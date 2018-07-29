@@ -16,6 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
+#include "ps2/pgif.h" // for PSX kernel TTY in iopMemWrite32
 
 uptr *psxMemWLUT = NULL;
 const uptr *psxMemRLUT = NULL;
@@ -488,4 +489,15 @@ void __fastcall iopMemWrite32(u32 mem, u32 value)
 			}
 		}
 	}
+}
+
+std::string iopMemReadString(u32 mem, int maxlen)
+{
+    std::string ret;
+    char c;
+
+    while ((c = iopMemRead8(mem++)) && maxlen--)
+        ret.push_back(c);
+
+    return ret;
 }

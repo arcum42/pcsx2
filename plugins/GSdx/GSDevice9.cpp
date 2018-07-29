@@ -23,6 +23,7 @@
 #include "GSdx.h"
 #include "GSDevice9.h"
 #include "resource.h"
+#include <fstream>
 
 GSDevice9::GSDevice9()
 	: m_lost(false)
@@ -41,10 +42,10 @@ GSDevice9::GSDevice9()
 
 GSDevice9::~GSDevice9()
 {
-	for_each(m_om_bs.begin(), m_om_bs.end(), delete_second());
-	for_each(m_om_dss.begin(), m_om_dss.end(), delete_second());
-	for_each(m_ps_ss.begin(), m_ps_ss.end(), delete_second());
-	for_each(m_mskfix.begin(), m_mskfix.end(), delete_second());
+	for(auto &i : m_om_bs) delete i.second;
+	for(auto &i : m_om_dss) delete i.second;
+	for(auto &i : m_ps_ss) delete i.second;
+	for(auto &i : m_mskfix) delete i.second;
 
 	if(m_state.vs_cb) _aligned_free(m_state.vs_cb);
 	if(m_state.ps_cb) _aligned_free(m_state.ps_cb);
@@ -56,7 +57,7 @@ static void FindAdapter(IDirect3D9 *d3d9, UINT &adapter, D3DDEVTYPE &devtype, st
 	devtype = D3DDEVTYPE_HAL;
 
 	if (!adapter_id.length())
-		adapter_id = theApp.GetConfig("Adapter", "default");
+		adapter_id = theApp.GetConfigS("Adapter");
 
 	if (adapter_id == "default")
 		;
@@ -83,9 +84,6 @@ static void FindAdapter(IDirect3D9 *d3d9, UINT &adapter, D3DDEVTYPE &devtype, st
 }
 
 // if supported and null != msaa_desc, msaa_desc will contain requested Count and Quality
-
-D3DTEXTUREFILTERTYPE LinearToAnisotropic = !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
-D3DTEXTUREFILTERTYPE PointToAnisotropic = !!theApp.GetConfig("AnisotropicFiltering", 0) && !theApp.GetConfig("paltex", 0) ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
 
 static bool IsMsaaSupported(IDirect3D9* d3d, UINT adapter, D3DDEVTYPE devtype, D3DFORMAT depth_format, uint32 msaaCount, DXGI_SAMPLE_DESC* msaa_desc = NULL)
 {
@@ -180,13 +178,13 @@ uint32 GSDevice9::GetMaxDepth(uint32 msaa, std::string adapter_id)
 
 void GSDevice9::ForceValidMsaaConfig()
 {
-	if(0 == GetMaxDepth(theApp.GetConfig("UserHacks_MSAA", 0)))
+	if(0 == GetMaxDepth(theApp.GetConfigI("UserHacks_MSAA")))
 	{
 		theApp.SetConfig("UserHacks_MSAA", 0); // replace invalid msaa value in ini file with 0.
 	}
 };
 
-bool GSDevice9::Create(GSWnd* wnd)
+bool GSDevice9::Create(const std::shared_ptr<GSWnd> &wnd)
 {
 	if(!__super::Create(wnd))
 	{
@@ -267,7 +265,7 @@ bool GSDevice9::Create(GSWnd* wnd)
 	}
 	else
 	{
-		string s = format(
+		std::string s = format(
 			"Supported pixel shader version is too low!\n\nSupported: %d.%d\nNeeded: 2.0 or higher",
 			D3DSHADER_VERSION_MAJOR(m_d3dcaps.PixelShaderVersion), D3DSHADER_VERSION_MINOR(m_d3dcaps.PixelShaderVersion));
 
@@ -292,11 +290,13 @@ bool GSDevice9::Create(GSWnd* wnd)
 		D3DDECL_END()
 	};
 
-	CompileShader(IDR_CONVERT_FX, "vs_main", NULL, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
+	std::vector<char> shader;
+	theApp.LoadResource(IDR_CONVERT_FX, shader);
+	CompileShader(shader.data(), shader.size(), "convert.fx", "vs_main", nullptr, &m_convert.vs, il_convert, countof(il_convert), &m_convert.il);
 
 	for(size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CompileShader(IDR_CONVERT_FX, format("ps_main%d", i), NULL, &m_convert.ps[i]);
+		CompileShader(shader.data(), shader.size(), "convert.fx", format("ps_main%d", i), nullptr, &m_convert.ps[i]);
 	}
 
 	m_convert.dss.DepthEnable = false;
@@ -304,6 +304,8 @@ bool GSDevice9::Create(GSWnd* wnd)
 
 	m_convert.bs.BlendEnable = false;
 	m_convert.bs.RenderTargetWriteMask = D3DCOLORWRITEENABLE_RGBA;
+	D3DTEXTUREFILTERTYPE LinearToAnisotropic = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3DTEXF_ANISOTROPIC : D3DTEXF_LINEAR;
+	D3DTEXTUREFILTERTYPE PointToAnisotropic = theApp.GetConfigI("MaxAnisotropy") && !theApp.GetConfigB("paltex") ? D3DTEXF_ANISOTROPIC : D3DTEXF_POINT;
 
 	m_convert.ln.FilterMin[0] = LinearToAnisotropic;
 	m_convert.ln.FilterMag[0] = LinearToAnisotropic;
@@ -311,7 +313,7 @@ bool GSDevice9::Create(GSWnd* wnd)
 	m_convert.ln.FilterMag[1] = LinearToAnisotropic;
 	m_convert.ln.AddressU = D3DTADDRESS_CLAMP;
 	m_convert.ln.AddressV = D3DTADDRESS_CLAMP;
-	m_convert.ln.MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	m_convert.ln.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
 
 	m_convert.pt.FilterMin[0] = PointToAnisotropic;
 	m_convert.pt.FilterMag[0] = PointToAnisotropic;
@@ -319,13 +321,14 @@ bool GSDevice9::Create(GSWnd* wnd)
 	m_convert.pt.FilterMag[1] = PointToAnisotropic;
 	m_convert.pt.AddressU = D3DTADDRESS_CLAMP;
 	m_convert.pt.AddressV = D3DTADDRESS_CLAMP;
-	m_convert.pt.MaxAnisotropy = theApp.GetConfig("MaxAnisotropy", 0);
+	m_convert.pt.MaxAnisotropy = theApp.GetConfigI("MaxAnisotropy");
 
 	// merge
 
+	theApp.LoadResource(IDR_MERGE_FX, shader);
 	for(size_t i = 0; i < countof(m_merge.ps); i++)
 	{
-		CompileShader(IDR_MERGE_FX, format("ps_main%d", i), NULL, &m_merge.ps[i]);
+		CompileShader(shader.data(), shader.size(), "merge.fx", format("ps_main%d", i), nullptr, &m_merge.ps[i]);
 	}
 
 	m_merge.bs.BlendEnable = true;
@@ -339,32 +342,34 @@ bool GSDevice9::Create(GSWnd* wnd)
 
 	// interlace
 
+	theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for(size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
-		CompileShader(IDR_INTERLACE_FX, format("ps_main%d", i), NULL, &m_interlace.ps[i]);
+		CompileShader(shader.data(), shader.size(), "interlace.fx", format("ps_main%d", i), nullptr, &m_interlace.ps[i]);
 	}
 
-	// Shade Boost	
+	// Shade Boost
 
-	int ShadeBoost_Contrast = theApp.GetConfig("ShadeBoost_Contrast", 50);
-	int ShadeBoost_Brightness = theApp.GetConfig("ShadeBoost_Brightness", 50);
-	int ShadeBoost_Saturation = theApp.GetConfig("ShadeBoost_Saturation", 50);
-		
-	string str[3];		
-		
+	int ShadeBoost_Contrast = theApp.GetConfigI("ShadeBoost_Contrast");
+	int ShadeBoost_Brightness = theApp.GetConfigI("ShadeBoost_Brightness");
+	int ShadeBoost_Saturation = theApp.GetConfigI("ShadeBoost_Saturation");
+
+	std::string str[3];
+
 	str[0] = format("%d", ShadeBoost_Saturation);
 	str[1] = format("%d", ShadeBoost_Brightness);
 	str[2] = format("%d", ShadeBoost_Contrast);
 
-	D3DXMACRO macro[] =
-	{			
+	D3D_SHADER_MACRO macro[] =
+	{
 		{"SB_SATURATION", str[0].c_str()},
 		{"SB_BRIGHTNESS", str[1].c_str()},
 		{"SB_CONTRAST", str[2].c_str()},
 		{NULL, NULL},
 	};
 
-	CompileShader(IDR_SHADEBOOST_FX, "ps_main", macro, &m_shadeboost.ps);
+	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
+	CompileShader(shader.data(), shader.size(), "shadeboost.fx", "ps_main", macro, &m_shadeboost.ps);
 
 	// create shader layout
 
@@ -398,7 +403,7 @@ bool GSDevice9::Reset(int w, int h)
 
 	HRESULT hr;
 
-	int mode = (!m_wnd->IsManaged() || theApp.GetConfig("windowed", 1)) ? Windowed : Fullscreen;
+	int mode = (!m_wnd->IsManaged() || theApp.GetConfigB("windowed")) ? Windowed : Fullscreen;
 
 	if(mode == DontCare)
 	{
@@ -456,9 +461,9 @@ bool GSDevice9::Reset(int w, int h)
 
 	// m_pp.Flags |= D3DPRESENTFLAG_VIDEO; // enables tv-out (but I don't think anyone would still use a regular tv...)
 
-	int mw = theApp.GetConfig("ModeWidth", 0);
-	int mh = theApp.GetConfig("ModeHeight", 0);
-	int mrr = theApp.GetConfig("ModeRefreshRate", 0);
+	int mw = theApp.GetConfigI("ModeWidth");
+	int mh = theApp.GetConfigI("ModeHeight");
+	int mrr = theApp.GetConfigI("ModeRefreshRate");
 
 	if(m_wnd->IsManaged() && mode == Fullscreen && mw > 0 && mh > 0 && mrr >= 0)
 	{
@@ -566,11 +571,11 @@ void GSDevice9::Flip()
 	}
 }
 
-void GSDevice9::SetVSync(bool enable)
+void GSDevice9::SetVSync(int vsync)
 {
-	if(m_vsync == enable) return;
+	if(m_vsync == vsync) return;
 
-	__super::SetVSync(enable);
+	__super::SetVSync(vsync);
 
 	// Clever trick:  Delete the backbuffer, so that the next Present will fail and
 	// cause a DXDevice9::Reset call, which re-creates the backbuffer with current
@@ -649,11 +654,13 @@ void GSDevice9::EndScene()
 
 void GSDevice9::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
+	if (!t) return;
 	ClearRenderTarget(t, (c * 255 + 0.5f).zyxw().rgba32());
 }
 
 void GSDevice9::ClearRenderTarget(GSTexture* rt, uint32 c)
 {
+	if (!rt) return;
 	CComPtr<IDirect3DSurface9> surface;
 	m_dev->GetRenderTarget(0, &surface);
 	m_dev->SetRenderTarget(0, *(GSTexture9*)rt);
@@ -661,17 +668,19 @@ void GSDevice9::ClearRenderTarget(GSTexture* rt, uint32 c)
 	m_dev->SetRenderTarget(0, surface);
 }
 
-void GSDevice9::ClearDepth(GSTexture* t, float c)
+void GSDevice9::ClearDepth(GSTexture* t)
 {
+	if (!t) return;
 	CComPtr<IDirect3DSurface9> dssurface;
 	m_dev->GetDepthStencilSurface(&dssurface);
 	m_dev->SetDepthStencilSurface(*(GSTexture9*)t);
-	m_dev->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, c, 0);
+	m_dev->Clear(0, NULL, D3DCLEAR_ZBUFFER, 0, 0.0f, 0);
 	m_dev->SetDepthStencilSurface(dssurface);
 }
 
 void GSDevice9::ClearStencil(GSTexture* t, uint8 c)
 {
+	if (!t) return;
 	CComPtr<IDirect3DSurface9> dssurface;
 	m_dev->GetDepthStencilSurface(&dssurface);
 	m_dev->SetDepthStencilSurface(*(GSTexture9*)t);
@@ -724,9 +733,13 @@ GSTexture* GSDevice9::CreateSurface(int type, int w, int h, bool msaa, int forma
 			ClearRenderTarget(t, 0);
 			break;
 		case GSTexture::DepthStencil:
-			ClearDepth(t, 0);
+			ClearDepth(t);
 			break;
 		}
+	}
+	else
+	{
+		throw std::bad_alloc();
 	}
 
 	return t;
@@ -768,7 +781,7 @@ GSTexture* GSDevice9::Resolve(GSTexture* t)
 	return NULL;
 }
 
-GSTexture* GSDevice9::CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format)
+GSTexture* GSDevice9::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)
 {
 	GSTexture* dst = NULL;
 
@@ -786,11 +799,11 @@ GSTexture* GSDevice9::CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, 
 
 	if(GSTexture* rt = CreateRenderTarget(w, h, false, format))
 	{
-		GSVector4 dr(0, 0, w, h);
+		GSVector4 dRect(0, 0, w, h);
 
 		if(GSTexture* src2 = src->IsMSAA() ? Resolve(src) : src)
 		{
-			StretchRect(src2, sr, rt, dr, m_convert.ps[1], NULL, 0);
+			StretchRect(src2, sRect, rt, dRect, m_convert.ps[1], NULL, 0);
 
 			if(src2 != src) Recycle(src2);
 		}
@@ -808,30 +821,30 @@ GSTexture* GSDevice9::CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, 
 	return dst;
 }
 
-void GSDevice9::CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r)
+void GSDevice9::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 {
-	if(!st || !dt)
+	if(!sTex || !dTex)
 	{
 		ASSERT(0);
 		return;
 	}
 
-	m_dev->StretchRect(*(GSTexture9*)st, r, *(GSTexture9*)dt, r, D3DTEXF_NONE);
+	m_dev->StretchRect(*(GSTexture9*)sTex, r, *(GSTexture9*)dTex, r, D3DTEXF_NONE);
 }
 
-void GSDevice9::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, int shader, bool linear)
+void GSDevice9::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
 {
-	StretchRect(st, sr, dt, dr, m_convert.ps[shader], NULL, 0, linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[shader], NULL, 0, linear);
 }
 
-void GSDevice9::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, bool linear)
+void GSDevice9::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, bool linear)
 {
-	StretchRect(st, sr, dt, dr, ps, ps_cb, ps_cb_len, &m_convert.bs, linear);
+	StretchRect(sTex, sRect, dTex, dRect, ps, ps_cb, ps_cb_len, &m_convert.bs, linear);
 }
 
-void GSDevice9::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, Direct3DBlendState9* bs, bool linear)
+void GSDevice9::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, Direct3DBlendState9* bs, bool linear)
 {
-	if(!st || !dt)
+	if(!sTex || !dTex)
 	{
 		ASSERT(0);
 		return;
@@ -839,27 +852,27 @@ void GSDevice9::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, c
 
 	BeginScene();
 
-	GSVector2i ds = dt->GetSize();
+	GSVector2i ds = dTex->GetSize();
 
 	// om
 
 	OMSetDepthStencilState(&m_convert.dss);
 	OMSetBlendState(bs, 0);
-	OMSetRenderTargets(dt, NULL);
+	OMSetRenderTargets(dTex, NULL);
 
 	// ia
 
-	float left = dr.x * 2 / ds.x - 1.0f;
-	float top = 1.0f - dr.y * 2 / ds.y;
-	float right = dr.z * 2 / ds.x - 1.0f;
-	float bottom = 1.0f - dr.w * 2 / ds.y;
+	float left = dRect.x * 2 / ds.x - 1.0f;
+	float top = 1.0f - dRect.y * 2 / ds.y;
+	float right = dRect.z * 2 / ds.x - 1.0f;
+	float bottom = 1.0f - dRect.w * 2 / ds.y;
 
 	GSVertexPT1 vertices[] =
 	{
-		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sr.x, sr.y)},
-		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sr.z, sr.y)},
-		{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sr.x, sr.w)},
-		{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sr.z, sr.w)},
+		{GSVector4(left, top, 0.5f, 1.0f), GSVector2(sRect.x, sRect.y)},
+		{GSVector4(right, top, 0.5f, 1.0f), GSVector2(sRect.z, sRect.y)},
+		{GSVector4(left, bottom, 0.5f, 1.0f), GSVector2(sRect.x, sRect.w)},
+		{GSVector4(right, bottom, 0.5f, 1.0f), GSVector2(sRect.z, sRect.w)},
 	};
 
 	for(size_t i = 0; i < countof(vertices); i++)
@@ -879,7 +892,7 @@ void GSDevice9::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, c
 	// ps
 
 	PSSetSamplerState(linear ? &m_convert.ln : &m_convert.pt);
-	PSSetShaderResources(st, NULL);
+	PSSetShaderResources(sTex, NULL);
 	PSSetShader(ps, ps_cb, ps_cb_len);
 
 	//
@@ -891,38 +904,41 @@ void GSDevice9::StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, c
 	EndScene();
 }
 
-void GSDevice9::DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c)
+void GSDevice9::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c)
 {
-	ClearRenderTarget(dt, c);
+	bool slbg = PMODE.SLBG;
+	bool mmod = PMODE.MMOD;
 
-	if(st[1] && !slbg)
+	ClearRenderTarget(dTex, c);
+
+	if(sTex[1] && !slbg)
 	{
-		StretchRect(st[1], sr[1], dt, dr[1], m_merge.ps[0], NULL, true);
+		StretchRect(sTex[1], sRect[1], dTex, dRect[1], m_merge.ps[0], NULL, true);
 	}
 
-	if(st[0])
+	if(sTex[0])
 	{
 		MergeConstantBuffer cb;
 
 		cb.BGColor = c;
 
-		StretchRect(st[0], sr[0], dt, dr[0], m_merge.ps[mmod ? 1 : 0], (const float*)&cb, 1, &m_merge.bs, true);
+		StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge.ps[mmod ? 1 : 0], (const float*)&cb, 1, &m_merge.bs, true);
 	}
 }
 
-void GSDevice9::DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool linear, float yoffset)
+void GSDevice9::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset)
 {
-	GSVector4 s = GSVector4(dt->GetSize());
+	GSVector4 s = GSVector4(dTex->GetSize());
 
-	GSVector4 sr(0, 0, 1, 1);
-	GSVector4 dr(0.0f, yoffset, s.x, s.y + yoffset);
+	GSVector4 sRect(0, 0, 1, 1);
+	GSVector4 dRect(0.0f, yoffset, s.x, s.y + yoffset);
 
 	InterlaceConstantBuffer cb;
 
 	cb.ZrH = GSVector2(0, 1.0f / s.y);
 	cb.hH = (float)s.y / 2;
 
-	StretchRect(st, sr, dt, dr, m_interlace.ps[shader], (const float*)&cb, 1, linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], (const float*)&cb, 1, linear);
 }
 
 void GSDevice9::InitExternalFX()
@@ -930,7 +946,25 @@ void GSDevice9::InitExternalFX()
 	if (!ExShader_Compiled)
 	{
 		try {
-			CompileShader("shaders/GSdx.fx", "ps_main", NULL, &m_shaderfx.ps);
+			std::string config_name(theApp.GetConfigS("shaderfx_conf"));
+			std::ifstream fconfig(config_name);
+			std::stringstream shader;
+			if (fconfig.good())
+				shader << fconfig.rdbuf() << "\n";
+			else
+				fprintf(stderr, "GSdx: External shader config '%s' not loaded.\n", config_name.c_str());
+
+			std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
+			std::ifstream fshader(shader_name);
+			if (fshader.good())
+			{
+				shader << fshader.rdbuf();
+				CompileShader(shader.str().c_str(), shader.str().length(), shader_name.c_str(), "ps_main", nullptr, &m_shaderfx.ps);
+			}
+			else
+			{
+				fprintf(stderr, "GSdx: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
+			}
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: failed to compile external post-processing shader. \n");
@@ -939,22 +973,22 @@ void GSDevice9::InitExternalFX()
 	}
 }
 
-void GSDevice9::DoExternalFX(GSTexture* st, GSTexture* dt)
+void GSDevice9::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 {
-	GSVector2i s = dt->GetSize();
+	GSVector2i s = dTex->GetSize();
 
-	GSVector4 sr(0, 0, 1, 1);
-	GSVector4 dr(0, 0, s.x, s.y);
+	GSVector4 sRect(0, 0, 1, 1);
+	GSVector4 dRect(0, 0, s.x, s.y);
 
 	ExternalFXConstantBuffer cb;
 	
 	InitExternalFX();
 
-	cb.xyFrame = GSVector2(s.x, s.y);
+	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
-	StretchRect(st, sr, dt, dr, m_shaderfx.ps, (const float*)&cb, 2, true);
+	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, (const float*)&cb, 2, true);
 }
 
 void GSDevice9::InitFXAA()
@@ -962,7 +996,9 @@ void GSDevice9::InitFXAA()
 	if (!FXAA_Compiled)
 	{
 		try {
-			CompileShader(IDR_FXAA_FX, "ps_main", NULL, &m_fxaa.ps);
+			std::vector<char> shader;
+			theApp.LoadResource(IDR_FXAA_FX, shader);
+			CompileShader(shader.data(), shader.size(), "fxaa.fx", "ps_main", nullptr, &m_fxaa.ps);
 		}
 		catch (GSDXRecoverableError) {
 			printf("GSdx: Failed to compile fxaa shader.\n");
@@ -971,12 +1007,12 @@ void GSDevice9::InitFXAA()
 	}
 }
 
-void GSDevice9::DoFXAA(GSTexture* st, GSTexture* dt)
+void GSDevice9::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 {
-	GSVector2i s = dt->GetSize();
+	GSVector2i s = dTex->GetSize();
 
-	GSVector4 sr(0, 0, 1, 1);
-	GSVector4 dr(0, 0, s.x, s.y);
+	GSVector4 sRect(0, 0, 1, 1);
+	GSVector4 dRect(0, 0, s.x, s.y);
 
 	FXAAConstantBuffer cb;
 
@@ -985,22 +1021,22 @@ void GSDevice9::DoFXAA(GSTexture* st, GSTexture* dt)
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
-	StretchRect(st, sr, dt, dr, m_fxaa.ps, (const float*)&cb, 2, true);
+	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, (const float*)&cb, 2, true);
 }
 
-void GSDevice9::DoShadeBoost(GSTexture* st, GSTexture* dt)
+void GSDevice9::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
 {
-	GSVector2i s = dt->GetSize();
+	GSVector2i s = dTex->GetSize();
 
-	GSVector4 sr(0, 0, 1, 1);
-	GSVector4 dr(0, 0, s.x, s.y);
+	GSVector4 sRect(0, 0, 1, 1);
+	GSVector4 dRect(0, 0, s.x, s.y);
 
 	ShadeBoostConstantBuffer cb;
 
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
 
-	StretchRect(st, sr, dt, dr, m_shadeboost.ps, (const float*)&cb, 1, true);
+	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, (const float*)&cb, 1, true);
 }
 
 void GSDevice9::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm)
@@ -1418,94 +1454,17 @@ void GSDevice9::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4
 	}
 }
 
-void GSDevice9::CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
+void GSDevice9::CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
 {
-    vector<D3DXMACRO> m;
-
-    PrepareShaderMacro(m, macro);
-
-    HRESULT hr;
-
-    CComPtr<ID3DXBuffer> shader, error;
-
-    hr = D3DXCompileShaderFromFile(fn, &m[0], NULL, entry.c_str(), m_shader.vs.c_str(), 0, &shader, &error, NULL);
-
-    if(SUCCEEDED(hr))
-    {
-        hr = m_dev->CreateVertexShader((DWORD*)shader->GetBufferPointer(), vs);
-    }
-    else if(error)
-    {
-        printf("%s\n", (const char*)error->GetBufferPointer());
-    }
-
-    ASSERT(SUCCEEDED(hr));
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-
-    hr = m_dev->CreateVertexDeclaration(layout, il);
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-}
-
-void GSDevice9::CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps)
-{
-    uint32 flags = 0;
-
-    if(m_shader.level >= D3D_FEATURE_LEVEL_9_3)
-    {
-        flags |= D3DXSHADER_AVOID_FLOW_CONTROL;
-    }
-    else
-    {
-        flags |= D3DXSHADER_SKIPVALIDATION;
-    }
-
-    vector<D3DXMACRO> m;
-
-    PrepareShaderMacro(m, macro);
-
-    HRESULT hr;
-
-    CComPtr<ID3DXBuffer> shader, error;
-
-    hr = D3DXCompileShaderFromFile(fn, &m[0], NULL, entry.c_str(), m_shader.ps.c_str(), flags, &shader, &error, NULL);
-
-    if(SUCCEEDED(hr))
-    {
-        hr = m_dev->CreatePixelShader((DWORD*)shader->GetBufferPointer(), ps);
-    }
-    else if(error)
-    {
-        printf("%s\n", (const char*)error->GetBufferPointer());
-    }
-
-    ASSERT(SUCCEEDED(hr));
-
-    if(FAILED(hr))
-    {
-        throw GSDXRecoverableError();
-    }
-}
-
-
-void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il)
-{
-	vector<D3DXMACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
 	HRESULT hr;
 
-	CComPtr<ID3DXBuffer> shader, error;
+	CComPtr<ID3DBlob> shader, error;
 
-	hr = D3DXCompileShaderFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), &m[0], NULL, entry.c_str(), m_shader.vs.c_str(), 0, &shader, &error, NULL);
+	hr = s_pD3DCompile(source, size, nullptr, &m[0], nullptr, entry.c_str(), m_shader.vs.c_str(), 0, 0, &shader, &error);
 
 	if(SUCCEEDED(hr))
 	{
@@ -1515,6 +1474,8 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 	{
 		printf("%s\n", (const char*)error->GetBufferPointer());
 	}
+
+	ASSERT(SUCCEEDED(hr));
 
 	if(FAILED(hr))
 	{
@@ -1529,28 +1490,27 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 	}
 }
 
-void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps)
+void GSDevice9::CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DPixelShader9** ps)
 {
 	uint32 flags = 0;
 
 	if(m_shader.level >= D3D_FEATURE_LEVEL_9_3)
 	{
-		flags |= D3DXSHADER_AVOID_FLOW_CONTROL;
+		flags |= D3DCOMPILE_AVOID_FLOW_CONTROL;
 	}
 	else
 	{
-		flags |= D3DXSHADER_SKIPVALIDATION;
+		flags |= D3DCOMPILE_SKIP_VALIDATION;
 	}
 
-	vector<D3DXMACRO> m;
+	std::vector<D3D_SHADER_MACRO> m;
 
 	PrepareShaderMacro(m, macro);
 
 	HRESULT hr;
 
-	CComPtr<ID3DXBuffer> shader, error;
-
-	hr = D3DXCompileShaderFromResource(theApp.GetModuleHandle(), MAKEINTRESOURCE(id), &m[0], NULL, entry.c_str(), m_shader.ps.c_str(), flags, &shader, &error, NULL);
+	CComPtr<ID3DBlob> shader, error;
+	hr = s_pD3DCompile(source, size, filename, &m[0], nullptr, entry.c_str(), m_shader.ps.c_str(), flags, 0, &shader, &error);
 
 	if(SUCCEEDED(hr))
 	{
@@ -1561,9 +1521,10 @@ void GSDevice9::CompileShader(uint32 id, const string& entry, const D3DXMACRO* m
 		printf("%s\n", (const char*)error->GetBufferPointer());
 	}
 
+	ASSERT(SUCCEEDED(hr));
+
 	if(FAILED(hr))
 	{
 		throw GSDXRecoverableError();
 	}
 }
-

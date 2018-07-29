@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWnd.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 class GSWndDX : public GSWnd
 {
 	HWND m_hWnd;
@@ -36,7 +36,7 @@ public:
 	GSWndDX();
 	virtual ~GSWndDX();
 
-	bool Create(const string& title, int w, int h);
+	bool Create(const std::string& title, int w, int h);
 	bool Attach(void* handle, bool managed = true);
 	void Detach();
 

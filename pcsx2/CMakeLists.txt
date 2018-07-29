@@ -12,12 +12,7 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-# set common flags
 set(CommonFlags
-    # GCC-4.6 crash pcsx2 during the binding of plugins at startup...
-    # Disable this optimization for the moment
-    -fno-omit-frame-pointer
-    # END GCC-4.6
     -fno-strict-aliasing
     -Wno-parentheses
     -Wstrict-aliasing # Allow to track strict aliasing issue.
@@ -27,78 +22,21 @@ set(CommonFlags
     -DWX_PRECOMP
 	)
 
-# set optimization flags
-set(OptimizationFlags
-	-falign-functions
-	-falign-jumps
-	-falign-labels
-	-falign-loops
-	-fcaller-saves
-	-fcprop-registers
-	-fcrossjumping
-	-fcse-follow-jumps
-	-fcse-skip-blocks
-	-fdefer-pop
-	-fdelete-null-pointer-checks
-	-fgcse
-	-fgcse-lm
-	-fif-conversion
-	-fif-conversion2
-	-fmerge-constants
-	-foptimize-sibling-calls
-	-fpeephole2
-	-fregmove
-	-freorder-blocks
-	-freorder-functions
-	-frerun-cse-after-loop
-	-fsched-interblock
-	-fsched-spec
-	-fstrict-overflow
-	-fthread-jumps
-	-ftree-ccp
-	-ftree-ch
-	-ftree-copyrename
-	-ftree-dce
-	-ftree-dominator-opts
-	-ftree-fre
-	-ftree-lrs
-	-ftree-pre
-	-ftree-sra
-	-ftree-ter
-	-ftree-vrp
-	-funit-at-a-time)
-
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG)
-	set(pcsx2FinalFlags ${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse)
+if ("${PGO}" STREQUAL "generate")
+    set(pcsx2FinalFlags -fprofile-generate)
+elseif("${PGO}" STREQUAL "use")
+    set(pcsx2FinalFlags -fprofile-use)
+else()
+    set(pcsx2FinalFlags "")
 endif()
 
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(Output pcsx2-dbg)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} -DPCSX2_DEVBUILD -DPCSX2_DEBUG)
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(Output pcsx2-dev)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD)
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(Output pcsx2)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags} ${OptimizationFlags})
-
-endif()
+set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags})
 
 if(XDG_STD)
-    set(pcsx2FinalFlags
-		${pcsx2FinalFlags}
-		-DXDG_STD
-	)
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -DXDG_STD)
 endif()
 
-# In package mode always use pcsx2
-if(PACKAGE_MODE)
-    set(Output pcsx2)
-endif()
+set(Output PCSX2)
 
 # Main pcsx2 source
 set(pcsx2Sources
@@ -112,7 +50,7 @@ set(pcsx2Sources
 	FiFo.cpp
 	FPU.cpp
 	Gif.cpp
-    Gif_Logger.cpp
+	Gif_Logger.cpp
 	Gif_Unit.cpp
 	GS.cpp
 	GSState.cpp
@@ -123,17 +61,18 @@ set(pcsx2Sources
 	IopBios.cpp
 	IopCounters.cpp
 	IopDma.cpp
+	IopGte.cpp
 	IopHw.cpp
 	IopIrq.cpp
 	IopMem.cpp
 	IopSio2.cpp
-#	Mdec.cpp
+	Mdec.cpp
 	Memory.cpp
 	MMI.cpp
 	MTGS.cpp
-    MTVU.cpp
-    MultipartFileReader.cpp
-    OutputIsoFile.cpp
+	MTVU.cpp
+	MultipartFileReader.cpp
+	OutputIsoFile.cpp
 	Patch.cpp
 	Patch_Memory.cpp
 	Pcsx2Config.cpp
@@ -175,6 +114,7 @@ set(pcsx2Sources
 
 # Main pcsx2 header
 set(pcsx2Headers
+	AsyncFileReader.h
 	Cache.h
 	cheatscpp.h
 	Common.h
@@ -194,11 +134,12 @@ set(pcsx2Headers
 	IopCommon.h
 	IopCounters.h
 	IopDma.h
+	IopGte.h
 	IopHw.h
 	IopMem.h
 	IopSio2.h
-#	Mdec.h
-    MTVU.h
+	Mdec.h
+	MTVU.h
 	Memory.h
 	MemoryTypes.h
 	NakedAsm.h
@@ -210,7 +151,6 @@ set(pcsx2Headers
 	R5900Exceptions.h
 	R5900.h
 	R5900OpcodeTables.h
-	SamplProf.h
 	SaveState.h
 	Sifcmd.h
 	Sif.h
@@ -236,7 +176,10 @@ set(pcsx2CDVDSources
 	CDVD/CDVDisoReader.cpp
 	CDVD/InputIsoFile.cpp
 	CDVD/OutputIsoFile.cpp
+	CDVD/ChunksCache.cpp
 	CDVD/CompressedFileReader.cpp
+	CDVD/CsoFileReader.cpp
+	CDVD/GzippedFileReader.cpp
 	CDVD/IsoFS/IsoFile.cpp
 	CDVD/IsoFS/IsoFSCDVD.cpp
 	CDVD/IsoFS/IsoFS.cpp
@@ -249,14 +192,20 @@ set(pcsx2CDVDHeaders
 	CDVD/CDVD.h
 	CDVD/CDVD_internal.h
 	CDVD/CDVDisoReader.h
-	CDVD/zlib_indexed.h
+	CDVD/ChunksCache.h
+	CDVD/CompressedFileReader.h
+	CDVD/CompressedFileReaderUtils.h
+	CDVD/CsoFileReader.h
+	CDVD/GzippedFileReader.h
 	CDVD/IsoFileFormats.h
 	CDVD/IsoFS/IsoDirectory.h
 	CDVD/IsoFS/IsoFileDescriptor.h
 	CDVD/IsoFS/IsoFile.h
 	CDVD/IsoFS/IsoFSCDVD.h
 	CDVD/IsoFS/IsoFS.h
-	CDVD/IsoFS/SectorSource.h)
+	CDVD/IsoFS/SectorSource.h
+	CDVD/zlib_indexed.h
+	)
 
 # DebugTools sources
 set(pcsx2DebugToolsSources
@@ -287,7 +236,7 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
 	DebugTools/Debug.h
-	DebugTools/DisASm.h
+	DebugTools/DisASM.h
 	DebugTools/DisVUmicro.h
 	DebugTools/DisVUops.h
 	DebugTools/BiosDebugData.h)
@@ -306,16 +255,12 @@ set(pcsx2GuiSources
 	gui/AppRes.cpp
 	gui/ConsoleLogger.cpp
 	gui/CpuUsageProvider.cpp
-	gui/CpuUsageProviderLnx.cpp
 	gui/Dialogs/AboutBoxDialog.cpp
 	gui/Dialogs/AppConfigDialog.cpp
 	gui/Dialogs/AssertionDialog.cpp
-	gui/Panels/BaseApplicableConfigPanel.cpp
-	gui/Panels/MemoryCardListView.cpp
-	gui/Panels/ThemeSelectorPanel.cpp
 	gui/Dialogs/BaseConfigurationDialog.cpp
-	gui/Dialogs/BiosSelectorDialog.cpp
 	gui/Dialogs/ConfirmationDialogs.cpp
+	gui/Dialogs/ConvertMemoryCardDialog.cpp
 	gui/Dialogs/CreateMemoryCardDialog.cpp
 	gui/Dialogs/FirstTimeWizard.cpp
 	gui/Dialogs/GameDatabaseDialog.cpp
@@ -323,7 +268,6 @@ set(pcsx2GuiSources
 	gui/Dialogs/LogOptionsDialog.cpp
 	gui/Dialogs/McdConfigDialog.cpp
 	gui/Dialogs/PickUserModeDialog.cpp
-	gui/Dialogs/StuckThreadDialog.cpp
 	gui/Dialogs/SysConfigDialog.cpp
 	gui/Debugger/BreakpointWindow.cpp
 	gui/Debugger/CtrlDisassemblyView.cpp
@@ -340,11 +284,10 @@ set(pcsx2GuiSources
 	gui/MainFrame.cpp
 	gui/MainMenuClicks.cpp
 	gui/MemoryCardFile.cpp
-	gui/Panels/BaseApplicableConfigPanel.cpp
-	gui/Panels/MemoryCardListPanel.cpp
+	gui/MemoryCardFolder.cpp
 	gui/MessageBoxes.cpp
 	gui/MSWstuff.cpp
-	gui/Panels/AudioPanel.cpp
+	gui/Panels/BaseApplicableConfigPanel.cpp
 	gui/Panels/BiosSelectorPanel.cpp
 	gui/Panels/CpuPanel.cpp
 	gui/Panels/DirPickerPanel.cpp
@@ -352,12 +295,13 @@ set(pcsx2GuiSources
 	gui/Panels/GameFixesPanel.cpp
 	gui/Panels/GSWindowPanel.cpp
 	gui/Panels/LogOptionsPanels.cpp
+	gui/Panels/MemoryCardListPanel.cpp
+	gui/Panels/MemoryCardListView.cpp
 	gui/Panels/MiscPanelStuff.cpp
 	gui/Panels/PathsPanel.cpp
 	gui/Panels/PluginSelectorPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
-	gui/pxLogTextCtrl.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
 	gui/SysState.cpp
@@ -366,36 +310,41 @@ set(pcsx2GuiSources
 
 # gui headers
 set(pcsx2GuiHeaders
-	gui/App.h
-	gui/ApplyState.h
 	gui/AppAccelerators.h
 	gui/AppCommon.h
 	gui/AppConfig.h
 	gui/AppCorePlugins.h
+	gui/AppCoreThread.h
 	gui/AppEventListeners.h
 	gui/AppForwardDefs.h
 	gui/AppGameDatabase.h
+	gui/App.h
+	gui/ApplyState.h
+	gui/AppSaveStates.h
 	gui/ConsoleLogger.h
 	gui/CpuUsageProvider.h
+	gui/Debugger/BreakpointWindow.h
+	gui/Debugger/CtrlDisassemblyView.h
+	gui/Debugger/CtrlMemView.h
+	gui/Debugger/CtrlRegisterList.h
+	gui/Debugger/DebugEvents.h
+	gui/Debugger/DebuggerLists.h
+	gui/Debugger/DisassemblyDialog.h
 	gui/Dialogs/BaseConfigurationDialog.inl
 	gui/Dialogs/ConfigurationDialog.h
 	gui/Dialogs/LogOptionsDialog.h
 	gui/Dialogs/ModalPopups.h
-	gui/Debugger/BreakpointWindow.h
-	gui/Debugger/CtrlDisassemblyView.h
-	gui/Debugger/CtrlRegisterList.h
-	gui/Debugger/CtrlMemView.h
-	gui/Debugger/DebuggerLists.h
-	gui/Debugger/DisassemblyDialog.h
-	gui/Debugger/DebugEvents.h
+	gui/GSFrame.h
 	gui/i18n.h
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
 	gui/MemoryCardFile.h
+	gui/MemoryCardFolder.h
 	gui/MSWstuff.h
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
+	gui/pxEventThread.h
 	gui/RecentIsoList.h
 	)
 
@@ -409,7 +358,6 @@ set(pcsx2GuiResources
     ${res_bin}/AppIcon32.h
     ${res_bin}/AppIcon64.h
     ${res_bin}/BackgroundLogo.h
-    ${res_bin}/ConfigIcon_Appearance.h
     ${res_bin}/ButtonIcon_Camera.h
     ${res_bin}/ConfigIcon_Cpu.h
     ${res_bin}/ConfigIcon_Gamefixes.h
@@ -418,7 +366,7 @@ set(pcsx2GuiResources
     ${res_bin}/ConfigIcon_Plugins.h
     ${res_bin}/ConfigIcon_Speedhacks.h
     ${res_bin}/ConfigIcon_Video.h
-    ${res_bin}/Dualshock.h
+    ${res_bin}/Logo.h
     ${res_bin}/Breakpoint_Active.h
     ${res_bin}/Breakpoint_Inactive.h
     )
@@ -434,16 +382,35 @@ set(pcsx2IPUSources
 
 # IPU headers
 set(pcsx2IPUHeaders
-	IPU/IPU.h
-	IPU/IPU_Fifo.h
 	IPU/IPUdma.h
-	IPU/yuv2rgb.h)
+	IPU/IPU_Fifo.h
+	IPU/IPU.h
+	IPU/mpeg2lib/Mpeg.h
+	IPU/mpeg2lib/Vlc.h
+	IPU/yuv2rgb.h
+	)
 
 # Linux sources
 set(pcsx2LinuxSources
+	gui/CpuUsageProviderLnx.cpp
+	Linux/LnxConsolePipe.cpp
 	Linux/LnxKeyCodes.cpp
-    Linux/LnxFlatFileReader.cpp
+	Linux/LnxFlatFileReader.cpp
     )
+
+set(pcsx2OSXSources
+	gui/CpuUsageProviderLnx.cpp
+#	Linux/LnxConsolePipe.cpp
+#	Linux/LnxKeyCodes.cpp
+	Darwin/DarwinFlatFileReader.cpp
+	)
+
+set(pcsx2FreeBSDSources
+	gui/CpuUsageProviderLnx.cpp
+	Linux/LnxConsolePipe.cpp
+	Linux/LnxKeyCodes.cpp
+	Darwin/DarwinFlatFileReader.cpp
+	)
 
 # Linux headers
 set(pcsx2LinuxHeaders
@@ -452,14 +419,17 @@ set(pcsx2LinuxHeaders
 # ps2 sources
 set(pcsx2ps2Sources
 	ps2/BiosTools.cpp
+	ps2/pgif.cpp
 	ps2/LegacyDmac.cpp
 	ps2/Iop/IopHwRead.cpp
-	ps2/Iop/IopHwWrite.cpp)
+	ps2/Iop/IopHwWrite.cpp
+	ps2/Iop/PsxBios.cpp)
 
 # ps2 headers
 set(pcsx2ps2Headers
 	ps2/BiosTools.h
 	ps2/eeHwTraceLog.inl
+	ps2/pgif.h
 	ps2/HwInternal.h
 	ps2/Iop/IopHw_Internal.h)
 
@@ -513,15 +483,18 @@ set(pcsx2ZipToolsHeaders
 
 # Windows sources
 set(pcsx2WindowsSources
+	gui/CpuUsageProviderMSW.cpp
 	windows/cheats/browser.cpp
 	windows/cheats/cheats.cpp
 	windows/DwmSetup.cpp
-	windows/ini.cpp
+	windows/FlatFileReaderWindows.cpp
+	windows/Optimus.cpp
 	windows/PatchBrowser.cpp
-	windows/SampleProf.cp
+	windows/VCprojects/IopSif.cpp
 	windows/WinCompressNTFS.cpp
 	windows/WinConsolePipe.cpp
-	windows/WinSysExec.cpp)
+	windows/WinKeyCodes.cpp
+	)
 
 # Windows headers
 set(pcsx2WindowsHeaders
@@ -538,7 +511,6 @@ set(pcsx2x86Sources
 	x86/iFPUd.cpp
 	x86/iMisc.cpp
 	x86/iMMI.cpp
-	x86/iPsxMem.cpp
 	x86/iR3000A.cpp
 	x86/iR3000Atables.cpp
 	x86/iR5900Misc.cpp
@@ -586,9 +558,6 @@ set(pcsx2x86Headers
 	x86/iR5900Move.h
 	x86/iR5900MultDiv.h
 	x86/iR5900Shift.h
-	x86/microVU.h
-	x86/microVU_IR.h
-	x86/microVU_Misc.h
 	x86/microVU_Alloc.inl
 	x86/microVU_Analyze.inl
 	x86/microVU_Branch.inl
@@ -597,21 +566,25 @@ set(pcsx2x86Headers
 	x86/microVU.cpp
 	x86/microVU_Execute.inl
 	x86/microVU_Flags.inl
+	x86/microVU.h
+	x86/microVU_IR.h
 	x86/microVU_Log.inl
 	x86/microVU_Lower.inl
 	x86/microVU_Macro.inl
+	x86/microVU_Misc.h
 	x86/microVU_Misc.inl
+	x86/microVU_Profiler.h
 	x86/microVU_Tables.inl
 	x86/microVU_Upper.inl
 	x86/newVif.h
 	x86/newVif_HashBucket.h
 	x86/newVif_UnpackSSE.h
+	x86/R5900_Profiler.h
+	x86/sVU_Compare.h
+	x86/sVU_Debug.h
+	x86/sVU_Micro.h
+	x86/sVU_zerorec.h
 	)
-
-# colect .asm files
-set(pcsx2AsmFiles
-	IPU/yuv2rgb.asm
-	x86/ix86-32/aVif_proc-32.asm)
 
 # collect .S files
 if (NOT DISABLE_SVU)
@@ -631,7 +604,7 @@ set(Common
 	${pcsx2CDVDHeaders}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
-    ${pcsx2GuiResources}
+	${pcsx2GuiResources}
 	${pcsx2GuiHeaders}
 	${pcsx2IPUSources}
 	${pcsx2IPUHeaders}
@@ -663,9 +636,16 @@ if(Windows)
 endif()
 
 # MacOSX
-if(MacOSX)
+if(APPLE)
 	set(Platform
-		)
+		${pcsx2OSXSources}
+		${pcsx2LinuxHeaders})
+endif()
+
+if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
+	set(Platform
+		${pcsx2FreeBSDSources}
+		${pcsx2LinuxHeaders})
 endif()
 
 set(pcsx2FinalSources
@@ -674,38 +654,56 @@ set(pcsx2FinalSources
 )
 
 set(pcsx2FinalLibs
-	Utilities
-	x86emitter
-	${wxWidgets_LIBRARIES}
-	${GTK2_LIBRARIES}
-	${ZLIB_LIBRARIES}
+    Utilities
+    x86emitter
+    ${wxWidgets_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${ZLIB_LIBRARIES}
     ${AIO_LIBRARIES}
+    ${GCOV_LIBRARIES}
 )
+
+if(BUILTIN_GS)
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx")
+endif()
+if(BUILTIN_PAD)
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} onepad-1.2.0")
+endif()
+if(BUILTIN_SPU2)
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} spu2x-2.0.0")
+endif()
+if(BUILTIN_USB)
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} USBnull-0.7.0")
+endif()
+if(BUILTIN_FW)
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} FWnull-0.7.0")
+endif()
+if(BUILTIN_DEV)
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} dev9null-0.5.0")
+endif()
+if(BUILTIN_CDVD)
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} CDVDnull")
+endif()
 
 # additonal include directories
 include_directories(
-					gui
-					x86
-                    ${CMAKE_BINARY_DIR}/pcsx2/gui
+    gui
+    x86
+    ${CMAKE_BINARY_DIR}/pcsx2/gui
 )
 
 ### Generate the resources files
 file(MAKE_DIRECTORY ${res_bin})
 
-add_custom_command(OUTPUT  "${res_bin}/Dualshock.h"  COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/Dualshock.jpg" "${res_bin}/Dualshock" )
-
 foreach(res_file IN ITEMS
-        AppIcon16 AppIcon32 AppIcon64 BackgroundLogo ButtonIcon_Camera
-        ConfigIcon_Appearance ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
+        AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo ButtonIcon_Camera
+        ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
         ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
 endforeach()
 
-# Suppress all the system-specific predefined macros outside the reserved namespace.
-# Needed when stringifying macros.
-# See issue: 1233
-if(PACKAGE_MODE)
-	SET_SOURCE_FILES_PROPERTIES(gui/AppConfig.cpp PROPERTIES COMPILE_FLAGS "-Wp,-ansi,-U__STRICT_ANSI__")
+if(USE_VTUNE)
+    set(pcsx2FinalLibs ${pcsx2FinalLibs} ${VTUNE_LIBRARIES})
 endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")

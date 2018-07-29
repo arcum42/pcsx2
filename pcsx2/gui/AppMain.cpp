@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "App.h"
 #include "MainFrame.h"
 #include "GSFrame.h"
 #include "GS.h"
@@ -40,66 +41,50 @@
 #endif
 
 #ifdef __WXGTK__
-
-#if wxMAJOR_VERSION < 3
-#include <wx/gtk/win_gtk.h> // GTK_PIZZA interface (internal include removed in 3.0)
-#endif
-
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
 #endif
 
+// Safe to remove these lines when this is handled properly.
+#ifdef __WXMAC__
+// Great joy....
+#undef EBP
+#undef ESP
+#undef EDI
+#undef ESI
+#undef EDX
+#undef EAX
+#undef EBX
+#undef ECX
+#include <wx/osx/private.h>		// needed to implement the app!
+#endif
 
 IMPLEMENT_APP(Pcsx2App)
 
-DEFINE_EVENT_TYPE( pxEvt_LoadPluginsComplete );
-DEFINE_EVENT_TYPE( pxEvt_LogicalVsync );
+std::unique_ptr<AppConfig> g_Conf;
 
-DEFINE_EVENT_TYPE( pxEvt_ThreadTaskTimeout_SysExec );
-
-ScopedPtr<AppConfig>	g_Conf;
-
-template<typename DialogType>
-int AppOpenModalDialog( wxWindow* parent=NULL )
-{
-	if( wxWindow* window = wxFindWindowByName( L"Dialog:" + DialogType::GetNameStatic() ) )
-	{
-		window->SetFocus();
-		if( wxDialog* dialog = wxDynamicCast( window, wxDialog ) )
-		{
-			// It's legal to call ShowModal on a non-modal dialog, therefore making
-			// it modal in nature for the needs of whatever other thread of action wants
-			// to block against it:
-
-			if( !dialog->IsModal() )
-			{
-				int result = dialog->ShowModal();
-				dialog->Destroy();
-				return result;
-			}
-		}
-		pxFailDev( "Can only show wxDialog class windows as modal!" );
-		return wxID_CANCEL;
-	}
-	else
-		return DialogType( parent ).ShowModal();
-}
+AspectRatioType iniAR;
+bool switchAR;
 
 static bool HandlePluginError( BaseException& ex )
 {
-	if( !pxDialogExists( L"CoreSettings" ) )
+	if (!pxDialogExists(L"Dialog:" + Dialogs::ComponentsConfigDialog::GetNameStatic()))
 	{
 		if( !Msgbox::OkCancel( ex.FormatDisplayMessage() +
 				_("\n\nPress Ok to go to the Plugin Configuration Panel.")
 			) )
 		return false;
 	}
+	else
+	{
+		Msgbox::Alert(ex.FormatDisplayMessage());
+	}
 
-	g_Conf->SysSettingsTabName = L"Plugins";
+	g_Conf->ComponentsTabName = L"Plugins";
 
 	// TODO: Send a message to the panel to select the failed plugin.
 
-	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>() != wxID_CANCEL;
+	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>(L"Plugins") != wxID_CANCEL;
 }
 
 class PluginErrorEvent : public pxExceptionEvent
@@ -110,7 +95,7 @@ public:
 	PluginErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
 	PluginErrorEvent( const BaseException& ex ) : _parent( ex ) {}
 
-	virtual ~PluginErrorEvent() throw() { }
+	virtual ~PluginErrorEvent() = default;
 	virtual PluginErrorEvent *Clone() const { return new PluginErrorEvent(*this); }
 
 protected:
@@ -125,7 +110,7 @@ public:
 	PluginInitErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
 	PluginInitErrorEvent( const BaseException& ex ) : _parent( ex ) {}
 
-	virtual ~PluginInitErrorEvent() throw() { }
+	virtual ~PluginInitErrorEvent() = default;
 	virtual PluginInitErrorEvent *Clone() const { return new PluginInitErrorEvent(*this); }
 
 protected:
@@ -161,6 +146,63 @@ void PluginInitErrorEvent::InvokeEvent()
 	}
 }
 
+// Returns a string message telling the user to consult guides for obtaining a legal BIOS.
+// This message is in a function because it's used as part of several dialogs in PCSX2 (there
+// are multiple variations on the BIOS and BIOS folder checks).
+wxString BIOS_GetMsg_Required()
+{
+	return pxE(L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
+		);
+}
+
+class BIOSLoadErrorEvent : public pxExceptionEvent
+{
+	typedef pxExceptionEvent _parent;
+
+public:
+	BIOSLoadErrorEvent(BaseException* ex = NULL) : _parent(ex) {}
+	BIOSLoadErrorEvent(const BaseException& ex) : _parent(ex) {}
+
+	virtual ~BIOSLoadErrorEvent() = default;
+	virtual BIOSLoadErrorEvent *Clone() const { return new BIOSLoadErrorEvent(*this); }
+
+protected:
+	void InvokeEvent();
+
+};
+
+static bool HandleBIOSError(BaseException& ex)
+{
+	if (!pxDialogExists(L"Dialog:" + Dialogs::ComponentsConfigDialog::GetNameStatic()))
+	{
+		if (!Msgbox::OkCancel(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required()
+			+ L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel."), _("PS2 BIOS Error")))
+			return false;
+	}
+	else
+	{
+		Msgbox::Alert(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required(), _("PS2 BIOS Error"));
+	}
+
+	g_Conf->ComponentsTabName = L"BIOS";
+
+	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>(L"BIOS") != wxID_CANCEL;
+}
+
+void BIOSLoadErrorEvent::InvokeEvent()
+{
+	if (!m_except) return;
+
+	ScopedExcept deleteMe(m_except);
+	m_except = NULL;
+
+	if (!HandleBIOSError(*deleteMe))
+	{
+		Console.Warning("User canceled BIOS configuration.");
+		Msgbox::Alert(_("Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."));
+	}
+}
+
 // Allows for activating menu actions from anywhere in PCSX2.
 // And it's Thread Safe!
 void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
@@ -168,7 +210,7 @@ void Pcsx2App::PostMenuAction( MenuIdentifiers menu_id ) const
 	MainEmuFrame* mainFrame = GetMainFramePtr();
 	if( mainFrame == NULL ) return;
 
-	wxCommandEvent joe( wxEVT_COMMAND_MENU_SELECTED, menu_id );
+	wxCommandEvent joe( wxEVT_MENU, menu_id );
 	if( wxThread::IsMain() )
 		mainFrame->GetEventHandler()->ProcessEvent( joe );
 	else
@@ -191,7 +233,7 @@ protected:
 	FnPtr_Pcsx2App	m_Method;
 
 public:
-	virtual ~Pcsx2AppMethodEvent() throw() { }
+	virtual ~Pcsx2AppMethodEvent() = default;
 	virtual Pcsx2AppMethodEvent *Clone() const { return new Pcsx2AppMethodEvent(*this); }
 
 	explicit Pcsx2AppMethodEvent( FnPtr_Pcsx2App method=NULL, SynchronousActionState* sema=NULL )
@@ -227,33 +269,47 @@ protected:
 
 IMPLEMENT_DYNAMIC_CLASS( Pcsx2AppMethodEvent, pxActionEvent )
 
-#ifdef __WXGTK__
+#ifdef __WXMSW__
+extern int TranslateVKToWXK( u32 keysym );
+#elif defined( __WXGTK__ )
 extern int TranslateGDKtoWXK( u32 keysym );
 #endif
 
 void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 {
 	m_kevt.SetEventType( ( ev.evt == KEYPRESS ) ? wxEVT_KEY_DOWN : wxEVT_KEY_UP );
-	const bool isDown = (ev.evt == KEYPRESS);
 
+//returns 0 for normal keys and a WXK_* value for special keys
 #ifdef __WXMSW__
-	const int vkey = wxCharCodeMSWToWX( ev.key );	//returns 0 if plain ascii value or a WXK_... (<=32 or >=300) if a special key
+	const int vkey = TranslateVKToWXK(ev.key);
+#elif defined( __WXMAC__ )
+	const int vkey = wxCharCodeWXToOSX( (wxKeyCode) ev.key );
 #elif defined( __WXGTK__ )
 	const int vkey = TranslateGDKtoWXK( ev.key );
 #else
 #	error Unsupported Target Platform.
 #endif
 
-	switch (vkey)
-	{
-		case WXK_SHIFT:		m_kevt.m_shiftDown		= isDown; return;
-		case WXK_CONTROL:	m_kevt.m_controlDown	= isDown; return;
-
-		case WXK_ALT:		// ALT/MENU are usually the same key?  I'm confused.
-		case WXK_MENU:		m_kevt.m_altDown		= isDown; return;
-	}
+	// Don't rely on current event handling to get the state of those specials keys.
+	// Typical linux bug: hit ctrl-alt key to switch the desktop. Key will be released
+	// outside of the window so the app isn't aware of the current key state.
+	m_kevt.m_shiftDown = wxGetKeyState(WXK_SHIFT);
+	m_kevt.m_controlDown = wxGetKeyState(WXK_CONTROL);
+	m_kevt.m_altDown = wxGetKeyState(WXK_MENU) || wxGetKeyState(WXK_ALT);
 
 	m_kevt.m_keyCode = vkey? vkey : ev.key;
+
+	if (DevConWriterEnabled && m_kevt.GetEventType() == wxEVT_KEY_DOWN) {
+		wxString strFromCode = wxAcceleratorEntry(
+			(m_kevt.m_shiftDown ? wxACCEL_SHIFT : 0) | (m_kevt.m_controlDown ? wxACCEL_CTRL : 0) | (m_kevt.m_altDown ? wxACCEL_ALT : 0),
+			m_kevt.m_keyCode
+			).ToString();
+
+		if (strFromCode.EndsWith(L"\\"))
+			strFromCode += L"\\"; // If copied into PCSX2_keys.ini, \ needs escaping
+
+		Console.WriteLn(wxString(L"> Key: %s (Code: %ld)"),	WX_STR(strFromCode), m_kevt.m_keyCode);
+	}
 
 	if( m_kevt.GetEventType() == wxEVT_KEY_DOWN )
 	{
@@ -277,12 +333,19 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 // displaying a readable --help command line list, so I replace it here with a custom one
 // that formats things nicer.
 //
+
+// This is only used in Windows. It's not possible to have wxWidgets show a localised
+// command line help message in cmd/powershell/mingw bash. It can be done in English
+// locales ( using AttachConsole, WriteConsole, FreeConsole combined with
+// wxMessageOutputStderr), but completely fails for some other languages (i.e. Japanese).
+#ifdef _WIN32
 class pxMessageOutputMessageBox : public wxMessageOutput
 {
 public:
 	pxMessageOutputMessageBox() { }
 
-	virtual void Printf(const wxChar* format, ...);
+	// DoPrintf in wxMessageOutputBase (wxWidgets 3.0) uses this.
+	virtual void Output(const wxString &out);
 };
 
 // EXTRAORDINARY HACK!  wxWidgets does not provide a clean way of overriding the commandline options
@@ -291,21 +354,18 @@ public:
 // wxMessageOutputMessageBox::PrintF is only used in like two places, so we can just check for the
 // commandline window using an identifier we know is contained in it, and then format our own window
 // display. :D  --air
-void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
+
+void pxMessageOutputMessageBox::Output(const wxString& out)
 {
 	using namespace pxSizerFlags;
 
-	va_list args;
-	va_start(args, format);
-	wxString out;
-	out.PrintfV(format, args);
-	va_end(args);
+	wxString isoFormatted;
+	isoFormatted.Printf(L"[%s]", _("IsoFile"));
 
-	FastFormatUnicode isoFormatted;
-	isoFormatted.Write( L"[%s]", _("IsoFile") );
-	int pos = out.Find( isoFormatted.c_str() );
-	
-	if(pos == wxNOT_FOUND)
+	int pos = out.Find(isoFormatted.c_str());
+
+	// I've no idea when this is true.
+	if (pos == wxNOT_FOUND)
 	{
 		Msgbox::Alert( out ); return;
 	}
@@ -337,6 +397,7 @@ void pxMessageOutputMessageBox::Printf(const wxChar* format, ...)
 
 	pxIssueConfirmation(popup, MsgButtons().Close() );
 }
+#endif
 
 wxMessageOutput* Pcsx2AppTraits::CreateMessageOutput()
 {
@@ -359,7 +420,7 @@ public:
 		return Path::Combine( GetDataDir(), L"Langs" );
 	}
 
-#ifdef __linux__
+#ifdef __POSIX__
 	wxString GetUserLocalDataDir() const
 	{
 		// I got memory corruption inside wxGetEnv when I heavily toggle the GS renderer (F9). It seems wxGetEnv
@@ -392,11 +453,7 @@ public:
 
 };
 
-#if wxMAJOR_VERSION < 3
-wxStandardPathsBase& Pcsx2AppTraits::GetStandardPaths()
-#else
 wxStandardPaths& Pcsx2AppTraits::GetStandardPaths()
-#endif
 {
 	static Pcsx2StandardPaths stdPaths;
 	return stdPaths;
@@ -430,8 +487,6 @@ void FramerateManager::Resume()
 
 void FramerateManager::DoFrame()
 {
-	++m_FrameCounter;
-
 	m_fpsqueue_writepos = (m_fpsqueue_writepos + 1) % FramerateQueueDepth;
 	m_fpsqueue[m_fpsqueue_writepos] = GetCPUTicks();
 
@@ -460,11 +515,25 @@ extern bool FMVstarted;
 extern bool renderswitch;
 extern bool EnableFMV;
 
-void DoFmvSwitch()
+void DoFmvSwitch(bool on)
 {
-	ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(PluginId_GS) );
-	renderswitch = !renderswitch;
-	paused_core.AllowResume();
+	if (g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+		if (on) {
+			switchAR = true;
+			iniAR = g_Conf->GSWindow.AspectRatio;
+		} else {
+			switchAR = false;
+		}
+		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
+			if (GSPanel* viewport = gsFrame->GetViewport())
+				viewport->DoResize();
+	}
+
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
+		ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
+		renderswitch = !renderswitch;
+		paused_core.AllowResume();
+	}
 }
 
 void Pcsx2App::LogicalVsync()
@@ -477,19 +546,19 @@ void Pcsx2App::LogicalVsync()
 
 	FpsManager.DoFrame();
 	
-	if (EmuConfig.Gamefixes.FMVinSoftwareHack) {
-		if (EnableFMV == 1) {
-			Console.Warning("FMV on");
-			DoFmvSwitch();
-			EnableFMV = 0;
+	if (EmuConfig.Gamefixes.FMVinSoftwareHack || g_Conf->GSWindow.IsToggleAspectRatioSwitch) {
+		if (EnableFMV) {
+			DevCon.Warning("FMV on");
+			DoFmvSwitch(true);
+			EnableFMV = false;
 		}
 
-		if (FMVstarted){
+		if (FMVstarted) {
 			int diff = cpuRegs.cycle - eecount_on_last_vdec;
 			if (diff > 60000000 ) {
-				Console.Warning("FMV off");
-				DoFmvSwitch();
-				FMVstarted = 0;
+				DevCon.Warning("FMV off");
+				DoFmvSwitch(false);
+				FMVstarted = false;
 			}
 		}
 	}
@@ -531,16 +600,6 @@ void Pcsx2App::OnEmuKeyDown( wxKeyEvent& evt )
 	cmd->Invoke();
 }
 
-// Returns a string message telling the user to consult guides for obtaining a legal BIOS.
-// This message is in a function because it's used as part of several dialogs in PCSX2 (there
-// are multiple variations on the BIOS and BIOS folder checks).
-wxString BIOS_GetMsg_Required()
-{
-	return pxE( L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
-	);
-}
-
-
 void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const
 {
 	const_cast<Pcsx2App*>(this)->HandleEvent( handler, func, event );
@@ -560,17 +619,15 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 	// ----------------------------------------------------------------------------
 	catch( Exception::BiosLoadFailed& ex )
 	{
-		wxDialogWithHelpers dialog( NULL, _("PS2 BIOS Error") );
-		dialog += dialog.Heading( ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required() + L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel.") );
-		dialog += new ModalButtonPanel( &dialog, MsgButtons().OKCancel() );
-		
-		if( dialog.ShowModal() == wxID_CANCEL )
-			Console.Warning( "User denied option to re-configure BIOS." );
+		// Commandline 'nogui' users will not receive an error message, but at least PCSX2 will
+		// terminate properly.
+		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
+		gsframe->Close();
 
-		if( AppOpenModalDialog<Dialogs::BiosSelectorDialog>() != wxID_CANCEL )
-			SysExecute();
-		else
-			Console.Warning( "User canceled BIOS configuration." );
+		Console.Error(ex.FormatDiagnosticMessage());
+
+		if (wxGetApp().HasGUI())
+			AddIdleEvent(BIOSLoadErrorEvent(ex));
 	}
 	// ----------------------------------------------------------------------------
 	catch( Exception::SaveStateLoadError& ex)
@@ -583,10 +640,23 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 	// ----------------------------------------------------------------------------
 	catch( Exception::PluginOpenError& ex )
 	{
-		// Should need to do much here -- all systems should be in an inert and (sorta safe!) state.
-		
-		Console.Error( ex.FormatDiagnosticMessage() );
-		AddIdleEvent( PluginInitErrorEvent(ex) );
+		// It might be possible for there to be no GS Frame, but I don't really know. This does
+		// prevent PCSX2 from locking up on a Windows wxWidgets 3.0 build. My conjecture is this:
+		// 1. Messagebox appears
+		// 2. Either a close or hide signal for gsframe gets sent to messagebox.
+		// 3. Message box hides itself without exiting the modal event loop, therefore locking up
+		// PCSX2. This probably happened in the BIOS error case above as well.
+		// So the idea is to explicitly close the gsFrame before the modal MessageBox appears and
+		// intercepts the close message. Only for wx3.0 though - it sometimes breaks linux wx2.8.
+
+		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+			gsframe->Close();
+
+		Console.Error(ex.FormatDiagnosticMessage());
+
+		// Make sure it terminates properly for nogui users.
+		if (wxGetApp().HasGUI())
+			AddIdleEvent(PluginInitErrorEvent(ex));
 	}
 	// ----------------------------------------------------------------------------
 	catch( Exception::PluginInitError& ex )
@@ -649,8 +719,15 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		// Runtime errors which have been unhandled should still be safe to recover from,
 		// so lets issue a message to the user and then continue the message pump.
 
+		// Test case (Windows only, Linux has an uncaught exception for some
+		// reason): Run PSX ISO using fast boot
+		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+			gsframe->Close();
+
 		Console.Error( ex.FormatDiagnosticMessage() );
-		Msgbox::Alert( ex.FormatDisplayMessage() );
+		// I should probably figure out how to have the error message as well.
+		if (wxGetApp().HasGUI())
+			Msgbox::Alert( ex.FormatDisplayMessage() );
 	}
 }
 
@@ -744,6 +821,7 @@ void AppApplySettings( const AppConfig* oldconf )
 	g_Conf->Folders.MemoryCards.Mkdir();
 	g_Conf->Folders.Savestates.Mkdir();
 	g_Conf->Folders.Snapshots.Mkdir();
+	g_Conf->Folders.Cheats.Mkdir();
 	g_Conf->Folders.CheatsWS.Mkdir();
 
 	g_Conf->EmuOptions.BiosFilename = g_Conf->FullpathToBios();
@@ -826,7 +904,7 @@ void Pcsx2App::PostIdleAppMethod( FnPtr_Pcsx2App method )
 
 SysMainMemory& Pcsx2App::GetVmReserve()
 {
-	if (!m_VmReserve) m_VmReserve = new SysMainMemory();
+	if (!m_VmReserve) m_VmReserve = std::unique_ptr<SysMainMemory>(new SysMainMemory());
 	return *m_VmReserve;
 }
 
@@ -837,7 +915,7 @@ void Pcsx2App::OpenGsPanel()
 	GSFrame* gsFrame = GetGsFramePtr();
 	if( gsFrame == NULL )
 	{
-		gsFrame = new GSFrame( GetMainFramePtr(), GetAppName() );
+		gsFrame = new GSFrame(GetAppName() );
 		m_id_GsFrame = gsFrame->GetId();
 
 		switch( wxGetApp().Overrides.GsWindowMode )
@@ -891,20 +969,12 @@ void Pcsx2App::OpenGsPanel()
 	// unfortunately it creates a gray box in the middle of the window on some
 	// users.
 
-#if wxMAJOR_VERSION < 3
-	GtkWidget *child_window = gtk_bin_get_child(GTK_BIN(gsFrame->GetViewport()->GetHandle()));
-#else
-	GtkWidget *child_window = (GtkWidget*)GTK_BIN(gsFrame->GetViewport()->GetHandle());
-#endif
+	GtkWidget *child_window = GTK_WIDGET(gsFrame->GetViewport()->GetHandle());
 
 	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
 	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
 
-#if wxMAJOR_VERSION < 3
-	GdkWindow* draw_window = GTK_PIZZA(child_window)->bin_window;
-#else
 	GdkWindow* draw_window = gtk_widget_get_window(child_window);
-#endif
 
 #if GTK_MAJOR_VERSION < 3
 	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
@@ -978,7 +1048,7 @@ protected:
 	wxString			m_elf_override;
 
 public:
-	virtual ~SysExecEvent_Execute() throw() {}
+	virtual ~SysExecEvent_Execute() = default;
 	SysExecEvent_Execute* Clone() const { return new SysExecEvent_Execute(*this); }
 
 	wxString GetEventName() const
@@ -994,6 +1064,7 @@ public:
 	SysExecEvent_Execute()
 		: m_UseCDVDsrc(false)
 		, m_UseELFOverride(false)
+		, m_cdvdsrc_type(CDVD_SourceType::Iso)
 	{
 	}
 
@@ -1019,11 +1090,11 @@ protected:
 		CoreThread.ResetQuick();
 		symbolMap.Clear();
 
-		CDVDsys_SetFile( CDVDsrc_Iso, g_Conf->CurrentIso );
+		CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
 		else if( CDVD == NULL )
-			CDVDsys_ChangeSource( CDVDsrc_NoDisc );
+			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 
 		if( m_UseELFOverride && !CoreThread.HasActiveMachine() )
 			CoreThread.SetElfOverride( m_elf_override );

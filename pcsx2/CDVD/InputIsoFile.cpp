@@ -90,7 +90,8 @@ void InputIsoFile::BeginRead2(uint lsn)
 
 int InputIsoFile::FinishRead3(u8* dst, uint mode)
 {
-	int _offset, length;
+	int _offset = 0;
+	int length = 0;
 	int ret = 0;
 
 	if(m_current_lsn < 0)
@@ -161,7 +162,7 @@ InputIsoFile::InputIsoFile()
 	_init();
 }
 
-InputIsoFile::~InputIsoFile() throw()
+InputIsoFile::~InputIsoFile()
 {
 	Close();
 }
@@ -178,7 +179,10 @@ void InputIsoFile::_init()
 	
 	m_read_inprogress = false;
 	m_read_count = 0;
+	ReadUnit = 0;
+	m_current_lsn = -1;
 	m_read_lsn = -1;
+	m_reader = NULL;
 }
 
 // Tests the specified filename to see if it is a supported ISO type.  This function typically
@@ -200,20 +204,34 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 {
 	Close();
 	m_filename = srcfile;
-	
-	// Allow write sharing of the iso based on the ini settings.
-	// Mostly useful for romhacking, where the disc is frequently
-	// changed and the emulator would block modifications
-	m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
+	m_reader = NULL;
+
+	bool isBlockdump = false;
+	bool isCompressed = false;
+
+	// First try using a compressed reader.  If it works, go with it.
+	m_reader = CompressedFileReader::GetNewReader(m_filename);
+	isCompressed = m_reader != NULL;
+
+	// If it wasn't compressed, let's open it has a FlatFileReader. 
+	if (!isCompressed)
+	{
+		// Allow write sharing of the iso based on the ini settings.
+		// Mostly useful for romhacking, where the disc is frequently
+		// changed and the emulator would block modifications
+		m_reader = new FlatFileReader(EmuConfig.CdvdShareWrite);
+	}
+
 	m_reader->Open(m_filename);
 
-	bool isBlockdump, isCompressed = false;
-	if(isBlockdump = BlockdumpFileReader::DetectBlockdump(m_reader))
+	// It might actually be a blockdump file.
+	// Check that before continuing with the FlatFileReader.
+	isBlockdump = BlockdumpFileReader::DetectBlockdump(m_reader);
+	if (isBlockdump)
 	{
 		delete m_reader;
 
-		BlockdumpFileReader *bdr = new BlockdumpFileReader();;
-
+		BlockdumpFileReader *bdr = new BlockdumpFileReader();
 		bdr->Open(m_filename);
 
 		m_blockofs = bdr->GetBlockOffset();
@@ -221,11 +239,7 @@ bool InputIsoFile::Open( const wxString& srcfile, bool testOnly )
 
 		m_reader = bdr;
 
-		ReadUnit = 1;		
-	} else if (isCompressed = CompressedFileReader::DetectCompressed(m_reader)) {
-		delete m_reader;
-		m_reader = CompressedFileReader::GetNewReader(m_filename);
-		m_reader->Open(m_filename);
+		ReadUnit = 1;
 	}
 
 	bool detected = Detect();

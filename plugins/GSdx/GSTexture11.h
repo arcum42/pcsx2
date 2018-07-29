@@ -37,10 +37,10 @@ class GSTexture11 : public GSTexture
 public:
 	explicit GSTexture11(ID3D11Texture2D* texture);
 
-	bool Update(const GSVector4i& r, const void* data, int pitch);
-	bool Map(GSMap& m, const GSVector4i* r);
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
 	void Unmap();
-	bool Save(const string& fn, bool dds = false);
+	bool Save(const std::string& fn, bool dds = false);
 
 	operator ID3D11Texture2D*();
 	operator ID3D11ShaderResourceView*();

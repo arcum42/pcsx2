@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PCSX2 0.9.8\n"
 "Report-Msgid-Bugs-To: https://github.com/PCSX2/pcsx2/issues\n"
-"POT-Creation-Date: 2014-12-23 19:50+0100\n"
+"POT-Creation-Date: 2016-12-31 11:39+0100\n"
 "PO-Revision-Date: 2011-04-17 16:35+0100\n"
 "Last-Translator: Delirious <delirious@freemail.hu>\n"
 "Language-Team: Delirious <delirious@freemail.hu>\n"
@@ -18,23 +18,23 @@ msgstr ""
 "X-Poedit-Language: Hungarian\n"
 "X-Poedit-SourceCharset: utf-8\n"
 
-#: common/include/Utilities/Exceptions.h:190
+#: common/include/Utilities/Exceptions.h:216
 msgid "No reason given."
 msgstr "Nincs meghatározott ok."
 
-#: common/include/Utilities/Exceptions.h:229
+#: common/include/Utilities/Exceptions.h:255
 msgid "Parse error"
 msgstr "Elemzési hiba"
 
-#: common/include/Utilities/Exceptions.h:253
+#: common/include/Utilities/Exceptions.h:279
 msgid "Your machine's hardware is incapable of running PCSX2.  Sorry dood."
 msgstr "A számítógéped hardvere nem alkalmas a PCSX2 futtatására. Bocs haver."
 
-#: common/src/Utilities/Exceptions.cpp:240
+#: common/src/Utilities/Exceptions.cpp:233
 msgid "Oh noes! Out of memory!"
 msgstr "Ó ne! Kevés a memória!"
 
-#: common/src/Utilities/Exceptions.cpp:255
+#: common/src/Utilities/Exceptions.cpp:248
 msgid ""
 "Virtual memory mapping failure!  Your system may have conflicting device "
 "drivers, services, or may simply have insufficient memory or resources to "
@@ -44,23 +44,23 @@ msgstr ""
 "illesztőprogram illetve folyamat ütközés, vagy egyszerűen nincs elegendő "
 "memória vagy erőforrás a PCSX2 magas igényéhez."
 
-#: common/src/Utilities/Exceptions.cpp:328
+#: common/src/Utilities/Exceptions.cpp:319
 msgid "Path: "
 msgstr "Hely:"
 
-#: common/src/Utilities/Exceptions.cpp:332
+#: common/src/Utilities/Exceptions.cpp:323
 msgid "[Unnamed or unknown]"
 msgstr "[Névtelen vagy ismeretlen]"
 
-#: common/src/Utilities/Exceptions.cpp:352
+#: common/src/Utilities/Exceptions.cpp:343
 msgid "A file could not be created."
 msgstr "Fájl létrehozása sikertelen."
 
-#: common/src/Utilities/Exceptions.cpp:372
+#: common/src/Utilities/Exceptions.cpp:363
 msgid "File not found."
 msgstr "Fájl nem található."
 
-#: common/src/Utilities/Exceptions.cpp:392
+#: common/src/Utilities/Exceptions.cpp:383
 msgid ""
 "Permission denied while trying to open file, likely due to insufficient user "
 "account rights."
@@ -68,7 +68,7 @@ msgstr ""
 "Fájl megnyitása megtagadva, valószínűleg a felhasználói fiók korlátozott "
 "jogosultságai miatt."
 
-#: common/src/Utilities/Exceptions.cpp:412
+#: common/src/Utilities/Exceptions.cpp:403
 msgid ""
 "Unexpected end of file or stream encountered.  File is probably truncated or "
 "corrupted."
@@ -84,17 +84,17 @@ msgstr "Folyamatág aktivitás: indítás, elkülönítés, szinkron, törlés, 
 msgid "Waiting for tasks..."
 msgstr "Feladatokra várakozás..."
 
-#: common/src/Utilities/ThreadingDialogs.cpp:41
+#: common/src/Utilities/ThreadingDialogs.cpp:42
 msgid "Waiting for task..."
 msgstr "Feladatra várakozás..."
 
-#: common/src/Utilities/wxAppWithHelpers.cpp:36
+#: common/src/Utilities/wxAppWithHelpers.cpp:35
 msgid "Includes idle event processing and some other uncommon event usages."
 msgstr ""
 "Beleértve az üresjárati esemény feldolgozást és néhány más rendkívüli "
 "esemény felhasználást."
 
-#: pcsx2/CDVD/InputIsoFile.cpp:238
+#: pcsx2/CDVD/InputIsoFile.cpp:252
 msgid "Unrecognized ISO image file format"
 msgstr "Felismerhetetlen ISO képfájl formátum"
 
@@ -112,20 +112,20 @@ msgstr ""
 "ISO képfájl betöltése esetén ezt a hibát okozhatja egy nem támogatott ISO "
 "képfájl típus, vagy egy hiba a PCSX2 ISO képfájl támogatásban."
 
-#: pcsx2/MTGS.cpp:871
+#: pcsx2/MTGS.cpp:882
 msgid ""
 "The MTGS thread has become unresponsive while waiting for the GS plugin to "
 "open."
 msgstr ""
 "Az MTGS folyamatág nem válaszol, miközben a GS plugin megnyitására várakozik."
 
-#: pcsx2/PluginManager.cpp:716
+#: pcsx2/PluginManager.cpp:737
 msgid ""
 "The savestate cannot be loaded, as it appears to be corrupt or incomplete."
 msgstr ""
 "A mentett állás nem tölthető be, mivel az sérültnek vagy hiányosnak tűnik."
 
-#: pcsx2/PluginManager.cpp:726
+#: pcsx2/PluginManager.cpp:747
 #, c-format
 msgid ""
 "%s plugin failed to open.  Your computer may have insufficient resources, or "
@@ -135,7 +135,7 @@ msgstr ""
 "rendelkezik elegendő erőforrással, vagy hardver / illesztőprogram ütközés "
 "van."
 
-#: pcsx2/PluginManager.cpp:733
+#: pcsx2/PluginManager.cpp:754
 #, c-format
 msgid ""
 "%s plugin failed to initialize.  Your system may have insufficient memory or "
@@ -144,17 +144,17 @@ msgstr ""
 "%s plugin iniciálása sikertelen.  A rendszer lehetséges, hogy nem "
 "rendelkezik elegendő memóriával vagy a szükséges erőforrásokkal.  "
 
-#: pcsx2/PluginManager.cpp:839
+#: pcsx2/PluginManager.cpp:982
 #, c-format
 msgid "The configured %s plugin file was not found"
 msgstr "A konfigurált %s plugin fájl nem található"
 
-#: pcsx2/PluginManager.cpp:843
+#: pcsx2/PluginManager.cpp:986
 #, c-format
 msgid "The configured %s plugin file is not a valid dynamic library"
 msgstr "A konfigurált %s plugin fájl egy érvénytelen dinamikus könyvtár "
 
-#: pcsx2/PluginManager.cpp:865
+#: pcsx2/PluginManager.cpp:1003
 #, c-format
 msgid ""
 "The configured %s plugin is not a PCSX2 plugin, or is for an older "
@@ -163,14 +163,14 @@ msgstr ""
 "A konfigurált %s plugin nem PCSX2 plugin, vagy egy régebbi, nem támogatott "
 "PCSX2 verzióhoz való."
 
-#: pcsx2/PluginManager.cpp:890
+#: pcsx2/PluginManager.cpp:1037
 msgid ""
 "The plugin reports that your hardware or software/drivers are not supported."
 msgstr ""
 "A plugin szerint a hardver vagy szoftver / illesztőprogramok nem "
 "támogatottak."
 
-#: pcsx2/PluginManager.cpp:911
+#: pcsx2/PluginManager.cpp:1058
 msgid ""
 "Configured plugin is not a PCSX2 plugin, or is for an older unsupported "
 "version of PCSX2."
@@ -178,7 +178,7 @@ msgstr ""
 "A konfigurált plugin nem PCSX2 plugin, vagy egy régebbi, nem támogatott "
 "PCSX2 verzióhoz való."
 
-#: pcsx2/PluginManager.cpp:937
+#: pcsx2/PluginManager.cpp:1083
 #, c-format
 msgid ""
 "Configured %s plugin is not a valid PCSX2 plugin, or is for an older "
@@ -187,11 +187,11 @@ msgstr ""
 "A konfigurált %s plugin nem évényes PCSX2 plugin, vagy egy régebbi, nem "
 "támogatott PCSX2 verzióhoz való."
 
-#: pcsx2/PluginManager.cpp:1366
+#: pcsx2/PluginManager.cpp:1518
 msgid "Internal Memorycard Plugin failed to initialize."
 msgstr "Belső memória kártya plugin iniciálása sikertelen."
 
-#: pcsx2/PluginManager.cpp:1763
+#: pcsx2/PluginManager.cpp:1915
 msgid "Unloaded Plugin"
 msgstr "Betöltetlen plugin"
 
@@ -338,11 +338,15 @@ msgstr ""
 msgid "Detailed logging of CDVD hardware."
 msgstr ""
 
-#: pcsx2/System.h:221 pcsx2/System.h:222 pcsx2/System.h:223
+#: pcsx2/SourceLog.cpp:336
+msgid "Detailed logging of the Motion (FMV) Decoder hardware unit."
+msgstr ""
+
+#: pcsx2/System.h:224 pcsx2/System.h:225 pcsx2/System.h:226
 msgid "PCSX2 Message"
 msgstr "PCSX2 üzenet"
 
-#: pcsx2/ZipTools/thread_gzip.cpp:82
+#: pcsx2/ZipTools/thread_gzip.cpp:85
 msgid ""
 "The savestate was not properly saved. The temporary file was created "
 "successfully but could not be moved to its final resting place."
@@ -350,31 +354,31 @@ msgstr ""
 "A mentett állás nem megfelelően van elmentve. Az ideiglenes fájl sikeresen "
 "létre lett hozva, de nem került át a végső helyére."
 
-#: pcsx2/gui/AppConfig.cpp:909
+#: pcsx2/gui/AppConfig.cpp:978
 msgid "Safest"
 msgstr "Legbiztonságosabb"
 
-#: pcsx2/gui/AppConfig.cpp:910
+#: pcsx2/gui/AppConfig.cpp:979
 msgid "Safe (faster)"
 msgstr "Biztonságos (gyorsabb)"
 
-#: pcsx2/gui/AppConfig.cpp:911
+#: pcsx2/gui/AppConfig.cpp:980
 msgid "Balanced"
 msgstr "Kiegyensúlyozott"
 
-#: pcsx2/gui/AppConfig.cpp:912
+#: pcsx2/gui/AppConfig.cpp:981
 msgid "Aggressive"
 msgstr "Agresszív"
 
-#: pcsx2/gui/AppConfig.cpp:913
+#: pcsx2/gui/AppConfig.cpp:982
 msgid "Aggressive plus"
 msgstr "Agresszív plusz"
 
-#: pcsx2/gui/AppConfig.cpp:914
+#: pcsx2/gui/AppConfig.cpp:983
 msgid "Mostly Harmful"
 msgstr "Legártalmasabb"
 
-#: pcsx2/gui/AppConfig.cpp:1074 pcsx2/gui/AppConfig.cpp:1080
+#: pcsx2/gui/AppConfig.cpp:1143 pcsx2/gui/AppConfig.cpp:1149
 msgid "Failed to overwrite existing settings file; permission was denied."
 msgstr "A meglévő beállítás fájl felülírása sikertelen; hozzáférés megtagadva."
 
@@ -382,7 +386,7 @@ msgstr "A meglévő beállítás fájl felülírása sikertelen; hozzáférés m
 msgid "Loading PS2 system plugins..."
 msgstr "PS2 rendszer pluginok betöltése..."
 
-#: pcsx2/gui/AppInit.cpp:49
+#: pcsx2/gui/AppInit.cpp:51
 #, fuzzy
 msgid ""
 "SSE2 extensions are not available.  PCSX2 requires a cpu that supports the "
@@ -391,95 +395,109 @@ msgstr ""
 "SSE kiterjesztések nem állnak rendelkezésre.  PCSX2 futtatásához szükséges "
 "egy SSE utasításkészletet támogató processzor."
 
-#: pcsx2/gui/AppInit.cpp:138
+#: pcsx2/gui/AppInit.cpp:140
 msgid "PCSX2 Recompiler Error(s)"
 msgstr "PCSX2 Recompiler hiba/hibák"
 
-#: pcsx2/gui/AppInit.cpp:208
+#: pcsx2/gui/AppInit.cpp:219
 msgid "All options are for the current session only and will not be saved.\n"
 msgstr ""
 "A beállítások csak a jelenlegi munkamenetre érvényesek és nem lesznek "
 "elmentve.\n"
 
-#: pcsx2/gui/AppInit.cpp:218 pcsx2/gui/AppMain.cpp:305
+#: pcsx2/gui/AppInit.cpp:229 pcsx2/gui/AppMain.cpp:363
 msgid "IsoFile"
 msgstr "Iso fájl"
 
-#: pcsx2/gui/AppInit.cpp:219
+#: pcsx2/gui/AppInit.cpp:230
 msgid "displays this list of command line options"
 msgstr "megjeleníti a parancssori lehetőségek listáját"
 
-#: pcsx2/gui/AppInit.cpp:220
+#: pcsx2/gui/AppInit.cpp:231
 msgid "forces the program log/console to be visible"
 msgstr "láthatóvá teszi a program naplót/konzolt"
 
-#: pcsx2/gui/AppInit.cpp:221
+#: pcsx2/gui/AppInit.cpp:232
 msgid "use fullscreen GS mode"
 msgstr "teljes képernyős GS mód használata"
 
-#: pcsx2/gui/AppInit.cpp:222
+#: pcsx2/gui/AppInit.cpp:233
 msgid "use windowed GS mode"
 msgstr "ablakos GS mód használata"
 
-#: pcsx2/gui/AppInit.cpp:224
+#: pcsx2/gui/AppInit.cpp:235
 msgid "disables display of the gui while running games"
 msgstr "játék közben elrejti a felhasználói felületet"
 
-#: pcsx2/gui/AppInit.cpp:225
+#: pcsx2/gui/AppInit.cpp:236
+msgid "when nogui - prompt before exiting on suspend"
+msgstr ""
+
+#: pcsx2/gui/AppInit.cpp:238
 msgid "executes an ELF image"
 msgstr "ELF képfájlt indít"
 
-#: pcsx2/gui/AppInit.cpp:226
-msgid "boots an empty dvd tray; use to enter the PS2 system menu"
+#: pcsx2/gui/AppInit.cpp:239
+#, fuzzy
+msgid "executes an IRX image"
+msgstr "ELF képfájlt indít"
+
+#: pcsx2/gui/AppInit.cpp:240
+#, fuzzy
+msgid "boots an empty DVD tray; use to enter the PS2 system menu"
 msgstr "dvd lemez nélkül indítás; PS2 rendszer menü elérésére használatos"
 
-#: pcsx2/gui/AppInit.cpp:227
+#: pcsx2/gui/AppInit.cpp:241
 msgid "boots from the CDVD plugin (overrides IsoFile parameter)"
 msgstr ""
 "CDVD pluginról indítás (figyelmen kívül hagyja az ISO fájl paraméterét)"
 
-#: pcsx2/gui/AppInit.cpp:229
+#: pcsx2/gui/AppInit.cpp:243
 msgid "disables all speedhacks"
 msgstr "kikapcsolja az összes gyorsító hacket"
 
-#: pcsx2/gui/AppInit.cpp:230
+#: pcsx2/gui/AppInit.cpp:244
 msgid "use the specified comma or pipe-delimited list of gamefixes."
 msgstr ""
 "használd a vesszővel vagy függőleges vonallal határolt játék javítás listát"
 
-#: pcsx2/gui/AppInit.cpp:231
+#: pcsx2/gui/AppInit.cpp:245
 msgid "disables fast booting"
 msgstr "letiltja a gyors indítást "
 
-#: pcsx2/gui/AppInit.cpp:233
+#: pcsx2/gui/AppInit.cpp:247
 msgid "changes the configuration file path"
 msgstr "megváltoztatja a konfigurációs fájl elérési helyét"
 
-#: pcsx2/gui/AppInit.cpp:234
+#: pcsx2/gui/AppInit.cpp:248
 msgid "specifies the PCSX2 configuration file to use"
 msgstr "kjelöli a használandó PCSX2 konfigurációs fájlt"
 
-#: pcsx2/gui/AppInit.cpp:235
+#: pcsx2/gui/AppInit.cpp:249
 #, c-format
 msgid "forces %s to start the First-time Wizard"
 msgstr "kényszeríti a %s emulátort az első indításkori varázsló elindítására"
 
-#: pcsx2/gui/AppInit.cpp:236
+#: pcsx2/gui/AppInit.cpp:250
 msgid "enables portable mode operation (requires admin/root access)"
 msgstr ""
 "hordozható módi műveletek használata (rendszergazdai hozzáférés szükséges)"
 
-#: pcsx2/gui/AppInit.cpp:240
+#: pcsx2/gui/AppInit.cpp:252
+msgid "update options to ease profiling (debug)"
+msgstr ""
+
+#: pcsx2/gui/AppInit.cpp:256
 #, c-format
 msgid "specify the file to use as the %s plugin"
 msgstr "válassz %s pluginként használatos fájlt"
 
-#: pcsx2/gui/AppInit.cpp:288
+#: pcsx2/gui/AppInit.cpp:306
 #, c-format
 msgid "Plugin Override Error - %s"
 msgstr "Plugin felülírási hiba - %s"
 
-#: pcsx2/gui/AppInit.cpp:291
+#: pcsx2/gui/AppInit.cpp:309
 #, c-format
 msgid ""
 "%s Plugin Override Error!  The following file does not exist or is not a "
@@ -490,96 +508,96 @@ msgstr ""
 "%s plugin:\n"
 "\n"
 
-#: pcsx2/gui/AppInit.cpp:298
+#: pcsx2/gui/AppInit.cpp:316
 #, c-format
 msgid "Press OK to use the default configured plugin, or Cancel to close %s."
 msgstr ""
 "Nyomj Rendben gombot az alapértelmezett konfigurált plugin használatához, "
 "vagy Mégsem gombot a %s bezárásához."
 
-#: pcsx2/gui/AppInit.cpp:477
+#: pcsx2/gui/AppInit.cpp:531
 msgid "PCSX2 Error: Hardware Deficiency"
 msgstr "PCSX2 hiba: Hardver elégtelenség"
 
-#: pcsx2/gui/AppInit.cpp:477 pcsx2/gui/AppInit.cpp:489
+#: pcsx2/gui/AppInit.cpp:531 pcsx2/gui/AppInit.cpp:543
 #, c-format
 msgid "Press OK to close %s."
 msgstr "Nyomj Rendben gombot a %s bezárásához."
 
-#: pcsx2/gui/AppInit.cpp:490
+#: pcsx2/gui/AppInit.cpp:544
 #, c-format
 msgid "%s Critical Error"
 msgstr "%s kritikus hiba"
 
-#: pcsx2/gui/AppInit.cpp:660
+#: pcsx2/gui/AppInit.cpp:714
 msgid "OK"
 msgstr "Rendben"
 
-#: pcsx2/gui/AppInit.cpp:661
+#: pcsx2/gui/AppInit.cpp:715
 msgid "&OK"
 msgstr "&Rendben"
 
-#: pcsx2/gui/AppInit.cpp:662
+#: pcsx2/gui/AppInit.cpp:716
 msgid "Cancel"
 msgstr "Mégsem"
 
-#: pcsx2/gui/AppInit.cpp:663
+#: pcsx2/gui/AppInit.cpp:717
 msgid "&Cancel"
 msgstr "&Mégsem"
 
-#: pcsx2/gui/AppInit.cpp:664
+#: pcsx2/gui/AppInit.cpp:718
 msgid "&Apply"
 msgstr "&Alkalmaz"
 
-#: pcsx2/gui/AppInit.cpp:665
+#: pcsx2/gui/AppInit.cpp:719
 msgid "&Next >"
 msgstr "&Következő >"
 
-#: pcsx2/gui/AppInit.cpp:666
+#: pcsx2/gui/AppInit.cpp:720
 msgid "< &Back"
 msgstr "< &Vissza"
 
-#: pcsx2/gui/AppInit.cpp:667
+#: pcsx2/gui/AppInit.cpp:721
 msgid "&Back"
 msgstr "&Vissza"
 
-#: pcsx2/gui/AppInit.cpp:668
+#: pcsx2/gui/AppInit.cpp:722
 msgid "&Finish"
 msgstr "&Befejezés"
 
-#: pcsx2/gui/AppInit.cpp:669
+#: pcsx2/gui/AppInit.cpp:723
 msgid "&Yes"
 msgstr "&Igen"
 
-#: pcsx2/gui/AppInit.cpp:670
+#: pcsx2/gui/AppInit.cpp:724
 msgid "&No"
 msgstr "&Nem"
 
-#: pcsx2/gui/AppInit.cpp:671
+#: pcsx2/gui/AppInit.cpp:725
 msgid "Browse"
 msgstr "Tallózás"
 
-#: pcsx2/gui/AppInit.cpp:672
+#: pcsx2/gui/AppInit.cpp:726
 msgid "&Save"
 msgstr "&Mentés"
 
-#: pcsx2/gui/AppInit.cpp:673
+#: pcsx2/gui/AppInit.cpp:727
 msgid "Save &As..."
 msgstr "Mentés &másként..."
 
-#: pcsx2/gui/AppInit.cpp:674
+#: pcsx2/gui/AppInit.cpp:728
 msgid "&Help"
 msgstr "&Súgó"
 
-#: pcsx2/gui/AppInit.cpp:675
+#: pcsx2/gui/AppInit.cpp:729
 msgid "&Home"
 msgstr "&Home"
 
-#: pcsx2/gui/AppInit.cpp:677
+#: pcsx2/gui/AppInit.cpp:731
 msgid "Show about dialog"
 msgstr "Megnyitja a Névjegy párbeszédablakot"
 
-#: pcsx2/gui/AppMain.cpp:93
+#: pcsx2/gui/AppMain.cpp:74
 msgid ""
 "\n"
 "\n"
@@ -589,43 +607,51 @@ msgstr ""
 "\n"
 "Nyomj Rendben gombot a plugin konfigurációs panel eléréséhez."
 
-#: pcsx2/gui/AppMain.cpp:146 pcsx2/gui/AppMain.cpp:160
+#: pcsx2/gui/AppMain.cpp:131 pcsx2/gui/AppMain.cpp:145
 msgid ""
 "Warning!  System plugins have not been loaded.  PCSX2 may be inoperable."
 msgstr ""
 "Figyelem!  A rendszer pluginok nem töltődtek be.  A PCSX2 lehet, hogy nem "
 "fog működni."
 
-#: pcsx2/gui/AppMain.cpp:315
+#: pcsx2/gui/AppMain.cpp:179 pcsx2/gui/AppMain.cpp:184
+msgid "PS2 BIOS Error"
+msgstr "PS2 BIOS hiba"
+
+#: pcsx2/gui/AppMain.cpp:179
+msgid "Press Ok to go to the BIOS Configuration Panel."
+msgstr "Nyomj Rendben gombot a BIOS konfigurációs panel eléréséhez."
+
+#: pcsx2/gui/AppMain.cpp:202
+#, fuzzy
+msgid "Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."
+msgstr ""
+"Figyelem!  A rendszer pluginok nem töltődtek be.  A PCSX2 lehet, hogy nem "
+"fog működni."
+
+#: pcsx2/gui/AppMain.cpp:375
 #, c-format
 msgid "%s Commandline Options"
 msgstr "%s parancssori beállítások"
 
-#: pcsx2/gui/AppMain.cpp:563
-msgid "PS2 BIOS Error"
-msgstr "PS2 BIOS hiba"
-
-#: pcsx2/gui/AppMain.cpp:564
-msgid "Press Ok to go to the BIOS Configuration Panel."
-msgstr "Nyomj Rendben gombot a BIOS konfigurációs panel eléréséhez."
-
-#: pcsx2/gui/AppMain.cpp:616
+#: pcsx2/gui/AppMain.cpp:686
 msgid "PCSX2 Unresponsive Thread"
 msgstr "PCSX2 nem reagáló folyamatág"
 
-#: pcsx2/gui/AppMain.cpp:623
+#: pcsx2/gui/AppMain.cpp:693
 msgid "Terminate"
 msgstr "Megszakítás"
 
-#: pcsx2/gui/AppMain.cpp:990
+#: pcsx2/gui/AppMain.cpp:1061
 msgid "Executing PS2 Virtual Machine..."
 msgstr "PS2 virtuális gép indítása..."
 
-#: pcsx2/gui/AppRes.cpp:72
-msgid "Browse for an Iso that is not in your recent history."
+#: pcsx2/gui/AppRes.cpp:66
+#, fuzzy
+msgid "Browse for an ISO that is not in your recent history."
 msgstr "Olyan ISO tallózása ami nem szerepel az előzményekben."
 
-#: pcsx2/gui/AppRes.cpp:72
+#: pcsx2/gui/AppRes.cpp:66
 msgid "Browse..."
 msgstr "Tallózás..."
 
@@ -667,56 +693,61 @@ msgstr ""
 "Próbáld meg törölni a \"portable.ini\" nevű fájlt a telepítési könyvtárból "
 "kézileg."
 
-#: pcsx2/gui/ApplyState.h:55
+#: pcsx2/gui/ApplyState.h:53
 msgid "Cannot apply new settings, one of the settings is invalid."
 msgstr ""
 "Az új beállítások nem érvényesíthetőek, egy vagy több beállítás érvénytelen."
 
-#: pcsx2/gui/ConsoleLogger.cpp:120
+#: pcsx2/gui/ConsoleLogger.cpp:115
 msgid "Save log question"
 msgstr "Napló kérdés mentése"
 
-#: pcsx2/gui/ConsoleLogger.cpp:417
+#: pcsx2/gui/ConsoleLogger.cpp:389
+msgid "&Small"
+msgstr "Kicsi"
+
+#: pcsx2/gui/ConsoleLogger.cpp:389
 msgid "Fits a lot of log in a microcosmically small area."
 msgstr "Legtöbb bejelentkezésre alkalmas egy mikrokozmikusan piciny területre."
 
-#: pcsx2/gui/ConsoleLogger.cpp:417
-msgid "Small"
-msgstr "Kicsi"
+#: pcsx2/gui/ConsoleLogger.cpp:391
+#, fuzzy
+msgid "&Normal font"
+msgstr "Normál"
 
-#: pcsx2/gui/ConsoleLogger.cpp:419
+#: pcsx2/gui/ConsoleLogger.cpp:391
 msgid "It's what I use (the programmer guy)."
 msgstr "Ezt használom én (a programozó fickó)."
 
-#: pcsx2/gui/ConsoleLogger.cpp:419 pcsx2/gui/Panels/CpuPanel.cpp:38
-msgid "Normal"
-msgstr "Normál"
+#: pcsx2/gui/ConsoleLogger.cpp:393
+msgid "&Large"
+msgstr "Nagy"
 
-#: pcsx2/gui/ConsoleLogger.cpp:421
+#: pcsx2/gui/ConsoleLogger.cpp:393
 msgid "Its nice and readable."
 msgstr "Szép és olvasható."
 
-#: pcsx2/gui/ConsoleLogger.cpp:421
-msgid "Large"
-msgstr "Nagy"
-
-#: pcsx2/gui/ConsoleLogger.cpp:423
-msgid "Huge"
+#: pcsx2/gui/ConsoleLogger.cpp:395
+msgid "&Huge"
 msgstr "Hatalmas"
 
-#: pcsx2/gui/ConsoleLogger.cpp:423
+#: pcsx2/gui/ConsoleLogger.cpp:395
 msgid "In case you have a really high res display."
 msgstr "Ha tényleg nagyfelbontású kijelzőt használsz."
 
-#: pcsx2/gui/ConsoleLogger.cpp:427
+#: pcsx2/gui/ConsoleLogger.cpp:399
+msgid "&Light theme"
+msgstr "Világos téma"
+
+#: pcsx2/gui/ConsoleLogger.cpp:399
 msgid "Default soft-tone color scheme."
 msgstr "Finom tónusú alapértelmezett szín sémák."
 
-#: pcsx2/gui/ConsoleLogger.cpp:427
-msgid "Light theme"
-msgstr "Világos téma"
+#: pcsx2/gui/ConsoleLogger.cpp:400
+msgid "&Dark theme"
+msgstr "Sötét téma"
 
-#: pcsx2/gui/ConsoleLogger.cpp:428
+#: pcsx2/gui/ConsoleLogger.cpp:400
 msgid ""
 "Classic black color scheme for people who enjoy having text seared into "
 "their optic nerves."
@@ -724,88 +755,95 @@ msgstr ""
 "Hagyományos fekete szín sémák azoknak, akik szeretik a beégett szöveget az "
 "optikai érzékelőikbe."
 
-#: pcsx2/gui/ConsoleLogger.cpp:428
-msgid "Dark theme"
-msgstr "Sötét téma"
-
-#: pcsx2/gui/ConsoleLogger.cpp:431
-msgid "Always on Top"
-msgstr "Mindig felül"
-
-#: pcsx2/gui/ConsoleLogger.cpp:432
-msgid ""
-"When checked the log window will be visible over other foreground windows."
-msgstr "Bekapcsoláskor a naplóablak megjelenik a háttérablakok előtt."
-
-#: pcsx2/gui/ConsoleLogger.cpp:434
+#: pcsx2/gui/ConsoleLogger.cpp:407
 msgid "&Save..."
 msgstr "&Mentés..."
 
-#: pcsx2/gui/ConsoleLogger.cpp:434
+#: pcsx2/gui/ConsoleLogger.cpp:407
 msgid "Save log contents to file"
 msgstr "Napló adatok mentése fájlba"
 
-#: pcsx2/gui/ConsoleLogger.cpp:435
+#: pcsx2/gui/ConsoleLogger.cpp:408
 msgid "C&lear"
 msgstr "T&örlés"
 
-#: pcsx2/gui/ConsoleLogger.cpp:435
+#: pcsx2/gui/ConsoleLogger.cpp:408
 msgid "Clear the log window contents"
 msgstr "Napló ablak tartalmának törlése"
 
-#: pcsx2/gui/ConsoleLogger.cpp:437 pcsx2/gui/Dialogs/SysConfigDialog.cpp:264
-msgid "Appearance"
+#: pcsx2/gui/ConsoleLogger.cpp:410
+msgid "Auto&dock"
+msgstr ""
+
+#: pcsx2/gui/ConsoleLogger.cpp:410
+msgid "Dock log window to main PCSX2 window"
+msgstr ""
+
+#: pcsx2/gui/ConsoleLogger.cpp:411
+#, fuzzy
+msgid "&Appearance"
 msgstr "Kinézet"
 
-#: pcsx2/gui/ConsoleLogger.cpp:439
+#: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "&Close"
 msgstr "&Bezárás"
 
-#: pcsx2/gui/ConsoleLogger.cpp:439
+#: pcsx2/gui/ConsoleLogger.cpp:413
 msgid "Close this log window; contents are preserved"
 msgstr "Napló ablak bezárása; tartalom megőrizve"
 
-#: pcsx2/gui/ConsoleLogger.cpp:443
-msgid "Dev/Verbose"
+#: pcsx2/gui/ConsoleLogger.cpp:417
+msgid "Dev/&Verbose"
 msgstr "Fejlesztés/részletes"
 
-#: pcsx2/gui/ConsoleLogger.cpp:443
+#: pcsx2/gui/ConsoleLogger.cpp:417
 msgid "Shows PCSX2 developer logs"
 msgstr "PCSX2 fejlesztői napló megjelenítése"
 
-#: pcsx2/gui/ConsoleLogger.cpp:444
-msgid "CDVD reads"
+#: pcsx2/gui/ConsoleLogger.cpp:418
+#, fuzzy
+msgid "&CDVD reads"
 msgstr "CDVD beolvasások"
 
-#: pcsx2/gui/ConsoleLogger.cpp:444
+#: pcsx2/gui/ConsoleLogger.cpp:418
 msgid "Shows disk read activity"
 msgstr "Lemez olvasási tevékenység megjelenítése"
 
-#: pcsx2/gui/ConsoleLogger.cpp:461
-msgid "Enable all"
+#: pcsx2/gui/ConsoleLogger.cpp:435
+msgid "&Enable all"
 msgstr "Mind bekapcsolása"
 
-#: pcsx2/gui/ConsoleLogger.cpp:461
+#: pcsx2/gui/ConsoleLogger.cpp:435
 msgid "Enables all log source filters."
 msgstr "Minden napló forrás szűrő bekapcsolása."
 
-#: pcsx2/gui/ConsoleLogger.cpp:462
-msgid "Disable all"
+#: pcsx2/gui/ConsoleLogger.cpp:436
+msgid "&Disable all"
 msgstr "Mind kikapcsolása"
 
-#: pcsx2/gui/ConsoleLogger.cpp:462
+#: pcsx2/gui/ConsoleLogger.cpp:436
 msgid "Disables all log source filters."
 msgstr "Minden napló forrás szűrő kikapcsolása."
 
-#: pcsx2/gui/ConsoleLogger.cpp:464
+#: pcsx2/gui/ConsoleLogger.cpp:437
+#, fuzzy
+msgid "&Restore Default"
+msgstr "Alapértékek visszaállítása"
+
+#: pcsx2/gui/ConsoleLogger.cpp:437
+#, fuzzy
+msgid "Restore default source filters."
+msgstr "Minden napló forrás szűrő bekapcsolása."
+
+#: pcsx2/gui/ConsoleLogger.cpp:439
 msgid "&Log"
 msgstr "&Napló"
 
-#: pcsx2/gui/ConsoleLogger.cpp:465
+#: pcsx2/gui/ConsoleLogger.cpp:440
 msgid "&Sources"
 msgstr "&Források"
 
-#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:223
+#: pcsx2/gui/Debugger/DisassemblyDialog.cpp:227
 msgid "panel"
 msgstr ""
 
@@ -814,51 +852,48 @@ msgstr ""
 msgid "About %s"
 msgstr "%s súgója"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
-msgid "Betatesting"
-msgstr "Béta tesztelés"
-
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Previous versions"
 msgstr "Előző verziók"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:55
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:54
 msgid "Webmasters"
 msgstr "Webmesterek"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Plugin Specialists"
 msgstr "Plugin specialisták"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:66
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:63
 msgid "Special thanks to"
 msgstr "Külön köszönet"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:82
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:75
 msgid "Developers"
 msgstr "Fejlesztők"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:84
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:77
 msgid "Contributors"
 msgstr "Közreműködők"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
-msgid "A Playstation 2 Emulator"
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:86
+#, fuzzy
+msgid "PlayStation 2 Emulator"
 msgstr ""
 "a PlayStation 2 emulátor\n"
 "\n"
 "Magyarítás: Delirious"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:102
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:89
 msgid "PCSX2 Official Website and Forums"
 msgstr "PCSX2 hivatalos weblap és fórum"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:106
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:93
 #, fuzzy
 msgid "PCSX2 Official Git Repository at GitHub"
 msgstr "PCSX2 hivatalos SVN GitHub tárhely"
 
-#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:110
+#: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:98
 msgid "I've seen enough"
 msgstr "Eleget láttam"
 
@@ -866,23 +901,19 @@ msgstr "Eleget láttam"
 msgid "Assertion Failure - "
 msgstr "Sikertelen kérés -"
 
-#: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:194
+#: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:185
 msgid "Saves a snapshot of this settings panel to a PNG file."
 msgstr "A beállításpanel pillanatképének mentése PNG fájlba."
 
-#: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:309
+#: pcsx2/gui/Dialogs/BaseConfigurationDialog.cpp:291
 msgid "Save dialog screenshots to..."
 msgstr "Párbeszédablak pillanatképek mentése..."
 
-#: pcsx2/gui/Dialogs/BiosSelectorDialog.cpp:31
-msgid "BIOS Selector"
-msgstr "BIOS választó"
-
-#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:193
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:195
 msgid "Do not show this dialog again."
 msgstr "Ez a párbeszédablak ne jelenjen meg újra."
 
-#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:199
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:201
 msgid ""
 "Disables this popup and whatever response you select here will be "
 "automatically used from now on."
@@ -890,7 +921,7 @@ msgstr ""
 "Letiltja ezt a felugró ablakot és bármilyen választ adsz meg itt, az "
 "mostantól automatikusan alkalmazva lesz."
 
-#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:201
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:203
 msgid ""
 "The popup will not be shown again.  This setting can be undone from the "
 "settings panels."
@@ -898,16 +929,89 @@ msgstr ""
 "Ez a felugró ablak nem fog megjelenni többé.  Ez a beállítás visszavonható a "
 "beállítások panelen."
 
-#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:247
-#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:292
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:249
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:294
 msgid "Ignore"
 msgstr "Kihagyás"
 
-#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:278
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:267
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:276
+msgid "Retry"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:270
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:273
+msgid "Abort"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConfirmationDialogs.cpp:280
 msgid "Reset"
 msgstr "Alapra állítás"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:40
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:36
+msgid "Convert a memory card to a different format"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:47
+msgid "Convert"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:53
+msgid "Convert: "
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:56
+msgid "To: "
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:87
+msgid "8MB File"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:89
+msgid "16MB File"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:91
+msgid "32MB File"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:93
+msgid "64MB File"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
+msgid "Convert this memory card to a folder of individual saves."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:95
+#, fuzzy
+msgid "Folder"
+msgstr "Mappák"
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:122
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:151
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:815
+#, c-format
+msgid "Error (%s)"
+msgstr "Hiba (%s)"
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:123
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
+#, fuzzy
+msgid "Convert memory card"
+msgstr "Memória kártya létrehozása"
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:153
+msgid "This target type is not supported!"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/ConvertMemoryCardDialog.cpp:159
+msgid "Memory Card conversion failed for unknown reasons."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:41
 msgid "Create a new memory card"
 msgstr "Új memória kártya létrehozása"
 
@@ -929,30 +1033,30 @@ msgstr "E mappában:"
 msgid "Select file name: "
 msgstr "Válassz fájl nevet:"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:149
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:876
-#, c-format
-msgid "Error (%s)"
-msgstr "Hiba (%s)"
-
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:150
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:152
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:164
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:179
 msgid "Create memory card"
 msgstr "Memória kártya létrehozása"
 
 #: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:163
+#, fuzzy
+msgid "Error: The directory for the memory card could not be created."
+msgstr "Hiba: A memória kártya létrehozása nem sikerült."
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:178
 msgid "Error: The memory card could not be created."
 msgstr "Hiba: A memória kártya létrehozása nem sikerült."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:177
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:193
 msgid "Use NTFS compression when creating this card."
 msgstr "NTFS tömörítés használata a kártya létrehozásakor."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:194
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:210
 msgid "8 MB [most compatible]"
 msgstr "8 MB [legjobb kompatibilitás]"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:194
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:210
 msgid ""
 "This is the standard Sony-provisioned size, and is supported by all games "
 "and BIOS versions."
@@ -960,7 +1064,7 @@ msgstr ""
 "Ez a szabvány Sony gyártmány méret, ami minden játék illetve BIOS verzió "
 "által támogatott."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:195
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:211
 msgid ""
 "Always use this option if you want the safest and surest memory card "
 "behavior."
@@ -968,34 +1072,34 @@ msgstr ""
 "Mindig ezt a beállítást használd, ha a legbiztonságosabb és legbiztosabb "
 "memória kártya működést szeretnéd."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:198
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:214
 msgid "16 MB"
 msgstr "16 MB"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:198
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:202
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:214
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:218
 msgid ""
 "A typical size for 3rd-party memory cards which should work with most games."
 msgstr ""
 "Tipikus harmadik féltől származó memória kártya méret, ami működik a legtöbb "
 "játékkal."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:199
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:203
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:215
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:219
 msgid "16 and 32 MB cards have roughly the same compatibility factor."
 msgstr ""
 "16 és 32 MB-os kártyák nagyjából azonos kompatibilitási faktorral "
 "rendelkeznek."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:202
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:218
 msgid "32 MB"
 msgstr "32 MB"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:206
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:222
 msgid "64 MB"
 msgstr "64 MB"
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:206
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:222
 msgid ""
 "Low compatibility warning: Yes it's very big, but may not work with many "
 "games."
@@ -1003,13 +1107,29 @@ msgstr ""
 "Alacsony kompatibilitási figyelmeztetés: Igen, meglehetősen nagy, de "
 "előfordul, hogy sok játéknál nem működik."
 
-#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:207
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:223
 msgid ""
 "Use at your own risk.  Erratic memory card behavior is possible (though "
 "unlikely)."
 msgstr ""
 "Csak saját felelősségre használd.  Szabálytalan memória kártya működés "
 "előfordulhat (noha valószínűtlen)."
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
+msgid "Folder [experimental]"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:226
+msgid "Store memory card contents in the host filesystem instead of a file."
+msgstr ""
+
+#: pcsx2/gui/Dialogs/CreateMemoryCardDialog.cpp:227
+msgid ""
+"Automatically manages memory card contents so that the console only sees "
+"files related to the currently running software. Allows you to drag-and-drop "
+"files in and out of the memory card with your standard file explorer. This "
+"is still experimental, so use at your own risk!"
+msgstr ""
 
 #: pcsx2/gui/Dialogs/FirstTimeWizard.cpp:47
 #, c-format
@@ -1074,15 +1194,19 @@ msgstr "Nyomkövető naplózás"
 msgid "Auto-eject memory cards when loading savestates"
 msgstr "Memória kártya automatikus leválasztása mentések betöltésekor"
 
-#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:92
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:44
+msgid "Automatically manage saves based on running game"
+msgstr ""
+
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:101
 msgid "MemoryCard Manager"
 msgstr "Memória kártya intéző"
 
-#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:108
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:116
 msgid "Drag cards to or from PS2-ports"
 msgstr "Kártyák illesztése/leválasztása PS2 portokra/portokról"
 
-#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:109
+#: pcsx2/gui/Dialogs/McdConfigDialog.cpp:117
 msgid ""
 "\n"
 "Note: Duplicate/Rename/Create/Delete will NOT be reverted with 'Cancel'."
@@ -1147,29 +1271,38 @@ msgstr "Játék hackek"
 msgid "Game Fixes"
 msgstr "Játék javítások"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:237
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:239
 #, c-format
 msgid "Components Selectors - %s"
 msgstr "Összetevő választó - %s"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:244
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:246
 msgid "Plugins"
 msgstr "Pluginok"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:245
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:247
 msgid "BIOS"
 msgstr "BIOS"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:246
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:248
 msgid "Folders"
 msgstr "Mappák"
 
-#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:257
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:261
 #, c-format
 msgid "Appearance/Themes - %s"
 msgstr "Megjelenés/Témák - %s"
 
-#: pcsx2/gui/ExecutorThread.cpp:40
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:268
+msgid "Appearance"
+msgstr "Kinézet"
+
+#: pcsx2/gui/Dialogs/SysConfigDialog.cpp:278
+#, fuzzy
+msgid "Language Selector"
+msgstr "Nyelv választó"
+
+#: pcsx2/gui/ExecutorThread.cpp:41
 msgid "Logs events as they are passed to the PS2 virtual machine."
 msgstr "A PS2 virtuális gépben zajló eseményeket naplózza."
 
@@ -1186,48 +1319,54 @@ msgstr "Nyomj Megszakítás gombot a %s azonnali leállításához."
 msgid "Terminate App"
 msgstr "Alk. megszakítása"
 
-#: pcsx2/gui/FrameForGS.cpp:388
+#: pcsx2/gui/FrameForGS.cpp:444
 msgid "GS Output is Disabled!"
 msgstr "GS kimenet kikapcsolva!"
 
-#: pcsx2/gui/GlobalCommands.cpp:386 pcsx2/gui/MainFrame.cpp:416
+#: pcsx2/gui/GlobalCommands.cpp:309
+msgid "Exit PCSX2?"
+msgstr ""
+
+#: pcsx2/gui/GlobalCommands.cpp:474
+#, fuzzy
 msgid "Save state"
 msgstr "Állás mentés"
 
-#: pcsx2/gui/GlobalCommands.cpp:387
+#: pcsx2/gui/GlobalCommands.cpp:475
 msgid "Saves the virtual machine state to the current slot."
 msgstr "A virtuális gép állapotát menti a jelenlegi helyre."
 
-#: pcsx2/gui/GlobalCommands.cpp:392 pcsx2/gui/MainFrame.cpp:415
+#: pcsx2/gui/GlobalCommands.cpp:481
+#, fuzzy
 msgid "Load state"
 msgstr "Állás betöltés"
 
-#: pcsx2/gui/GlobalCommands.cpp:393
+#: pcsx2/gui/GlobalCommands.cpp:482
 msgid "Loads a virtual machine state from the current slot."
 msgstr "Betölti a virtuális gép állapotát a jelenlegi helyről."
 
-#: pcsx2/gui/GlobalCommands.cpp:398
+#: pcsx2/gui/GlobalCommands.cpp:488
 msgid "Load State Backup"
 msgstr "Állás mentés másolat betöltés"
 
-#: pcsx2/gui/GlobalCommands.cpp:399
+#: pcsx2/gui/GlobalCommands.cpp:489
 msgid "Loads virtual machine state backup for current slot."
 msgstr ""
 "Betölti a virtuális gép állapotának biztonsági mentését a jelenlegi helyről."
 
-#: pcsx2/gui/GlobalCommands.cpp:404
+#: pcsx2/gui/GlobalCommands.cpp:495
 msgid "Cycle to next slot"
 msgstr "Ugrás a következő helyre"
 
-#: pcsx2/gui/GlobalCommands.cpp:405
+#: pcsx2/gui/GlobalCommands.cpp:496
 msgid "Cycles the current save slot in +1 fashion!"
 msgstr "A jelenlegi mentési hely növelése eggyel!"
 
-#: pcsx2/gui/GlobalCommands.cpp:410
+#: pcsx2/gui/GlobalCommands.cpp:502
 msgid "Cycle to prev slot"
 msgstr "Ugrás az előző helyre"
 
-#: pcsx2/gui/GlobalCommands.cpp:411
+#: pcsx2/gui/GlobalCommands.cpp:503
 msgid "Cycles the current save slot in -1 fashion!"
 msgstr "A jelenlegi mentési hely csökkentése eggyel!"
 
@@ -1244,7 +1383,7 @@ msgstr ""
 "Ez hiba a hiba akkor jelentkezik, ha egyszerre több fájl kerül a %s ablakba. "
 "Egyszerre egyet csak, köszi."
 
-#: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:342
+#: pcsx2/gui/IsoDropTarget.cpp:87 pcsx2/gui/MainMenuClicks.cpp:355
 msgid "Confirm PS2 Reset"
 msgstr "PS2 alapra állításának jóváhagyása"
 
@@ -1262,281 +1401,305 @@ msgstr ""
 msgid "You have dropped the following ISO image into %s:"
 msgstr "A következő ISO képfájlt húztad ide: %s:"
 
-#: pcsx2/gui/MainFrame.cpp:36
+#: pcsx2/gui/MainFrame.cpp:39
 #, c-format
 msgid "Slot %d"
 msgstr "%d hely"
 
-#: pcsx2/gui/MainFrame.cpp:42 pcsx2/gui/Saveslots.cpp:150
+#: pcsx2/gui/MainFrame.cpp:45 pcsx2/gui/Saveslots.cpp:150
 msgid "Backup"
 msgstr "Biztonsági mentés"
 
-#: pcsx2/gui/MainFrame.cpp:324
-msgid "Show Console"
+#: pcsx2/gui/MainFrame.cpp:327
+msgid "&Show Console"
 msgstr "Konzol megjelenítése"
 
-#: pcsx2/gui/MainFrame.cpp:325
-msgid "Console to Stdio"
+#: pcsx2/gui/MainFrame.cpp:329
+msgid "&Console to Stdio"
 msgstr "Stdio konzol"
 
-#: pcsx2/gui/MainFrame.cpp:338
+#: pcsx2/gui/MainFrame.cpp:343
 msgid "&System"
 msgstr "&Rendszer"
 
-#: pcsx2/gui/MainFrame.cpp:339
+#: pcsx2/gui/MainFrame.cpp:344
 msgid "CD&VD"
 msgstr "CD&VD"
 
-#: pcsx2/gui/MainFrame.cpp:340
+#: pcsx2/gui/MainFrame.cpp:345
 msgid "&Config"
 msgstr "&Beállítások"
 
-#: pcsx2/gui/MainFrame.cpp:341
+#: pcsx2/gui/MainFrame.cpp:346
 msgid "&Misc"
 msgstr "&Egyebek"
 
-#: pcsx2/gui/MainFrame.cpp:342
+#: pcsx2/gui/MainFrame.cpp:347
 msgid "&Debug"
 msgstr "&Hibakereső"
 
-#: pcsx2/gui/MainFrame.cpp:401 pcsx2/gui/MainFrame.cpp:403
-#: pcsx2/gui/MainFrame.cpp:409
+#: pcsx2/gui/MainFrame.cpp:411 pcsx2/gui/MainFrame.cpp:413
+#: pcsx2/gui/MainFrame.cpp:419
 msgid "Initializing..."
 msgstr "Iniciálás..."
 
-#: pcsx2/gui/MainFrame.cpp:405
-msgid "Run ELF..."
+#: pcsx2/gui/MainFrame.cpp:415
+msgid "&Run ELF..."
 msgstr "ELF futtatása..."
 
-#: pcsx2/gui/MainFrame.cpp:406
+#: pcsx2/gui/MainFrame.cpp:416
 msgid "For running raw PS2 binaries directly"
 msgstr "Feldolgozatlan PS2 binérek közvetlen futtatásához"
 
-#: pcsx2/gui/MainFrame.cpp:418
-msgid "Backup before save"
+#: pcsx2/gui/MainFrame.cpp:425
+msgid "&Load state"
+msgstr "Állás betöltés"
+
+#: pcsx2/gui/MainFrame.cpp:426
+msgid "&Save state"
+msgstr "Állás mentés"
+
+#: pcsx2/gui/MainFrame.cpp:428
+msgid "&Backup before save"
 msgstr "Mentés előtt másolat készítése"
 
-#: pcsx2/gui/MainFrame.cpp:423
-msgid "Automatic Gamefixes"
+#: pcsx2/gui/MainFrame.cpp:433
+msgid "Automatic &Gamefixes"
 msgstr "Automatikus játék javítások"
 
-#: pcsx2/gui/MainFrame.cpp:424
+#: pcsx2/gui/MainFrame.cpp:434
 msgid "Automatically applies needed Gamefixes to known problematic games"
 msgstr ""
 "Automatikusan érvényesíti a szükséges játék javításokat az ismert problémás "
 "játékokhoz"
 
-#: pcsx2/gui/MainFrame.cpp:426
-msgid "Enable Cheats"
+#: pcsx2/gui/MainFrame.cpp:436
+msgid "Enable &Cheats"
 msgstr "Csalások használata"
 
-#: pcsx2/gui/MainFrame.cpp:429
+#: pcsx2/gui/MainFrame.cpp:439
 #, fuzzy
-msgid "Enable Widescreen Patches"
+msgid "Enable &Widescreen Patches"
 msgstr "Javítások használata"
 
-#: pcsx2/gui/MainFrame.cpp:432
-msgid "Enable Host Filesystem"
+#: pcsx2/gui/MainFrame.cpp:443
+msgid "Enable &Host Filesystem"
 msgstr "Gazda fájlrendszer használata"
 
-#: pcsx2/gui/MainFrame.cpp:437
-msgid "Shutdown"
+#: pcsx2/gui/MainFrame.cpp:448
+msgid "Shut&down"
 msgstr "Leállítás"
 
-#: pcsx2/gui/MainFrame.cpp:438
+#: pcsx2/gui/MainFrame.cpp:449
 msgid "Wipes all internal VM states and shuts down plugins."
 msgstr "Töröl minden VM állapotot és leállítja a pluginokat."
 
-#: pcsx2/gui/MainFrame.cpp:440
-msgid "Exit"
+#: pcsx2/gui/MainFrame.cpp:452
+msgid "E&xit"
 msgstr "Kilépés"
 
-#: pcsx2/gui/MainFrame.cpp:441
+#: pcsx2/gui/MainFrame.cpp:453
 #, c-format
 msgid "Closing %s may be hazardous to your health"
 msgstr "%s bezárása az egészségedre káros lehet"
 
-#: pcsx2/gui/MainFrame.cpp:448
-msgid "Iso Selector"
+#: pcsx2/gui/MainFrame.cpp:460
+#, fuzzy
+msgid "ISO &Selector"
 msgstr "ISO választó"
 
-#: pcsx2/gui/MainFrame.cpp:449
-msgid "Plugin Menu"
+#: pcsx2/gui/MainFrame.cpp:461
+#, fuzzy
+msgid "Plugin &Menu"
 msgstr "Plugin menü"
 
-#: pcsx2/gui/MainFrame.cpp:452
-msgid "Iso"
-msgstr "ISO"
+#: pcsx2/gui/MainFrame.cpp:464
+msgid "&ISO"
+msgstr ""
 
-#: pcsx2/gui/MainFrame.cpp:452
+#: pcsx2/gui/MainFrame.cpp:464
 msgid "Makes the specified ISO image the CDVD source."
 msgstr "Beállítja a kiválasztott ISO képfájlt CDVD forrásnak."
 
-#: pcsx2/gui/MainFrame.cpp:453
-msgid "Plugin"
+#: pcsx2/gui/MainFrame.cpp:465
+msgid "&Plugin"
 msgstr "Plugin"
 
-#: pcsx2/gui/MainFrame.cpp:453
+#: pcsx2/gui/MainFrame.cpp:465
 msgid "Uses an external plugin as the CDVD source."
 msgstr "Egy külső plugint használ CDVD forrásként."
 
-#: pcsx2/gui/MainFrame.cpp:454
-msgid "No disc"
+#: pcsx2/gui/MainFrame.cpp:466
+msgid "&No disc"
 msgstr "Nincs lemez"
 
-#: pcsx2/gui/MainFrame.cpp:454
+#: pcsx2/gui/MainFrame.cpp:466
 msgid "Use this to boot into your virtual PS2's BIOS configuration."
 msgstr "Ennek használatával lehet elérni a virtuális PS2 BIOS beállításokat."
 
-#: pcsx2/gui/MainFrame.cpp:462
+#: pcsx2/gui/MainFrame.cpp:474
 msgid "Emulation &Settings"
 msgstr "Emuláció &beállítások"
 
-#: pcsx2/gui/MainFrame.cpp:463
+#: pcsx2/gui/MainFrame.cpp:475
 msgid "&Memory cards"
 msgstr "&Memória kártyák"
 
-#: pcsx2/gui/MainFrame.cpp:464
+#: pcsx2/gui/MainFrame.cpp:476
 msgid "&Plugin/BIOS Selector"
 msgstr "&Plugin/BIOS választó"
 
-#: pcsx2/gui/MainFrame.cpp:465 pcsx2/gui/Panels/GameDatabasePanel.cpp:346
-msgid "Game Database Editor"
+#: pcsx2/gui/MainFrame.cpp:477
+msgid "&Game Database Editor"
 msgstr "Játék adatbázis szerkesztő"
 
-#: pcsx2/gui/MainFrame.cpp:471
+#: pcsx2/gui/MainFrame.cpp:483
 msgid "&Video (GS)"
 msgstr "&Grafika (GS)"
 
-#: pcsx2/gui/MainFrame.cpp:472
+#: pcsx2/gui/MainFrame.cpp:484
 msgid "&Audio (SPU2)"
 msgstr "&Hang (SPU2)"
 
-#: pcsx2/gui/MainFrame.cpp:473
+#: pcsx2/gui/MainFrame.cpp:485
 msgid "&Controllers (PAD)"
 msgstr "&Irányítók (PAD)"
 
-#: pcsx2/gui/MainFrame.cpp:474
-msgid "Dev9"
+#: pcsx2/gui/MainFrame.cpp:486
+msgid "&Dev9"
 msgstr "Dev9"
 
-#: pcsx2/gui/MainFrame.cpp:475
-msgid "USB"
+#: pcsx2/gui/MainFrame.cpp:487
+msgid "&USB"
 msgstr "USB"
 
-#: pcsx2/gui/MainFrame.cpp:476
-msgid "Firewire"
+#: pcsx2/gui/MainFrame.cpp:488
+msgid "&Firewire"
 msgstr "Firewire"
 
-#: pcsx2/gui/MainFrame.cpp:482
-msgid "Multitap 1"
+#: pcsx2/gui/MainFrame.cpp:494
+msgid "Multitap &1"
 msgstr "1. Multitap"
 
-#: pcsx2/gui/MainFrame.cpp:483
-msgid "Multitap 2"
+#: pcsx2/gui/MainFrame.cpp:495
+msgid "Multitap &2"
 msgstr "2. Multitap"
 
-#: pcsx2/gui/MainFrame.cpp:486
-msgid "Clear all settings..."
+#: pcsx2/gui/MainFrame.cpp:498
+msgid "C&lear all settings..."
 msgstr "Minden beállítás törlése..."
 
-#: pcsx2/gui/MainFrame.cpp:487
+#: pcsx2/gui/MainFrame.cpp:499
 #, c-format
 msgid "Clears all %s settings and re-runs the startup wizard."
 msgstr "Töröl minden %s beállítást és újrafuttatja az indításkori varázslót."
 
-#: pcsx2/gui/MainFrame.cpp:509
-msgid "About..."
+#: pcsx2/gui/MainFrame.cpp:521
+msgid "&About..."
 msgstr "Névjegy..."
 
-#: pcsx2/gui/MainFrame.cpp:514
-msgid "Open Debug Window..."
+#: pcsx2/gui/MainFrame.cpp:526
+msgid "&Open Debug Window..."
 msgstr ""
 
-#: pcsx2/gui/MainFrame.cpp:517
-msgid "Logging..."
+#: pcsx2/gui/MainFrame.cpp:529
+msgid "&Logging..."
 msgstr "Naplózás..."
 
-#: pcsx2/gui/MainFrame.cpp:595
-msgid "Pause"
+#: pcsx2/gui/MainFrame.cpp:609
+msgid "Paus&e"
 msgstr "Szünet"
 
-#: pcsx2/gui/MainFrame.cpp:596
+#: pcsx2/gui/MainFrame.cpp:610
 msgid "Safely pauses emulation and preserves the PS2 state."
 msgstr "Biztonságosan szüntelteti az emulációt és megőrzi a PS2 állapotát."
 
-#: pcsx2/gui/MainFrame.cpp:603
-msgid "Resume"
+#: pcsx2/gui/MainFrame.cpp:617
+msgid "R&esume"
 msgstr "Folytatás"
 
-#: pcsx2/gui/MainFrame.cpp:604
+#: pcsx2/gui/MainFrame.cpp:618
 msgid "Resumes the suspended emulation state."
 msgstr "Folytatja a felfüggesztett emulációs állapotot."
 
-#: pcsx2/gui/MainFrame.cpp:608
+#: pcsx2/gui/MainFrame.cpp:622
 msgid "Pause/Resume"
 msgstr "Szünet / folytatás"
 
-#: pcsx2/gui/MainFrame.cpp:609
+#: pcsx2/gui/MainFrame.cpp:623
 msgid "No emulation state is active; cannot suspend or resume."
 msgstr ""
 "Nincs aktív emulációs állapot; nem függeszthető fel és nem folytatható."
 
-#: pcsx2/gui/MainFrame.cpp:618
-msgid "Restart"
+#: pcsx2/gui/MainFrame.cpp:632
+msgid "Res&tart"
 msgstr "Újraindítás"
 
-#: pcsx2/gui/MainFrame.cpp:619
+#: pcsx2/gui/MainFrame.cpp:633
 msgid "Simulates hardware reset of the PS2 virtual machine."
 msgstr "Szimulálja a PS2 virtuális gép hardverének alaphelyzetbe állítását."
 
-#: pcsx2/gui/MainFrame.cpp:624
+#: pcsx2/gui/MainFrame.cpp:638
 msgid "No emulation state is active; boot something first."
 msgstr "Nincs aktív emulációs állapot; először indíts el valamit."
 
-#: pcsx2/gui/MainFrame.cpp:632
-msgid "Reboot CDVD (full)"
-msgstr "CDVD újraindítása (teljes)"
+#: pcsx2/gui/MainFrame.cpp:655
+msgid "Use fast boot to skip PS2 startup and splash screens"
+msgstr "Gyors indítás használata a PS2 indító és üdvözlőképernyő kihagyásához"
 
-#: pcsx2/gui/MainFrame.cpp:633
-msgid "Hard reset of the active VM."
-msgstr "A virtuális gép (VM) teljes alaphelyzetbe állítása."
+#: pcsx2/gui/MainFrame.cpp:660
+#, fuzzy
+msgid "Boot ISO (&fast)"
+msgstr "CDVD indítása (gyors)"
 
-#: pcsx2/gui/MainFrame.cpp:637
-msgid "Boot CDVD (full)"
+#: pcsx2/gui/MainFrame.cpp:663
+msgid "Boot CDVD (&fast)"
+msgstr "CDVD indítása (gyors)"
+
+#: pcsx2/gui/MainFrame.cpp:687
+#, fuzzy
+msgid "Boo&t ISO (full)"
 msgstr "CDVD indítása (teljes)"
 
-#: pcsx2/gui/MainFrame.cpp:638
-msgid "Boot the VM using the current DVD or Iso source media"
+#: pcsx2/gui/MainFrame.cpp:688
+#, fuzzy
+msgid "Boot the VM using the current ISO source media"
 msgstr ""
 "Indítsd el a virtuális gépet a mostani DVD vagy ISO forrás média "
 "használatával."
 
-#: pcsx2/gui/MainFrame.cpp:646
-msgid "Reboot CDVD (fast)"
-msgstr "CDVD újraindítása (gyors)"
+#: pcsx2/gui/MainFrame.cpp:691
+#, fuzzy
+msgid "Boo&t CDVD (full)"
+msgstr "CDVD indítása (teljes)"
 
-#: pcsx2/gui/MainFrame.cpp:647
-msgid "Reboot using fast BOOT (skips splash screens)"
-msgstr "Újraindítás a gyors indítás használatával (üdvözlőképernyő kihagyása)"
+#: pcsx2/gui/MainFrame.cpp:692
+#, fuzzy
+msgid "Boot the VM using the current CD/DVD source media"
+msgstr ""
+"Indítsd el a virtuális gépet a mostani DVD vagy ISO forrás média "
+"használatával."
 
-#: pcsx2/gui/MainFrame.cpp:651
-msgid "Boot CDVD (fast)"
-msgstr "CDVD indítása (gyors)"
+#: pcsx2/gui/MainFrame.cpp:695
+msgid "Boo&t BIOS"
+msgstr ""
 
-#: pcsx2/gui/MainFrame.cpp:652
-msgid "Use fast boot to skip PS2 startup and splash screens"
-msgstr "Gyors indítás használata a PS2 indító és üdvözlőképernyő kihagyásához"
+#: pcsx2/gui/MainFrame.cpp:696
+#, fuzzy
+msgid "Boot the VM without any source media"
+msgstr ""
+"Indítsd el a virtuális gépet a mostani DVD vagy ISO forrás média "
+"használatával."
 
-#: pcsx2/gui/MainFrame.cpp:714 pcsx2/gui/MainFrame.cpp:749
+#: pcsx2/gui/MainFrame.cpp:777 pcsx2/gui/MainFrame.cpp:812
 msgid "No plugin loaded"
 msgstr "Nincs plugin betöltve"
 
-#: pcsx2/gui/MainFrame.cpp:719
-msgid "Core GS Settings..."
+#: pcsx2/gui/MainFrame.cpp:782
+msgid "&Core GS Settings..."
 msgstr "GS központi beállítások..."
 
-#: pcsx2/gui/MainFrame.cpp:720
+#: pcsx2/gui/MainFrame.cpp:783
 msgid ""
 "Modify hardware emulation settings regulated by the PCSX2 core virtual "
 "machine."
@@ -1544,97 +1707,97 @@ msgstr ""
 "A PCSX2 központi virtuális gép által szabályozott hardver emulációs "
 "beállítások módosítása."
 
-#: pcsx2/gui/MainFrame.cpp:722
-msgid "Window Settings..."
+#: pcsx2/gui/MainFrame.cpp:785
+msgid "&Window Settings..."
 msgstr "Ablak beállítások..."
 
-#: pcsx2/gui/MainFrame.cpp:723
+#: pcsx2/gui/MainFrame.cpp:786
 msgid "Modify window and appearance options, including aspect ratio."
 msgstr "Ablak és megjeleníési beállítások módosítása, beleérte a képarányt is."
 
-#: pcsx2/gui/MainFrame.cpp:730
-msgid "Plugin Settings..."
+#: pcsx2/gui/MainFrame.cpp:793
+msgid "&Plugin Settings..."
 msgstr "Plugin beállítások..."
 
-#: pcsx2/gui/MainFrame.cpp:731
+#: pcsx2/gui/MainFrame.cpp:794
 #, c-format
 msgid "Opens the %s plugin's advanced settings dialog."
 msgstr "%s plugin fejlett beállítási párbeszédablakját nyitja meg."
 
-#: pcsx2/gui/MainMenuClicks.cpp:109
+#: pcsx2/gui/MainMenuClicks.cpp:120
 msgid "Reset all settings?"
 msgstr "Minden beállítás alapra állítása?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:137
+#: pcsx2/gui/MainMenuClicks.cpp:148
 msgid "Confirm ISO image change"
 msgstr "ISO képfájl csere megerősítése"
 
-#: pcsx2/gui/MainMenuClicks.cpp:143
+#: pcsx2/gui/MainMenuClicks.cpp:154
 msgid "Do you want to swap discs or boot the new image (via system reset)?"
 msgstr ""
 "Lemezt akarsz cserélni vagy elindítani az új képfájlt (a rendszer "
 "alapértékekre állításával)?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:145 pcsx2/gui/MainMenuClicks.cpp:191
+#: pcsx2/gui/MainMenuClicks.cpp:156 pcsx2/gui/MainMenuClicks.cpp:202
 msgid "Swap Disc"
 msgstr "Lemezcsere"
 
-#: pcsx2/gui/MainMenuClicks.cpp:181
+#: pcsx2/gui/MainMenuClicks.cpp:192
 msgid "Confirm CDVD source change"
 msgstr "CDVD forrás váltás megerősítése"
 
-#: pcsx2/gui/MainMenuClicks.cpp:184
+#: pcsx2/gui/MainMenuClicks.cpp:195
 #, c-format
 msgid "You've selected to switch the CDVD source from %s to %s."
 msgstr "Azt választottad, hogy a CDVD forrást átváltod erről: %s, erre: %s."
 
-#: pcsx2/gui/MainMenuClicks.cpp:188
+#: pcsx2/gui/MainMenuClicks.cpp:199
 msgid "Do you want to swap discs or boot the new image (system reset)?"
 msgstr ""
 "Lemezt akarsz cserélni vagy elindítani az új képfájlt (a rendszer "
 "alapértékekre állítása)?"
 
-#: pcsx2/gui/MainMenuClicks.cpp:258
+#: pcsx2/gui/MainMenuClicks.cpp:271
 #, c-format
 msgid "All Supported (%s)"
 msgstr "Minden formátum (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:261
+#: pcsx2/gui/MainMenuClicks.cpp:274
 #, c-format
 msgid "Disc Images (%s)"
 msgstr "Lemez képfájlok (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:264
+#: pcsx2/gui/MainMenuClicks.cpp:277
 #, c-format
 msgid "Blockdumps (%s)"
 msgstr "Mentés tömbök (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:267
+#: pcsx2/gui/MainMenuClicks.cpp:280
 #, fuzzy, c-format
 msgid "Compressed (%s)"
 msgstr "Mentés tömbök (%s)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:270 pcsx2/gui/MainMenuClicks.cpp:291
+#: pcsx2/gui/MainMenuClicks.cpp:283 pcsx2/gui/MainMenuClicks.cpp:304
 msgid "All Files (*.*)"
 msgstr "Minden fájl (*.*)"
 
-#: pcsx2/gui/MainMenuClicks.cpp:273
-msgid "Select CDVD source iso..."
-msgstr "CDVD forrás ISO választása..."
+#: pcsx2/gui/MainMenuClicks.cpp:286
+msgid "Select disc image, compressed disc image, or block-dump..."
+msgstr ""
 
-#: pcsx2/gui/MainMenuClicks.cpp:290
+#: pcsx2/gui/MainMenuClicks.cpp:303
 msgid "Select ELF file..."
 msgstr "ELF fájl választása..."
 
-#: pcsx2/gui/MainMenuClicks.cpp:316
+#: pcsx2/gui/MainMenuClicks.cpp:329
 msgid "ISO file not found!"
 msgstr "Nem található ISO fájl!"
 
-#: pcsx2/gui/MainMenuClicks.cpp:318
+#: pcsx2/gui/MainMenuClicks.cpp:331
 msgid "An error occurred while trying to open the file:"
 msgstr "Hiba keletkezett a fájl megnyitására irányuló próbálkozás közben:"
 
-#: pcsx2/gui/MainMenuClicks.cpp:319
+#: pcsx2/gui/MainMenuClicks.cpp:332
 msgid ""
 "Error: The configured ISO file does not exist.  Click OK to select a new ISO "
 "source for CDVD."
@@ -1642,7 +1805,7 @@ msgstr ""
 "Hiba: A megadott ISO fájl nincs meg.  Kattints a Rendben gombra egy új ISO "
 "forráshoz a CDVD számára."
 
-#: pcsx2/gui/MainMenuClicks.cpp:390
+#: pcsx2/gui/MainMenuClicks.cpp:403
 msgid ""
 "You have selected the following ISO image into PCSX2:\n"
 "\n"
@@ -1650,7 +1813,7 @@ msgstr ""
 "A következő ISO képfájlt választottad a PCSX2 számára:\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:183
+#: pcsx2/gui/MemoryCardFile.cpp:193
 #, c-format
 msgid ""
 "Could not create a memory card: \n"
@@ -1663,7 +1826,7 @@ msgstr ""
 "%s\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:201
+#: pcsx2/gui/MemoryCardFile.cpp:211
 #, c-format
 msgid ""
 "Access denied to memory card: \n"
@@ -1676,19 +1839,19 @@ msgstr ""
 "%s\n"
 "\n"
 
-#: pcsx2/gui/MemoryCardFile.cpp:586
+#: pcsx2/gui/MemoryCardFile.cpp:678
 msgid "File name empty or too short"
 msgstr "Nincs megadva fájlnév vagy túl rövid"
 
-#: pcsx2/gui/MemoryCardFile.cpp:591
+#: pcsx2/gui/MemoryCardFile.cpp:683
 msgid "File name outside of required directory"
 msgstr "A fájlnév a kívánt könyvtáron kívül van"
 
-#: pcsx2/gui/MemoryCardFile.cpp:597
+#: pcsx2/gui/MemoryCardFile.cpp:689 pcsx2/gui/MemoryCardFile.cpp:694
 msgid "File name already exists"
 msgstr "Ilyen fájlnév már van"
 
-#: pcsx2/gui/MemoryCardFile.cpp:604
+#: pcsx2/gui/MemoryCardFile.cpp:701
 msgid "The Operating-System prevents this file from being created"
 msgstr "Az operációs rendszer akadályozza a fájl létrehozását"
 
@@ -1696,15 +1859,15 @@ msgstr "Az operációs rendszer akadályozza a fájl létrehozását"
 msgid "Cannot apply settings..."
 msgstr "Beállítások nem érvényesíthetőek..."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:107
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:104
 msgid "BIOS Search Path:"
 msgstr "BIOS keresési hely:"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:108
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:105
 msgid "Select folder with PS2 BIOS roms"
 msgstr "Válassz PS2 BIOS romokat tartalmazó mappát"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:115
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:112
 msgid ""
 "Click the Browse button to select a different folder where PCSX2 will look "
 "for PS2 BIOS roms."
@@ -1712,13 +1875,13 @@ msgstr ""
 "Kattints a Tallózás gombra egy másik mappa megadásához, ahol PCSX2 keresni "
 "fogja a PS2 BIOS romokat."
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:117
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:171
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:47
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:114
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:195
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:48
 msgid "Refresh list"
 msgstr "Lista frissítése"
 
-#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:119
+#: pcsx2/gui/Panels/BiosSelectorPanel.cpp:116
 msgid "Select a BIOS rom:"
 msgstr "BIOS rom választása:"
 
@@ -1750,40 +1913,44 @@ msgstr "Darab / nulla"
 msgid "None"
 msgstr "Nincs"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:85
+#: pcsx2/gui/Panels/CpuPanel.cpp:38
+msgid "Normal"
+msgstr "Normál"
+
+#: pcsx2/gui/Panels/CpuPanel.cpp:86
 msgid "EE/FPU Advanced Recompiler Options"
 msgstr "EE/FPU fejlett Recompiler beállítások"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:87 pcsx2/gui/Panels/CpuPanel.cpp:102
+#: pcsx2/gui/Panels/CpuPanel.cpp:88 pcsx2/gui/Panels/CpuPanel.cpp:103
 msgid "Extra + Preserve Sign"
 msgstr "Extra + fenntartott jel"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:88
+#: pcsx2/gui/Panels/CpuPanel.cpp:89
 msgid "Full"
 msgstr "Teljes"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:99
+#: pcsx2/gui/Panels/CpuPanel.cpp:100
 msgid "VU0 / VU1 Advanced Recompiler Options"
 msgstr "VU0 / VU1 fejlett Recompiler beállítások"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:101
+#: pcsx2/gui/Panels/CpuPanel.cpp:102
 msgid "Extra"
 msgstr "Extra"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:116 pcsx2/gui/Panels/CpuPanel.cpp:125
-#: pcsx2/gui/Panels/CpuPanel.cpp:182
+#: pcsx2/gui/Panels/CpuPanel.cpp:117 pcsx2/gui/Panels/CpuPanel.cpp:126
+#: pcsx2/gui/Panels/CpuPanel.cpp:185
 msgid "Interpreter"
 msgstr "Interpreter"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:117
+#: pcsx2/gui/Panels/CpuPanel.cpp:118
 msgid "Quite possibly the slowest thing in the universe."
 msgstr "Minden bizonnyal a leglassabb dolog a világegyetemben"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:119 pcsx2/gui/Panels/CpuPanel.cpp:128
+#: pcsx2/gui/Panels/CpuPanel.cpp:120 pcsx2/gui/Panels/CpuPanel.cpp:129
 msgid "Recompiler"
 msgstr "Recompiler"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:120
+#: pcsx2/gui/Panels/CpuPanel.cpp:121
 msgid ""
 "Performs just-in-time binary translation of 64-bit MIPS-IV machine code to "
 "x86."
@@ -1791,11 +1958,11 @@ msgstr ""
 "Megfelelő időben végzi a 64-bit MIPS-IV gépi kód bináris fordítását x86 "
 "rendszerre."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:126
+#: pcsx2/gui/Panels/CpuPanel.cpp:127
 msgid "Pretty slow; provided for diagnostic purposes only."
 msgstr "Meglehetősen lassú; csak diagnosztikai célokra szolgál."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:129
+#: pcsx2/gui/Panels/CpuPanel.cpp:130
 msgid ""
 "Performs just-in-time binary translation of 32-bit MIPS-I machine code to "
 "x86."
@@ -1803,22 +1970,22 @@ msgstr ""
 "Megfelelő időben végzi a 32-bit MIPS-I gépi kód bináris fordítását x86 "
 "rendszerre."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:153
+#: pcsx2/gui/Panels/CpuPanel.cpp:154
 #, fuzzy
 msgid "Enable EE Cache (Slower)"
 msgstr "EE gyorsítótár használata - Csak Interpreter ! (lassabb)"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:153
+#: pcsx2/gui/Panels/CpuPanel.cpp:154
 #, fuzzy
 msgid "Interpreter only; provided for diagnostic"
 msgstr "Meglehetősen lassú; csak diagnosztikai célokra szolgál."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:169 pcsx2/gui/Panels/CpuPanel.cpp:221
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:99
+#: pcsx2/gui/Panels/CpuPanel.cpp:170 pcsx2/gui/Panels/CpuPanel.cpp:226
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:129
 msgid "Restore Defaults"
 msgstr "Alapértékek visszaállítása"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:183
+#: pcsx2/gui/Panels/CpuPanel.cpp:186
 msgid ""
 "Vector Unit Interpreter. Slow and not very compatible. Only use for "
 "diagnostics."
@@ -1826,22 +1993,22 @@ msgstr ""
 "Vector Unit Interpreter. Lassú és nem túl kompatibilis. Csak diagnosztikára "
 "használd."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:185
+#: pcsx2/gui/Panels/CpuPanel.cpp:188
 msgid "microVU Recompiler"
 msgstr "microVU Recompiler"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:186
+#: pcsx2/gui/Panels/CpuPanel.cpp:189
 msgid ""
 "New Vector Unit recompiler with much improved compatibility. Recommended."
 msgstr ""
 "Új Vector Unit recompiler nagy mértékben javított kompatibilitással. "
 "Ajánlott."
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:188
+#: pcsx2/gui/Panels/CpuPanel.cpp:192
 msgid "superVU Recompiler [legacy]"
 msgstr "superVU Recompiler [öröklött]"
 
-#: pcsx2/gui/Panels/CpuPanel.cpp:189
+#: pcsx2/gui/Panels/CpuPanel.cpp:193
 msgid ""
 "Useful for diagnosing bugs or clamping issues in the new mVU recompiler."
 msgstr ""
@@ -1909,19 +2076,23 @@ msgstr "Várakozás függőleges szinkronra frissítéskor"
 msgid "Double-click toggles fullscreen mode"
 msgstr "Dupla kattintással váltás teljes nézetre"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:85
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:52
+msgid "Switch to 4:3 aspect ratio when an FMV plays"
+msgstr ""
+
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:86
 msgid "Aspect Ratio:"
 msgstr "Képarány:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:87
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:88
 msgid "Custom Window Size:"
 msgstr "Egyedi ablak méret:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:90
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:91
 msgid "Zoom:"
 msgstr "Zoomolás:"
 
-#: pcsx2/gui/Panels/GSWindowPanel.cpp:166
+#: pcsx2/gui/Panels/GSWindowPanel.cpp:170
 msgid ""
 "Invalid window dimensions specified: Size cannot contain non-numeric digits! "
 ">_<"
@@ -1929,11 +2100,36 @@ msgstr ""
 "A megadott ablak méret érvénytelen: A méret csak számjegyeket tartalmazhat! "
 ">_<"
 
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:322
 msgid "Search"
 msgstr "Keresés"
 
-#: pcsx2/gui/Panels/GameDatabasePanel.cpp:368
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:334
+#, fuzzy
+msgid "Game Database Editor"
+msgstr "Játék adatbázis szerkesztő"
+
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:348
+msgid "Name: "
+msgstr ""
+
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:349
+msgid "Region: "
+msgstr ""
+
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:350
+msgid "Compatibility: "
+msgstr ""
+
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:351
+msgid "Comments: "
+msgstr ""
+
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:352
+msgid "Patches: "
+msgstr ""
+
+#: pcsx2/gui/Panels/GameDatabasePanel.cpp:356
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:25
 msgid "Gamefixes"
 msgstr "Játék javítások"
@@ -2006,30 +2202,37 @@ msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:92
 msgid ""
-"Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD & Spy Hunter loading hang."
+"Delay VIF1 Stalls (VIF1 FIFO) - For SOCOM 2 HUD and Spy Hunter loading hang."
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:96
-msgid "Ignore Bus Direction on Path3 Transfer - Used for Hotwheels"
+msgid ""
+"Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ "
+"Hero)"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:100
-msgid "Switch to GSdx software rendering when a FMV plays"
+msgid "Switch to GSdx software rendering when an FMV plays"
 msgstr ""
 
 #: pcsx2/gui/Panels/GameFixesPanel.cpp:104
 msgid "Preload TLB hack to avoid tlb miss on Goemon"
 msgstr ""
 
-#: pcsx2/gui/Panels/GameFixesPanel.cpp:115
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:108
+msgid ""
+"VU I bit Hack avoid constant recompilation (Scarface The World Is Yours)"
+msgstr ""
+
+#: pcsx2/gui/Panels/GameFixesPanel.cpp:119
 msgid "Enable manual game fixes [Not recommended]"
 msgstr "Kézi játék javítások használata [Nem ajánlott]"
 
-#: pcsx2/gui/Panels/LogOptionsPanels.cpp:249
+#: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
 msgid "Enable Trace Logging"
 msgstr "Nyomkövető naplózás használata"
 
-#: pcsx2/gui/Panels/LogOptionsPanels.cpp:250
+#: pcsx2/gui/Panels/LogOptionsPanels.cpp:251
 msgid ""
 "Trace logs are all written to emulog.txt.  Toggle trace logging at any time "
 "using F10."
@@ -2037,7 +2240,7 @@ msgstr ""
 "A nyomkövetések az emulog.txt fájlba lesznek naplózva.  A naplózás be/"
 "kikapcsolható F10 használatával bármikor."
 
-#: pcsx2/gui/Panels/LogOptionsPanels.cpp:251
+#: pcsx2/gui/Panels/LogOptionsPanels.cpp:252
 msgid ""
 "Warning: Enabling trace logs is typically very slow, and is a leading cause "
 "of 'What happened to my FPS?' problems. :)"
@@ -2045,87 +2248,92 @@ msgstr ""
 "Figyelem: Nyomkövető naplózás használata meglehetősen lassú, és többnyire a "
 "'Miért esett az FPS értéke?' problémát veti fel. :)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:166
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:188
 msgid "Select folder with PS2 memory cards"
 msgstr "PS2 memória kártyákat tartalmazó mappa választása"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:473
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:558
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:389
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Eject"
 msgstr "Kiadás"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:474
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:390
 msgid "Duplicate ..."
 msgstr "Másolás..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:475
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:391
 msgid "Rename ..."
 msgstr "Átnevezés..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:476
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:540
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:567
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:392
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:462
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:492
 msgid "Create ..."
 msgstr "Létrehozás..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:488
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:393
+#, fuzzy
+msgid "Convert ..."
+msgstr "Behelyezés..."
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:405
 msgid "Card: "
 msgstr "Kártya:"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:541
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:574
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:463
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:499
 msgid "Create a new memory card."
 msgstr "Új memória kártya létrehozása."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:554
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:477
 msgid "Rename this memory card ..."
 msgstr "A memória kártya átnevezése..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:558
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:481
 msgid "Insert ..."
 msgstr "Behelyezés..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:559
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
 msgid "Eject the card from this port"
 msgstr "Kártya kiadása erről a portról"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:559
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:482
 msgid "Insert this card to a port ..."
 msgstr "Kártya behelyezése egy portra..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:563
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:486
 msgid "Create a duplicate of this memory card ..."
 msgstr "Egy másolat létrehozása erről a memória kártyáról..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:567
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:492
 msgid "Delete"
 msgstr "Törlés"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:570
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:495
 msgid "Permanently delete this memory card from disk (all contents are lost)"
 msgstr ""
 "Véglegesen törli ezt a memória kártyát a lemezről (minden tartalom elveszik)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:572
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:497
 msgid "Create a new memory card and assign it to this Port."
 msgstr "Új memória kártya létrehozása és kiosztása ehhez a porthoz."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:749
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:687
 msgid "Delete memory file?"
 msgstr "Törlöd a memória fájlt?"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:784
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:791
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:805
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:714
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:725
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:732
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:746
 msgid "Duplicate memory card"
 msgstr "Memória kártya másolat"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:773
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:714
 msgid "Failed: Can only duplicate an existing card."
 msgstr "Hiba: Csak meglévő kártyáról készíthető másolat."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:791
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:732
 msgid ""
 "Select a name for the duplicate\n"
 "( '.ps2' will be added automatically)"
@@ -2133,25 +2341,25 @@ msgstr ""
 "Adj nevet a másolat számára\n"
 "( '.ps2' automatikusan hozzá lesz adva)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:745
 #, c-format
 msgid "Failed: %s"
 msgstr "Hiba: %s"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:829
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:770
 msgid "Copy failed!"
 msgstr "Másolás sikertelen!"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:837
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:777
 #, c-format
 msgid "Memory card '%s' duplicated to '%s'."
 msgstr "'%s' memória kártya másolat létrehozva '%s' néven."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:841
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:781
 msgid "Success"
 msgstr "Sikerült"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:862
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:801
 #, c-format
 msgid ""
 "Select a new name for the memory card '%s'\n"
@@ -2160,141 +2368,146 @@ msgstr ""
 "Adj új nevet a memória kártya számára '%s'\n"
 "( '.ps2' automatikusan hozzá lesz adva)"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:865
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:877
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:893
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:804
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:816
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:830
 msgid "Rename memory card"
 msgstr "Memória kártya átnevezése"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:893
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:830
 msgid "Error: Rename could not be completed.\n"
 msgstr "Hiba: Az átnevezés nem sikerült.\n"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:983
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:143
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:930
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:134
 #, c-format
 msgid "Port-%u / Multitap-%u--Port-1"
 msgstr "Port-%u / Multitap-%u--Port-1"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:984
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:144
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:931
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:135
 #, c-format
 msgid "             Multitap-%u--Port-%u"
 msgstr "             Multitap-%u--Port-%u"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1009
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:956
 msgid "Empty"
 msgstr "Üres"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1015
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:962
 #, c-format
 msgid "Select a target port for '%s'"
 msgstr "Válassz célportot a(z) '%s' számára"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1016
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:963
 msgid "Insert card"
 msgstr "Kártya behelyezése"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1076
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
 msgid "Eject card"
 msgstr "Kártya kiadása"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1076
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1024
 msgid "Insert card ..."
 msgstr "Kártya behelyezése..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1077
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1025
 msgid "Duplicate card ..."
 msgstr "Kártya másolat készítése..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1078
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1026
 msgid "Rename card ..."
 msgstr "Kártya átnevezése..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1079
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1027
 msgid "Delete card"
 msgstr "Kártya törlése"
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1082
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1086
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1029
+#, fuzzy
+msgid "Convert card"
+msgstr "Kártya behelyezése"
+
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1033
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1037
 msgid "Create a new card ..."
 msgstr "Új kártya létrehozása..."
 
-#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1090
+#: pcsx2/gui/Panels/MemoryCardListPanel.cpp:1041
 msgid "Refresh List"
 msgstr "Lista frissítése"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:108
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:99
 msgid "PS2 Port"
 msgstr "PS2 port"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:110
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:101
 msgid "Card (file) name"
 msgstr "Kártya (fájl) név"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:111
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:102
 msgid "Card size"
 msgstr "Kártya méret"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:112
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:103
 msgid "Formatted"
 msgstr "Formázva"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:113
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:104
 msgid "Type"
 msgstr ""
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:114
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:105
 msgid "Last Modified"
 msgstr "Utoljára módosítva"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:115
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:106
 msgid "Created on"
 msgstr "Létrehozva"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:160
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "No"
 msgstr "Nem"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:160
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:151
 msgid "Yes"
 msgstr "Igen"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:161
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
 #, fuzzy
 msgid "PS2"
 msgstr "FPS"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:161
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:152
 #, fuzzy
 msgid "PSX"
 msgstr "FPS"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:174
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:165
 msgid "[-- Unused cards --]"
 msgstr "[-- Nem használt kártyák --]"
 
-#: pcsx2/gui/Panels/MemoryCardListView.cpp:176
+#: pcsx2/gui/Panels/MemoryCardListView.cpp:167
 msgid "[-- No unused cards --]"
 msgstr "[-- Nincsenek nem használt kártyák --]"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:33
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:34
 msgid "Usermode Selection"
 msgstr "Felhasználói mód választás"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:44
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:45
 msgid "User Documents (recommended)"
 msgstr "Felhasználó dokumentumai (ajánlott)"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:45
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:46
 msgid "Location: "
 msgstr "Hely:"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:49
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:50
 msgid "Custom folder:"
 msgstr "Saját mappa:"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:51
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:52
 msgid ""
 "This setting may require administration privileges from your operating "
 "system, depending on how your system is configured."
@@ -2302,16 +2515,16 @@ msgstr ""
 "Ez a beállítás elképzelhető, hogy rendszergazdai jogosultságot igényel az "
 "operációs rendszeren, a rendszerbeállításoktól függően. "
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:60
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:61
 #, c-format
 msgid "Select a document root for %s"
 msgstr "%s dokumentum gyökérkönyvtár megadása"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:118
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:125
 msgid "Apply"
 msgstr "Alkalmaz"
 
-#: pcsx2/gui/Panels/MiscPanelStuff.cpp:119
+#: pcsx2/gui/Panels/MiscPanelStuff.cpp:126
 msgid "Make this language my default right now!"
 msgstr "Legyen ez az alapértelmezett nyelv mostantól!"
 
@@ -2347,37 +2560,37 @@ msgstr "Beállítások érvényesítése..."
 msgid "Shutdown PS2 virtual machine?"
 msgstr "Leállítod a PS2 virtuális gépet?"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:316
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:317
 msgid "I'm givin' her all she's got, Captain!"
 msgstr "Mindent ráadok, amit csak kibír, kapitány!"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:318
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:319
 msgid "Enumerating available plugins..."
 msgstr "Meglévő pluginok listázása..."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:352
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:353
 msgid "Plugins Search Path:"
 msgstr "Plugin keresési hely:"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:353
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:354
 msgid "Select a folder with PCSX2 plugins"
 msgstr "PCSX2 pluginokat tartalmazó mappa választása"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:366
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:367
 msgid "Configure..."
 msgstr "Beállítás..."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:375
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:376
 msgid "Click the Browse button to select a different folder for PCSX2 plugins."
 msgstr ""
 "Kattints a Tallózás gombra másik plugin mappa választásához a PCSX2 számára."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:474
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:475
 #, c-format
 msgid "Please select a valid plugin for the %s."
 msgstr "Válassz egy érvényes %s plugint."
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:512
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:513
 #, c-format
 msgid ""
 "The selected %s plugin failed to load.\n"
@@ -2390,46 +2603,38 @@ msgstr ""
 "Ok: %s\n"
 "\n"
 
-#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:723
+#: pcsx2/gui/Panels/PluginSelectorPanel.cpp:720
 msgid "Completing tasks..."
 msgstr "Feladat befejezése..."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:87
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:117
 msgid "Enable speedhacks"
 msgstr "Gyorsító hackek használata"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:91
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:121
 msgid ""
 "A safe and easy way to make sure that all speedhacks are completely disabled."
 msgstr ""
 "A legbiztosabban így győződhetünk meg arról, hogy a gyorsító hackek teljesen "
 "ki vannak kapcsolva."
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:100
-msgid ""
-"Resets all speedhack options to their defaults, which consequently turns "
-"them all OFF."
-msgstr ""
-"Visszaállít minden gyorsító hack beállítást az alapértékre, ami által mind "
-"KIKAPCSOLVA lesz."
-
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:109
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:138
 msgid "EE Cyclerate [Not Recommended]"
 msgstr "EE ciklusszám [Nem ajánlott]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:127
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:154
 msgid "VU Cycle Stealing [Not Recommended]"
 msgstr "VU ciklus csökkentés [Nem ajánlott]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:145
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
 msgid "microVU Hacks"
 msgstr "microVU hackek"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:147
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:172
 msgid "mVU Flag Hack"
 msgstr "mVU Flag hack"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:148
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:173
 #, fuzzy
 msgid ""
 "Good Speedup and High Compatibility; may cause bad graphics... [Recommended]"
@@ -2437,11 +2642,11 @@ msgstr ""
 "Látványos gyorsulás és magas kompatibilitás; grafikai hibákat okozhat, SPS, "
 "stb... [Ajánlott]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:150
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:175
 msgid "MTVU (Multi-Threaded microVU1)"
 msgstr ""
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:151
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:176
 #, fuzzy
 msgid ""
 "Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ "
@@ -2450,15 +2655,15 @@ msgstr ""
 "Látványos gyorsulás és magas kompatibilitás; grafikai hibákat okozhat, SPS, "
 "stb... [Ajánlott]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:162
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:187
 msgid "Other Hacks"
 msgstr "Egyéb hackek"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:164
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:189
 msgid "Enable INTC Spin Detection"
 msgstr "INTC pörgés észlelés használata"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:165
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:190
 msgid ""
 "Huge speedup for some games, with almost no compatibility side effects. "
 "[Recommended]"
@@ -2466,34 +2671,34 @@ msgstr ""
 "Nagymértékű gyorsulás néhány játék esetében, többnyire nincs kompatibilitási "
 "mellékhatás. [Ajánlott]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:167
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:192
 msgid "Enable Wait Loop Detection"
 msgstr "Hurok észlelésre várakozás használata"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:168
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:193
 msgid ""
 "Moderate speedup for some games, with no known side effects. [Recommended]"
 msgstr ""
 "Enyhe sebesség növekedés néhány játéknál, nincs ismert mellékhatás. "
 "[Ajánlott]"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:170
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:195
 msgid "Enable fast CDVD"
 msgstr "Gyors CDVD használata"
 
-#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:171
+#: pcsx2/gui/Panels/SpeedhacksPanel.cpp:196
 msgid "Fast disc access, less loading times. [Not Recommended]"
 msgstr "Gyors lemez hozzáférés, kevesebb betöltési idő. [Nem ajánlott]"
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:37
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:38
 msgid "Themes Search Path:"
 msgstr "Témák keresési helye:"
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:38
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:39
 msgid "Select folder containing PCSX2 visual themes"
 msgstr "PCSX2 vizuális témákat tartalmazó mappa választása"
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:45
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:46
 msgid ""
 "Click the Browse button to select a different folder containing PCSX2 visual "
 "themes."
@@ -2501,46 +2706,46 @@ msgstr ""
 "Kattints a Tallózás gombra egy másik PCSX2 vizuális témákat tartalmazó mappa "
 "választására."
 
-#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:49
+#: pcsx2/gui/Panels/ThemeSelectorPanel.cpp:50
 msgid "Select a visual theme:"
 msgstr "Vizuális téma választása:"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:34
+#: pcsx2/gui/Panels/VideoPanel.cpp:32
 msgid "Disable Framelimiting"
 msgstr "Képkocka korlátozás kikapcsolása"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:35
+#: pcsx2/gui/Panels/VideoPanel.cpp:33
 msgid ""
 "Useful for running benchmarks. Toggle this option in-game by pressing F4."
 msgstr ""
 "Tesztek futtatásához hasznos. Az opció be/kikapcsolása játék közben az F4 "
 "lenyomásával."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:59
+#: pcsx2/gui/Panels/VideoPanel.cpp:57
 msgid "Base Framerate Adjust:"
 msgstr "Képfrissítésen alapuló szabályozás:"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:65
+#: pcsx2/gui/Panels/VideoPanel.cpp:63
 msgid "Slow Motion Adjust:"
 msgstr "Lassított mozgás szabályozás:"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:71
+#: pcsx2/gui/Panels/VideoPanel.cpp:69
 msgid "Turbo Adjust:"
 msgstr "Turbó szabályozás:"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:86
+#: pcsx2/gui/Panels/VideoPanel.cpp:78
 msgid "NTSC Framerate:"
 msgstr "NTSC képfrissítés:"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:89 pcsx2/gui/Panels/VideoPanel.cpp:95
+#: pcsx2/gui/Panels/VideoPanel.cpp:81 pcsx2/gui/Panels/VideoPanel.cpp:87
 msgid "FPS"
 msgstr "FPS"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:92
+#: pcsx2/gui/Panels/VideoPanel.cpp:84
 msgid "PAL Framerate:"
 msgstr "PAL képfrissítés:"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:164
+#: pcsx2/gui/Panels/VideoPanel.cpp:156
 msgid ""
 "Error while parsing either NTSC or PAL framerate settings.  Settings must be "
 "valid floating point numerics."
@@ -2548,19 +2753,19 @@ msgstr ""
 "Hiba vagy az NTSC vagy PAL képfrissítési beállítások elemzésekor.  A "
 "beállításoknak érvényes lebegőpontos számoknak kell lenniük."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:182
+#: pcsx2/gui/Panels/VideoPanel.cpp:176
 msgid "Disabled [default]"
 msgstr "Kikapcsolva [alap]"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:186
+#: pcsx2/gui/Panels/VideoPanel.cpp:180
 msgid "Skip when on Turbo only (TAB to enable)"
 msgstr "Csak bekapcsolt Turbó esetén (TAB a használathoz)"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:190
+#: pcsx2/gui/Panels/VideoPanel.cpp:184
 msgid "Constant skipping"
 msgstr "Változatlan kihagyás"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:192
+#: pcsx2/gui/Panels/VideoPanel.cpp:186
 msgid ""
 "Normal and Turbo limit rates skip frames.  Slow motion mode will still "
 "disable frameskipping."
@@ -2568,19 +2773,19 @@ msgstr ""
 "Normál és turbó korlátozza a kihagyandó képkockák számát.  A lassított mód "
 "is kikapcsolja a képkocka kihagyást."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:215
+#: pcsx2/gui/Panels/VideoPanel.cpp:209
 msgid "Frames to Draw"
 msgstr "Megjelenítendő képkockák"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:220
+#: pcsx2/gui/Panels/VideoPanel.cpp:214
 msgid "Frames to Skip"
 msgstr "Kihagyandó képkockák"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:294
+#: pcsx2/gui/Panels/VideoPanel.cpp:290
 msgid "Use Synchronized MTGS"
 msgstr "Szinkronizált MTGS használata"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:295
+#: pcsx2/gui/Panels/VideoPanel.cpp:291
 msgid ""
 "For troubleshooting potential bugs in the MTGS only, as it is potentially "
 "very slow."
@@ -2588,11 +2793,11 @@ msgstr ""
 "Lehetséges hibák keresése csupán az MTGS-ben, mivel potenciálisan nagyon "
 "lassú."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:298
+#: pcsx2/gui/Panels/VideoPanel.cpp:294
 msgid "Disable all GS output"
 msgstr "Minden GS kimenet kikapcsolása"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:299
+#: pcsx2/gui/Panels/VideoPanel.cpp:295
 msgid ""
 "Completely disables all GS plugin activity; ideal for benchmarking EEcore "
 "components."
@@ -2600,33 +2805,33 @@ msgstr ""
 "Teljesen leállít minden GS plugin tevékenységet; ideális az EEcore "
 "összetevők tesztelése esetén."
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:314
+#: pcsx2/gui/Panels/VideoPanel.cpp:310
 msgid "Frame Skipping"
 msgstr "Képkocka kihagyás"
 
-#: pcsx2/gui/Panels/VideoPanel.cpp:317
+#: pcsx2/gui/Panels/VideoPanel.cpp:313
 msgid "Framelimiter"
 msgstr "Képkocka korlátozó"
 
-#: pcsx2/gui/SysState.cpp:283
+#: pcsx2/gui/SysState.cpp:289
 #, fuzzy
 msgid "Cannot load this savestate.  The state is an unsupported version."
 msgstr ""
 "A mentett állás nem tölthető be. Ez egy ismeretlen vagy nem támogatott "
 "verzió."
 
-#: pcsx2/gui/SysState.cpp:290
+#: pcsx2/gui/SysState.cpp:296
 #, fuzzy
 msgid "Cannot load this savestate. The state is an unsupported version."
 msgstr ""
 "A mentett állás nem tölthető be. Ez egy ismeretlen vagy nem támogatott "
 "verzió."
 
-#: pcsx2/gui/SysState.cpp:326
+#: pcsx2/gui/SysState.cpp:332
 msgid "There is no active virtual machine state to download or save."
 msgstr "Nincs letölthető vagy menthető aktív virtuális gép állapot."
 
-#: pcsx2/gui/SysState.cpp:520
+#: pcsx2/gui/SysState.cpp:526
 msgid ""
 "This savestate cannot be loaded because it is not a valid gzip archive.  It "
 "may have been created by an older unsupported version of PCSX2, or it may be "
@@ -2636,12 +2841,12 @@ msgstr ""
 "Feltehetőleg egy régebbi, nem támogatott PCSX2 verzió által lett létrehozva, "
 "vagy talán sérült."
 
-#: pcsx2/gui/SysState.cpp:579
+#: pcsx2/gui/SysState.cpp:585
 msgid "This file is not a valid PCSX2 savestate.  See the logfile for details."
 msgstr ""
 "Ez a fájl egy érvénytelen PCSX2 állásmentés.  Részletek a naplófájlban."
 
-#: pcsx2/gui/SysState.cpp:598
+#: pcsx2/gui/SysState.cpp:604
 msgid ""
 "This savestate cannot be loaded due to missing critical components.  See the "
 "log file for details."
@@ -2649,7 +2854,7 @@ msgstr ""
 "Az állásmentés nem tölthető be kritikus összetevők hiánya miatt.  Részletek "
 "a naplófájlban."
 
-#: pcsx2/gui/i18n.cpp:70
+#: pcsx2/gui/i18n.cpp:63
 msgid " (default)"
 msgstr ""
 
@@ -2657,7 +2862,7 @@ msgstr ""
 msgid "The selected BIOS file is not a valid PS2 BIOS.  Please re-configure."
 msgstr "A kiválasztott BIOS fájl nem megfelelő PS2 BIOS.  Konfiguráld újra."
 
-#: pcsx2/ps2/BiosTools.cpp:250
+#: pcsx2/ps2/BiosTools.cpp:270
 msgid ""
 "The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the "
 "configuration has been corrupted.  Please re-configure."
@@ -2665,11 +2870,11 @@ msgstr ""
 "A PS2 BIOS nem tölthető be.  A BIOS nincs konfigurálva, vagy a beállítás "
 "sérült. Konfiguráld újra."
 
-#: pcsx2/ps2/BiosTools.cpp:257
+#: pcsx2/ps2/BiosTools.cpp:277
 msgid "The configured BIOS file does not exist.  Please re-configure."
 msgstr "A BIOS konfigurációs fájl nincs meg.  Konfiguráld újra."
 
-#: pcsx2/x86/ix86-32/iR5900-32.cpp:580
+#: pcsx2/x86/ix86-32/iR5900-32.cpp:472
 #, fuzzy, c-format
 msgid ""
 "%s Extensions not found.  The R5900-32 recompiler requires a host CPU with "
@@ -2678,13 +2883,52 @@ msgstr ""
 "%s kiterjesztés nem található.  Az R5900-32 recompiler működéséhez szükséges "
 "egy MMX, SSE és SSE2 utasításkészletet támogató processzor."
 
-#: pcsx2/x86/microVU.cpp:28
+#: pcsx2/x86/microVU.cpp:32
 #, fuzzy, c-format
 msgid ""
 "%s Extensions not found.  microVU requires a host CPU with SSE2 extensions."
 msgstr ""
 "%s kiterjesztés nem található.  A microVU működéséhez szükséges egy MMX, SSE "
 "és SSE2 utasításkészletet támogató processzor."
+
+#~ msgid "Always on Top"
+#~ msgstr "Mindig felül"
+
+#~ msgid ""
+#~ "When checked the log window will be visible over other foreground windows."
+#~ msgstr "Bekapcsoláskor a naplóablak megjelenik a háttérablakok előtt."
+
+#~ msgid "&Iso"
+#~ msgstr "ISO"
+
+#~ msgid "Reboot CDVD (f&ull)"
+#~ msgstr "CDVD újraindítása (teljes)"
+
+#~ msgid "Hard reset of the active VM."
+#~ msgstr "A virtuális gép (VM) teljes alaphelyzetbe állítása."
+
+#~ msgid "Reboot CDVD (&fast)"
+#~ msgstr "CDVD újraindítása (gyors)"
+
+#~ msgid "Reboot using fast BOOT (skips splash screens)"
+#~ msgstr ""
+#~ "Újraindítás a gyors indítás használatával (üdvözlőképernyő kihagyása)"
+
+#~ msgid ""
+#~ "Resets all speedhack options to their defaults, which consequently turns "
+#~ "them all OFF."
+#~ msgstr ""
+#~ "Visszaállít minden gyorsító hack beállítást az alapértékre, ami által "
+#~ "mind KIKAPCSOLVA lesz."
+
+#~ msgid "Betatesting"
+#~ msgstr "Béta tesztelés"
+
+#~ msgid "BIOS Selector"
+#~ msgstr "BIOS választó"
+
+#~ msgid "Select CDVD source iso..."
+#~ msgstr "CDVD forrás ISO választása..."
 
 #~ msgid "PCSX2 - SSE2 Recommended"
 #~ msgstr "PCSX2 - SSE2 ajánlott"

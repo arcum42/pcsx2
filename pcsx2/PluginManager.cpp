@@ -18,15 +18,16 @@
 
 #include <wx/dir.h>
 #include <wx/file.h>
+#include <memory>
 
 #include "GS.h"
 #include "Gif.h"
 #include "CDVD/CDVDisoReader.h"
 
-#include "Utilities/ScopedPtr.h"
 #include "Utilities/pxStreams.h"
 
 #include "svnrev.h"
+#include "ConsoleLogger.h"
 
 SysPluginBindings SysPlugins;
 
@@ -66,6 +67,13 @@ u64 SysPluginBindings::McdGetCRC( uint port, uint slot )
 	return Mcd->McdGetCRC( (PS2E_THISPTR) Mcd, port, slot );
 }
 
+void SysPluginBindings::McdNextFrame( uint port, uint slot ) {
+	Mcd->McdNextFrame( (PS2E_THISPTR) Mcd, port, slot );
+}
+
+bool SysPluginBindings::McdReIndex( uint port, uint slot, const wxString& filter ) {
+	return Mcd->McdReIndex( (PS2E_THISPTR) Mcd, port, slot, filter );
+}
 
 // ----------------------------------------------------------------------------
 // Yay, order of this array shouldn't be important. :)
@@ -146,7 +154,10 @@ static void CALLBACK fallback_configure() {}
 static void CALLBACK fallback_about() {}
 static s32  CALLBACK fallback_test() { return 0; }
 
+#ifndef BUILTIN_GS_PLUGIN
 _GSvsync           GSvsync;
+_GSosdLog          GSosdLog;
+_GSosdMonitor      GSosdMonitor;
 _GSopen            GSopen;
 _GSopen2           GSopen2;
 _GSgifTransfer     GSgifTransfer;
@@ -163,7 +174,6 @@ _GSgetTitleInfo2   GSgetTitleInfo2;
 _GSmakeSnapshot	   GSmakeSnapshot;
 _GSmakeSnapshot2   GSmakeSnapshot2;
 _GSirqCallback 	   GSirqCallback;
-_GSprintf      	   GSprintf;
 _GSsetBaseMem		GSsetBaseMem;
 _GSsetGameCRC		GSsetGameCRC;
 _GSsetFrameSkip		GSsetFrameSkip;
@@ -172,6 +182,7 @@ _GSsetExclusive		GSsetExclusive;
 _GSsetupRecording	GSsetupRecording;
 _GSreset			GSreset;
 _GSwriteCSR			GSwriteCSR;
+#endif
 
 static void CALLBACK GS_makeSnapshot(const char *path) {}
 static void CALLBACK GS_setGameCRC(u32 crc, int gameopts) {}
@@ -180,17 +191,6 @@ static void CALLBACK GS_setFrameSkip(int frameskip) {}
 static void CALLBACK GS_setVsync(int enabled) {}
 static void CALLBACK GS_setExclusive(int isExcl) {}
 static void CALLBACK GS_changeSaveState( int, const char* filename ) {}
-static void CALLBACK GS_printf(int timeout, char *fmt, ...)
-{
-	va_list list;
-	char msg[512];
-
-	va_start(list, fmt);
-	vsprintf(msg, fmt, list);
-	va_end(list);
-
-	Console.WriteLn(msg);
-}
 
 void CALLBACK GS_getTitleInfo2( char* dest, size_t length )
 {
@@ -262,6 +262,7 @@ static void CALLBACK GS_Legacy_GSreadFIFO2(u64* pMem, int qwc) {
 }
 
 // PAD
+#ifndef BUILTIN_PAD_PLUGIN
 _PADinit           PADinit;
 _PADopen           PADopen;
 _PADstartPoll      PADstartPoll;
@@ -272,10 +273,12 @@ _PADkeyEvent       PADkeyEvent;
 _PADsetSlot        PADsetSlot;
 _PADqueryMtap      PADqueryMtap;
 _PADWriteEvent	   PADWriteEvent;
+#endif
 
 static void PAD_update( u32 padslot ) { }
 
 // SPU2
+#ifndef BUILTIN_SPU2_PLUGIN
 _SPU2open          SPU2open;
 _SPU2write         SPU2write;
 _SPU2reset         SPU2reset;
@@ -300,9 +303,11 @@ _SPU2irqCallback   SPU2irqCallback;
 
 _SPU2setClockPtr   SPU2setClockPtr;
 _SPU2async         SPU2async;
+#endif
 
 
 // DEV9
+#ifndef BUILTIN_DEV9_PLUGIN
 _DEV9open          DEV9open;
 _DEV9read8         DEV9read8;
 _DEV9read16        DEV9read16;
@@ -320,8 +325,11 @@ _DEV9writeDMA8Mem  DEV9writeDMA8Mem;
 #endif
 _DEV9irqCallback   DEV9irqCallback;
 _DEV9irqHandler    DEV9irqHandler;
+_DEV9async         DEV9async;
+#endif
 
 // USB
+#ifndef BUILTIN_USB_PLUGIN
 _USBopen           USBopen;
 _USBread8          USBread8;
 _USBread16         USBread16;
@@ -334,12 +342,15 @@ _USBasync          USBasync;
 _USBirqCallback    USBirqCallback;
 _USBirqHandler     USBirqHandler;
 _USBsetRAM         USBsetRAM;
+#endif
 
 // FW
+#ifndef BUILTIN_FW_PLUGIN
 _FWopen            FWopen;
 _FWread32          FWread32;
 _FWwrite32         FWwrite32;
 _FWirqCallback     FWirqCallback;
+#endif
 
 DEV9handler dev9Handler;
 USBhandler usbHandler;
@@ -387,7 +398,6 @@ static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 
 	{	"GSmakeSnapshot",	(vMeth**)&GSmakeSnapshot,	(vMeth*)GS_makeSnapshot },
 	{	"GSirqCallback",	(vMeth**)&GSirqCallback,	(vMeth*)GS_irqCallback },
-	{	"GSprintf",			(vMeth**)&GSprintf,			(vMeth*)GS_printf },
 	{	"GSsetBaseMem",		(vMeth**)&GSsetBaseMem,		NULL	},
 	{	"GSwriteCSR",		(vMeth**)&GSwriteCSR,		NULL	},
 	{	"GSsetGameCRC",		(vMeth**)&GSsetGameCRC,		(vMeth*)GS_setGameCRC },
@@ -402,6 +412,8 @@ static const LegacyApi_ReqMethod s_MethMessReq_GS[] =
 
 static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 {
+	{	"GSosdLog",			(vMeth**)&GSosdLog			},
+	{	"GSosdMonitor",		(vMeth**)&GSosdMonitor		},
 	{	"GSopen2",			(vMeth**)&GSopen2			},
 	{	"GSreset",			(vMeth**)&GSreset			},
 	{	"GSsetupRecording",	(vMeth**)&GSsetupRecording	},
@@ -630,6 +642,7 @@ static const LegacyApi_ReqMethod s_MethMessReq_DEV9[] =
 
 static const LegacyApi_OptMethod s_MethMessOpt_DEV9[] =
 {
+	{ "DEV9async", (vMeth**)&DEV9async },
 	{ NULL }
 };
 
@@ -706,6 +719,7 @@ wxString Exception::SaveStateLoadError::FormatDiagnosticMessage() const
 {
 	FastFormatUnicode retval;
 	retval.Write("Savestate is corrupt or incomplete!\n");
+	OSDlog(Color_Red, false, "Error: Savestate is corrupt or incomplete!");
 	_formatDiagMsg(retval);
 	return retval;
 }
@@ -715,6 +729,7 @@ wxString Exception::SaveStateLoadError::FormatDisplayMessage() const
 	FastFormatUnicode retval;
 	retval.Write(_("The savestate cannot be loaded, as it appears to be corrupt or incomplete."));
 	retval.Write("\n");
+	OSDlog(Color_Red, false, "Error: The savestate cannot be loaded, as it appears to be corrupt or incomplete.");
 	_formatUserMsg(retval);
 	return retval;
 }
@@ -817,12 +832,98 @@ static char* PS2E_CALLBACK pcsx2_GetStringAlloc( const char* name, void* (PS2E_C
 
 static void PS2E_CALLBACK pcsx2_OSD_WriteLn( int icon, const char* msg )
 {
-	return;		// not implemented...
+	OSDlog( Color_StrongYellow, false, msg );
+}
+
+// ---------------------------------------------------------------------------------
+// DynamicStaticLibrary
+// ---------------------------------------------------------------------------------
+StaticLibrary::StaticLibrary(PluginsEnum_t _pid) : pid(_pid)
+{
+}
+
+bool StaticLibrary::Load(const wxString& name)
+{
+	return true;
+}
+
+void* StaticLibrary::GetSymbol(const wxString &name)
+{
+#define RETURN_SYMBOL(s) if (name == #s) return (void*)&s;
+
+#define RETURN_COMMON_SYMBOL(p) \
+	RETURN_SYMBOL(p##init) \
+	RETURN_SYMBOL(p##close) \
+	RETURN_SYMBOL(p##shutdown) \
+	RETURN_SYMBOL(p##keyEvent) \
+	RETURN_SYMBOL(p##setSettingsDir) \
+	RETURN_SYMBOL(p##setLogDir) \
+	RETURN_SYMBOL(p##freeze) \
+	RETURN_SYMBOL(p##test) \
+	RETURN_SYMBOL(p##configure) \
+	RETURN_SYMBOL(p##about)
+
+#ifdef BUILTIN_GS_PLUGIN
+	RETURN_COMMON_SYMBOL(GS);
+#endif
+#ifdef BUILTIN_PAD_PLUGIN
+	RETURN_COMMON_SYMBOL(PAD);
+#endif
+#ifdef BUILTIN_SPU2_PLUGIN
+	RETURN_COMMON_SYMBOL(SPU2);
+#endif
+#ifdef BUILTIN_CDVD_PLUGIN
+	RETURN_COMMON_SYMBOL(CDVD);
+#endif
+#ifdef BUILTIN_DEV9_PLUGIN
+	RETURN_COMMON_SYMBOL(DEV9);
+#endif
+#ifdef BUILTIN_USB_PLUGIN
+	RETURN_COMMON_SYMBOL(USB);
+#endif
+#ifdef BUILTIN_FW_PLUGIN
+	RETURN_COMMON_SYMBOL(FW);
+#endif
+
+
+#undef RETURN_COMMON_SYMBOL
+#undef RETURN_SYMBOL
+
+	return NULL;
+}
+
+bool StaticLibrary::HasSymbol(const wxString &name)
+{
+	return false;
+}
+
+DynamicLibrary::DynamicLibrary() : Lib()
+{
+}
+
+bool DynamicLibrary::Load(const wxString& name)
+{
+	return Lib.Load(name);
+}
+
+void* DynamicLibrary::GetSymbol(const wxString &name)
+{
+	return Lib.GetSymbol(name);
+}
+
+bool DynamicLibrary::HasSymbol(const wxString &name)
+{
+	return Lib.HasSymbol(name);
 }
 
 // ---------------------------------------------------------------------------------
 //  PluginStatus_t Implementations
 // ---------------------------------------------------------------------------------
+SysCorePlugins::SysCorePlugins() :
+	m_mcdPlugin(NULL), m_SettingsFolder(), m_LogFolder(), m_mtx_PluginStatus(), m_mcdOpen(false)
+{
+}
+
 SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxString& srcfile )
 	: Filename( srcfile )
 {
@@ -831,53 +932,93 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 	IsInitialized	= false;
 	IsOpened		= false;
 
-	if( Filename.IsEmpty() )
-		throw Exception::PluginInitError( pid ).SetDiagMsg( L"Empty plugin filename" );
+	switch (_pid) {
+#ifdef BUILTIN_GS_PLUGIN
+		case PluginId_GS:
+#endif
+#ifdef BUILTIN_PAD_PLUGIN
+		case PluginId_PAD:
+#endif
+#ifdef BUILTIN_SPU2_PLUGIN
+		case PluginId_SPU2:
+#endif
+#ifdef BUILTIN_CDVD_PLUGIN
+		case PluginId_CDVD:
+#endif
+#ifdef BUILTIN_DEV9_PLUGIN
+		case PluginId_DEV9:
+#endif
+#ifdef BUILTIN_USB_PLUGIN
+		case PluginId_USB:
+#endif
+#ifdef BUILTIN_FW_PLUGIN
+		case PluginId_FW:
+#endif
+		case PluginId_Count:
+			IsStatic	= true;
+			Lib			= new StaticLibrary(_pid);
+			break;
+		default:
+			IsStatic	= false;
+			Lib			= new DynamicLibrary();
+			break;
+	}
 
-	if( !wxFile::Exists( Filename ) )
-		throw Exception::PluginLoadError( pid ).SetStreamName(srcfile)
-			.SetBothMsgs(pxL("The configured %s plugin file was not found"));
+	if (IsStatic) {
+		BindCommon( pid );
 
-	if( !Lib.Load( Filename ) )
-		throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
-			.SetBothMsgs(pxL("The configured %s plugin file is not a valid dynamic library"));
+	} else {
+		if( Filename.IsEmpty() )
+			throw Exception::PluginInitError( pid ).SetDiagMsg( L"Empty plugin filename" );
+
+		if( !wxFile::Exists( Filename ) )
+			throw Exception::PluginLoadError( pid ).SetStreamName(srcfile)
+				.SetBothMsgs(pxL("The configured %s plugin file was not found"));
+
+		if( !Lib->Load( Filename ) )
+			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
+				.SetBothMsgs(pxL("The configured %s plugin file is not a valid dynamic library"));
 
 
-	// Try to enumerate the new v2.0 plugin interface first.
-	// If that fails, fall back on the old style interface.
+		// Try to enumerate the new v2.0 plugin interface first.
+		// If that fails, fall back on the old style interface.
 
-	//m_libs[i].GetSymbol( L"PS2E_InitAPI" );		// on the TODO list!
+		//m_libs[i].GetSymbol( L"PS2E_InitAPI" );		// on the TODO list!
 
-	
-	// 2.0 API Failed; Enumerate the Old Stuff! -->
 
-	_PS2EgetLibName		GetLibName		= (_PS2EgetLibName)		Lib.GetSymbol( L"PS2EgetLibName" );
-	_PS2EgetLibVersion2	GetLibVersion2	= (_PS2EgetLibVersion2)	Lib.GetSymbol( L"PS2EgetLibVersion2" );
-#ifdef __linux__
-	_PS2EsetEmuVersion	SetEmuVersion	= NULL;
-#else
-	_PS2EsetEmuVersion	SetEmuVersion	= (_PS2EsetEmuVersion)	Lib.GetSymbol( L"PS2EsetEmuVersion" );
+		// 2.0 API Failed; Enumerate the Old Stuff! -->
+
+		_PS2EgetLibName		GetLibName		= (_PS2EgetLibName)		Lib->GetSymbol( L"PS2EgetLibName" );
+		_PS2EgetLibVersion2	GetLibVersion2	= (_PS2EgetLibVersion2)	Lib->GetSymbol( L"PS2EgetLibVersion2" );
+
+		if( GetLibName == NULL || GetLibVersion2 == NULL )
+			throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
+				.SetDiagMsg(L"%s plugin init failed: Method binding failure on GetLibName or GetLibVersion2.")
+				.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
+
+		// Only Windows GSdx uses this. Should be removed in future after GSdx no longer relies on it to show the new config dialog.
+#ifdef _WIN32
+		// Since only Windows Gsdx has this symbol, that means every other plugin is going to cause error messages to be logged.
+		// Let's not do that for a hack function.
+		if (Lib->HasSymbol(L"PS2EsetEmuVersion")) {
+			_PS2EsetEmuVersion	SetEmuVersion = (_PS2EsetEmuVersion)Lib->GetSymbol(L"PS2EsetEmuVersion");
+			if (SetEmuVersion)
+				SetEmuVersion("PCSX2", (PCSX2_VersionHi << 24) | (PCSX2_VersionMid << 16) | (PCSX2_VersionLo << 8) | 0);
+		}
 #endif
 
-	if( GetLibName == NULL || GetLibVersion2 == NULL )
-		throw Exception::PluginLoadError( pid ).SetStreamName(Filename)
-			.SetDiagMsg(L"%s plugin init failed: Method binding failure on GetLibName or GetLibVersion2.")
-			.SetUserMsg(_( "The configured %s plugin is not a PCSX2 plugin, or is for an older unsupported version of PCSX2."));
+		Name = fromUTF8( GetLibName() );
+		int version = GetLibVersion2( tbl_PluginInfo[pid].typemask );
+		Version.Printf( L"%d.%d.%d", (version>>8)&0xff, version&0xff, (version>>24)&0xff );
 
-	if( SetEmuVersion != NULL )
-		SetEmuVersion( "PCSX2", (0ul << 24) | (9ul<<16) | (7ul<<8) | 0 );
+		// Bind Required Functions
+		// (generate critical error if binding fails)
 
-	Name = fromUTF8( GetLibName() );
-	int version = GetLibVersion2( tbl_PluginInfo[pid].typemask );
-	Version.Printf( L"%d.%d.%d", (version>>8)&0xff, version&0xff, (version>>24)&0xff );
+		BindCommon( pid );
+		BindRequired( pid );
+		BindOptional( pid );
+	}
 
-
-	// Bind Required Functions
-	// (generate critical error if binding fails)
-
-	BindCommon( pid );
-	BindRequired( pid );
-	BindOptional( pid );
 
 	// Run Plugin's Functionality Test.
 	// A lot of plugins don't bother to implement this function and return 0 (success)
@@ -899,7 +1040,7 @@ void SysCorePlugins::PluginStatus_t::BindCommon( PluginsEnum_t pid )
 
 	while( current->MethodName != NULL )
 	{
-		*target = (VoidMethod*)Lib.GetSymbol( current->GetMethodName( pid ) );
+		*target = (VoidMethod*)Lib->GetSymbol( current->GetMethodName( pid ) );
 
 		if( *target == NULL )
 			*target = current->Fallback;
@@ -919,13 +1060,12 @@ void SysCorePlugins::PluginStatus_t::BindCommon( PluginsEnum_t pid )
 void SysCorePlugins::PluginStatus_t::BindRequired( PluginsEnum_t pid )
 {
 	const LegacyApi_ReqMethod* current = s_MethMessReq[pid];
-	const wxDynamicLibrary& lib = Lib;
 
 	wxDoNotLogInThisScope please;
 
 	while( current->MethodName != NULL )
 	{
-		*(current->Dest) = (VoidMethod*)lib.GetSymbol( current->GetMethodName() );
+		*(current->Dest) = (VoidMethod*)Lib->GetSymbol( current->GetMethodName() );
 
 		if( *(current->Dest) == NULL )
 			*(current->Dest) = current->Fallback;
@@ -944,13 +1084,12 @@ void SysCorePlugins::PluginStatus_t::BindRequired( PluginsEnum_t pid )
 void SysCorePlugins::PluginStatus_t::BindOptional( PluginsEnum_t pid )
 {
 	const LegacyApi_OptMethod* current = s_MethMessOpt[pid];
-	const wxDynamicLibrary& lib = Lib;
 
 	wxDoNotLogInThisScope please;
 
 	while( current->MethodName != NULL )
 	{
-		*(current->Dest) = (VoidMethod*)lib.GetSymbol( current->GetMethodName() );
+		*(current->Dest) = (VoidMethod*)Lib->GetSymbol( current->GetMethodName() );
 		current++;
 	}
 }
@@ -959,11 +1098,7 @@ void SysCorePlugins::PluginStatus_t::BindOptional( PluginsEnum_t pid )
 //  SysCorePlugins Implementations
 // =====================================================================================
 
-SysCorePlugins::SysCorePlugins()
-{
-}
-
-SysCorePlugins::~SysCorePlugins() throw()
+SysCorePlugins::~SysCorePlugins()
 {
 	try
 	{
@@ -978,8 +1113,11 @@ void SysCorePlugins::Load( PluginsEnum_t pid, const wxString& srcfile )
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 	pxAssert( (uint)pid < PluginId_Count );
-	Console.Indent().WriteLn( L"Binding %4s: %s ", WX_STR(tbl_PluginInfo[pid].GetShortname()), WX_STR(srcfile) );
-	m_info[pid] = new PluginStatus_t( pid, srcfile );
+
+	m_info[pid] = std::make_unique<PluginStatus_t>(pid, srcfile);
+
+	Console.Indent().WriteLn(L"Bound %4s: %s [%s %s]", WX_STR(tbl_PluginInfo[pid].GetShortname()), 
+		WX_STR(wxFileName(srcfile).GetFullName()), WX_STR(m_info[pid]->Name), WX_STR(m_info[pid]->Version));
 }
 
 void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
@@ -987,8 +1125,8 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 	if( !NeedsLoad() ) return;
 
 	wxDoNotLogInThisScope please;
-	
-	Console.WriteLn( Color_StrongBlue, "\nLoading plugins..." );
+
+	Console.WriteLn(Color_StrongBlue, L"\nLoading plugins from %s...", WX_STR(g_Conf->Folders[FolderId_Plugins].ToString()));
 
 	ConsoleIndentScope indent;
 	const PluginInfo* pi = tbl_PluginInfo; do
@@ -1026,7 +1164,18 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 		pcsx2_GetBoolean,
 		pcsx2_GetString,
 		pcsx2_GetStringAlloc,
-		pcsx2_OSD_WriteLn
+		pcsx2_OSD_WriteLn,
+
+		NULL, // AddMenuItem
+		NULL, // Menu_Create
+		NULL, // Menu_Delete
+		NULL, // Menu_AddItem
+
+		{ 0 }, // MenuItem
+		{ 0 }, // Console
+		{ 0 }, // ConsoleW
+
+		{ 0,0,0,0,0,0,0,0 },
 	};
 
 	m_mcdPlugin = FileMcd_InitAPI( &myself );
@@ -1044,7 +1193,7 @@ void SysCorePlugins::Unload(PluginsEnum_t pid)
 {
 	ScopedLock lock( m_mtx_PluginStatus );
 	pxAssert( (uint)pid < PluginId_Count );
-	m_info[pid].Delete();
+	m_info[pid] = nullptr;
 }
 
 void SysCorePlugins::Unload()
@@ -1201,7 +1350,7 @@ void SysCorePlugins::Open()
 
 	if (GSopen2) GetMTGS().WaitForOpen();
 
-	if( !AtomicExchange( m_mcdOpen, true ) )
+	if( !m_mcdOpen.exchange(true) )
 	{
 		DbgCon.Indent().WriteLn( "Opening Memorycards");
 		OpenPlugin_Mcd();
@@ -1301,7 +1450,7 @@ void SysCorePlugins::Close()
 
 	Console.WriteLn( Color_StrongBlue, "Closing plugins..." );
 
-	if( AtomicExchange( m_mcdOpen, false ) )
+	if( m_mcdOpen.exchange(false) )
 	{
 		DbgCon.Indent().WriteLn( "Closing Memorycards");
 		ClosePlugin_Mcd();
@@ -1351,7 +1500,7 @@ bool SysCorePlugins::Init()
 {
 	if( !NeedsInit() ) return false;
 
-	Console.WriteLn( Color_StrongBlue, "\nInitializing plugins..." );
+	Console.WriteLn( Color_StrongBlue, "Initializing plugins..." );
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		Init( pi->id );
 	} while( ++pi, pi->shortname != NULL );
@@ -1583,10 +1732,8 @@ void SysCorePlugins::SendSettingsFolder()
 	ScopedLock lock( m_mtx_PluginStatus );
 	if( m_SettingsFolder.IsEmpty() ) return;
 
-	wxCharBuffer buffer(m_SettingsFolder.mb_str(wxConvFile));
-
 	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetSettingsDir( buffer );
+		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetSettingsDir( m_SettingsFolder.utf8_str() );
 	} while( ++pi, pi->shortname != NULL );
 }
 
@@ -1609,10 +1756,8 @@ void SysCorePlugins::SendLogFolder()
 	ScopedLock lock( m_mtx_PluginStatus );
 	if( m_LogFolder.IsEmpty() ) return;
 
-	wxCharBuffer buffer(m_LogFolder.mb_str(wxConvFile));
-
 	const PluginInfo* pi = tbl_PluginInfo; do {
-		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetLogDir( buffer );
+		if( m_info[pi->id] ) m_info[pi->id]->CommonBindings.SetLogDir( m_LogFolder.utf8_str() );
 	} while( ++pi, pi->shortname != NULL );
 }
 

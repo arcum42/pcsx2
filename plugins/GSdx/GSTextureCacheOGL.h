@@ -25,12 +25,13 @@
 #include "GSTextureCache.h"
 #include "GSDeviceOGL.h"
 
-class GSTextureCacheOGL : public GSTextureCache
+class GSTextureCacheOGL final : public GSTextureCache
 {
 protected:
-	int Get8bitFormat() { return GL_R8; /* TODO return DXGI_FORMAT_A8_UNORM;*/}
+	int Get8bitFormat() { return GL_R8;}
 
 	void Read(Target* t, const GSVector4i& r);
+	void Read(Source* t, const GSVector4i& r);
 
 public:
 	GSTextureCacheOGL(GSRenderer* r);

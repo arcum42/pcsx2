@@ -13,25 +13,20 @@
 ------------------------------------------------------------------------------*/
 #if (FXAA_GLSL_130 == 1)
 
-struct vertex_basic
-{
-    vec4 p;
-    vec2 t;
-};
-
-#ifdef ENABLE_BINDLESS_TEX
-layout(bindless_sampler, location = 0) uniform sampler2D TextureSampler;
-#else
-layout(binding = 0) uniform sampler2D TextureSampler;
-#endif
-
 in SHADER
 {
     vec4 p;
     vec2 t;
+    vec4 c;
 } PSin;
 
 layout(location = 0) out vec4 SV_Target0;
+
+layout(std140, binding = 14) uniform cb14
+{
+    vec2 _xyFrame;
+    vec4 _rcpFrame;
+};
 
 #else
 

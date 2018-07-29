@@ -30,11 +30,14 @@ public:
 	void scrollbarEvent(wxScrollWinEvent& evt);
 	void charEvent(wxKeyEvent& evt);
 	void redraw();
-	void gotoAddress(u32 address);
+	void gotoAddress(u32 address, bool pushInHistory = false);
+	void updateReference(u32 address);
 
 	DECLARE_EVENT_TABLE()
 private:
 	void render(wxDC& dc);
+	int hexGroupPositionFromIndex(int idx);
+	void setRowSize(int bytesInRow);
 	void gotoPoint(int x, int y);
 	void updateStatusBarText();
 	void postEvent(wxEventType type, wxString text);
@@ -48,7 +51,9 @@ private:
 	int rowHeight;
 	int charWidth;
 	u32 windowStart;
-	u32 curAddress;
+	u32 curAddress; // current selected address
+	u32 referencedAddress; // refrenced by register
+	u32 byteGroupSize;
 	int rowSize;
 	wxFont font,underlineFont;
 
@@ -58,5 +63,6 @@ private:
 	bool asciiSelected;
 	int selectedNibble;
 
+	std::stack<u32> history;
 	wxMenu menu;
 };

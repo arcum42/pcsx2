@@ -1212,28 +1212,22 @@ void __fastcall mVU_XGKICK_(u32 addr) {
 	}
 }
 
-static __fi void mVU_XGKICK_DELAY(mV, bool memVI) {
+static __fi void mVU_XGKICK_DELAY(mV) {
 	mVUbackupRegs(mVU);
 #if 0 // XGkick Break - ToDo: Change "SomeGifPathValue" to w/e needs to be tested
 	xTEST (ptr32[&SomeGifPathValue], 1); // If '1', breaks execution
 	xMOV  (ptr32[&mVU.resumePtrXG], (uptr)xGetPtr() + 10 + 6);
 	xJcc32(Jcc_NotZero, (uptr)mVU.exitFunctXG - ((uptr)xGetPtr()+6));
 #endif
-	if (memVI)	xMOV(gprT2, ptr32[&mVU.VIxgkick]);
-	else		mVUallocVIa(mVU, gprT2, _Is_);
-	xCALL(mVU_XGKICK_);
+	xFastCall(mVU_XGKICK_, ptr32[&mVU.VIxgkick]);
 	mVUrestoreRegs(mVU);
 }
 
 mVUop(mVU_XGKICK) {
 	pass1 { mVUanalyzeXGkick(mVU, _Is_, mVU_XGKICK_CYCLES); }
 	pass2 {
-		if (!mVU_XGKICK_CYCLES) {
-			mVU_XGKICK_DELAY(mVU, false);
-			return;
-		}
-		else if (mVUinfo.doXGKICK) {
-			mVU_XGKICK_DELAY(mVU, true);
+		if (mVUinfo.doXGKICK) { // check for XGkick Transfer
+			mVU_XGKICK_DELAY(mVU);
 			mVUinfo.doXGKICK = false;
 		}
 
@@ -1249,8 +1243,15 @@ mVUop(mVU_XGKICK) {
 //------------------------------------------------------------------
 
 void setBranchA(mP, int x, int _x_) {
+	bool isBranchDelaySlot = false;
+
+	incPC(-2);
+	if (mVUlow.branch)
+		isBranchDelaySlot = true;
+	incPC(2);
+
 	pass1 {
-		if (_Imm11_ == 1 && !_x_) {
+		if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) {
 			DevCon.WriteLn(Color_Green, "microVU%d: Branch Optimization", mVU.index);
 			mVUlow.isNOP = true;
 			return;
@@ -1258,15 +1259,15 @@ void setBranchA(mP, int x, int _x_) {
 		mVUbranch	  = x;
 		mVUlow.branch = x;
 	}
-	pass2 { if (_Imm11_ == 1 && !_x_) { return; } mVUbranch = x; }
+	pass2 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
 	pass3 { mVUbranch = x; }
-	pass4 { if (_Imm11_ == 1 && !_x_) { return; } mVUbranch = x; }
+	pass4 { if (_Imm11_ == 1 && !_x_ && !isBranchDelaySlot) { return; } mVUbranch = x; }
 }
 
 void condEvilBranch(mV, int JMPcc) {
 	if (mVUlow.badBranch) {
 		xMOV(ptr32[&mVU.branch], gprT1);
-		xMOV(ptr32[&mVU.badBranch], branchAddrN);
+		xMOV(ptr32[&mVU.badBranch], branchAddrN(mVU));
 
 		xCMP(gprT1b, 0);
 		xForwardJump8 cJMP((JccComparisonType)JMPcc);
@@ -1276,7 +1277,7 @@ void condEvilBranch(mV, int JMPcc) {
 		cJMP.SetTarget();
 		return;
 	}
-	xMOV(ptr32[&mVU.evilBranch], branchAddr);
+	xMOV(ptr32[&mVU.evilBranch], branchAddr(mVU));
 	xCMP(gprT1b, 0);
 	xForwardJump8 cJMP((JccComparisonType)JMPcc);
 		xMOV(gprT1, ptr32[&mVU.badBranch]); // Branch Not Taken
@@ -1291,11 +1292,11 @@ mVUop(mVU_B) {
 	setBranchA(mX, 1, 0);
 	pass1 { mVUanalyzeNormBranch(mVU, 0, false); }
 	pass2 {
-		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN); }
-		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr); }
+		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN(mVU)); }
+		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr(mVU)); }
 		mVU.profiler.EmitOp(opB);
 	}
-	pass3 { mVUlog("B [<a href=\"#addr%04x\">%04x</a>]", branchAddr, branchAddr); }
+	pass3 { mVUlog("B [<a href=\"#addr%04x\">%04x</a>]", branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_BAL) {
@@ -1308,11 +1309,11 @@ mVUop(mVU_BAL) {
 			mVUallocVIb(mVU, gprT1, _It_);
 		}
 
-		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN); }
-		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr);}
+		if (mVUlow.badBranch)  { xMOV(ptr32[&mVU.badBranch],  branchAddrN(mVU)); }
+		if (mVUlow.evilBranch) { xMOV(ptr32[&mVU.evilBranch], branchAddr(mVU));}
 		mVU.profiler.EmitOp(opBAL);
 	}
-	pass3 { mVUlog("BAL vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, branchAddr, branchAddr); }
+	pass3 { mVUlog("BAL vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBEQ) {
@@ -1329,7 +1330,7 @@ mVUop(mVU_IBEQ) {
 		else				condEvilBranch(mVU, Jcc_Equal);
 		mVU.profiler.EmitOp(opIBEQ);
 	}
-	pass3 { mVUlog("IBEQ vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBEQ vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBGEZ) {
@@ -1342,7 +1343,7 @@ mVUop(mVU_IBGEZ) {
 		else					condEvilBranch(mVU, Jcc_GreaterOrEqual);
 		mVU.profiler.EmitOp(opIBGEZ);
 	}
-	pass3 { mVUlog("IBGEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBGEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBGTZ) {
@@ -1355,7 +1356,7 @@ mVUop(mVU_IBGTZ) {
 		else					condEvilBranch(mVU, Jcc_Greater);
 		mVU.profiler.EmitOp(opIBGTZ);
 	}
-	pass3 { mVUlog("IBGTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBGTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBLEZ) {
@@ -1368,7 +1369,7 @@ mVUop(mVU_IBLEZ) {
 		else					condEvilBranch(mVU, Jcc_LessOrEqual);
 		mVU.profiler.EmitOp(opIBLEZ);
 	}
-	pass3 { mVUlog("IBLEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBLEZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBLTZ) {
@@ -1381,7 +1382,7 @@ mVUop(mVU_IBLTZ) {
 		else					condEvilBranch(mVU, Jcc_Less);
 		mVU.profiler.EmitOp(opIBLTZ);
 	}
-	pass3 { mVUlog("IBLTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBLTZ vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 mVUop(mVU_IBNE) {
@@ -1398,7 +1399,7 @@ mVUop(mVU_IBNE) {
 		else				condEvilBranch(mVU, Jcc_NotEqual);
 		mVU.profiler.EmitOp(opIBNE);
 	}
-	pass3 { mVUlog("IBNE vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr, branchAddr); }
+	pass3 { mVUlog("IBNE vi%02d, vi%02d [<a href=\"#addr%04x\">%04x</a>]", _Ft_, _Fs_, branchAddr(mVU), branchAddr(mVU)); }
 }
 
 void normJumpPass2(mV) {

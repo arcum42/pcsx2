@@ -13,12 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-   
+
 #include "PrecompiledHeader.h"
 #include "Common.h"
 
 #include "R5900.h"
 #include "R3000A.h"
+#include "ps2/pgif.h" // pgif init
 #include "VUmicro.h"
 #include "COP0.h"
 #include "MTVU.h"
@@ -49,10 +50,13 @@ R5900cpu *Cpu = NULL;
 
 bool g_SkipBiosHack; // set at boot if the skip bios hack is on, reset before the game has started
 bool g_GameStarted; // set when we reach the game's entry point or earlier if the entry point cannot be determined
+bool g_GameLoading; // EELOAD has been called to load the game
 
 static const uint eeWaitCycles = 3072;
 
 bool eeEventTestIsActive = false;
+
+u32 eeloadMain = 0;
 
 extern SysMainMemory& GetVmMemory();
 
@@ -72,21 +76,23 @@ void cpuReset()
 	cpuRegs.CP0.n.Config	= 0x440;
 	cpuRegs.CP0.n.Status.val= 0x70400004; //0x10900000 <-- wrong; // COP0 enabled | BEV = 1 | TS = 1
 	cpuRegs.CP0.n.PRid		= 0x00002e20; // PRevID = Revision ID, same as R5900
-	fpuRegs.fprc[0]			= 0x00002e00; // fpu Revision..
+	fpuRegs.fprc[0]			= 0x00002e30; // fpu Revision..
 	fpuRegs.fprc[31]		= 0x01000001; // fpu Status/Control
 
 	g_nextEventCycle = cpuRegs.cycle + 4;
 	EEsCycle = 0;
 	EEoCycle = cpuRegs.cycle;
 
+	pgifInit();
 	hwReset();
 	rcntInit();
 	psxReset();
-	
+
 	extern void Deci2Reset();		// lazy, no good header for it yet.
 	Deci2Reset();
 
 	g_GameStarted = false;
+	g_GameLoading = false;
 	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
 
 	ElfCRC = 0;
@@ -103,6 +109,8 @@ void cpuReset()
 	// run into this while testing minor binary hacked changes to ISO images, which
 	// is why I found out about this) --air
 	LastELF = L"";
+
+	eeloadMain = 0;
 }
 
 void cpuShutdown()
@@ -113,7 +121,7 @@ void cpuShutdown()
 __ri void cpuException(u32 code, u32 bd)
 {
 	bool errLevel2, checkStatus;
-	u32 offset;
+	u32 offset = 0;
 
     cpuRegs.branch = 0;		// Tells the interpreter that an exception occurred during a branch.
 	cpuRegs.CP0.n.Cause = code & 0xffff;
@@ -282,7 +290,9 @@ static __fi void _cpuTestInterrupts()
 	// The following ints are rarely called.  Encasing them in a conditional
 	// as follows helps speed up most games.
 
-	if( cpuRegs.interrupt & 0x60F19 ) // Bits 0 3 4 8 9 10 11 17 18( 1100000111100011001 )
+	if (cpuRegs.interrupt & ((1 << DMAC_VIF0) | (1 << DMAC_FROM_IPU) | (1 << DMAC_TO_IPU)
+		| (1 << DMAC_FROM_SPR) | (1 << DMAC_TO_SPR) | (1 << DMAC_MFIFO_VIF) | (1 << DMAC_MFIFO_GIF)
+		| (1 << VIF_VU0_FINISH) | (1 << VIF_VU1_FINISH)))
 	{
 		TESTINT(DMAC_VIF0,		vif0Interrupt);
 
@@ -517,6 +527,7 @@ void __fastcall eeGameStarting()
 	{
 		//Console.WriteLn( Color_Green, "(R5900) ELF Entry point! [addr=0x%08X]", ElfEntry );
 		g_GameStarted = true;
+		g_GameLoading = false;
 		GetCoreThread().GameStartingInThread();
 
 		// GameStartingInThread may issue a reset of the cpu and/or recompilers.  Check for and
@@ -530,10 +541,8 @@ void __fastcall eeGameStarting()
 }
 
 // Called from recompilers; __fastcall define is mandatory.
-void __fastcall eeloadReplaceOSDSYS()
+void __fastcall eeloadHook()
 {
-	g_SkipBiosHack = false;
-
 	const wxString &elf_override = GetCoreThread().GetElfOverride();
 
 	if (!elf_override.IsEmpty())
@@ -541,55 +550,63 @@ void __fastcall eeloadReplaceOSDSYS()
 	else
 		cdvdReloadElfInfo();
 
-	// didn't recognize an ELF
-	if (ElfEntry == 0xFFFFFFFF) {
-		eeGameStarting();
-		return;
-	}
-
-	static u32 osdsys = 0, osdsys_p = 0;
-	// Memory this high is safe before the game's running presumably
-	// Other options are kernel memory (first megabyte) or the scratchpad
-	// PS2LOGO is loaded at 16MB, let's use 17MB
-	const u32 safemem = 0x1100000;
-
-	// The strings are all 64-bit aligned.  Why? I don't know, but they are
-	for (u32 i = EELOAD_START; i < EELOAD_START + EELOAD_SIZE; i += 8) {
-		if (!strcmp((char*)PSM(i), "rom0:OSDSYS")) {
-			osdsys = i;
-			break;
-		}
-	}
-	pxAssert(osdsys);
-
-	for (u32 i = osdsys - 4; i >= EELOAD_START; i -= 4) {
-		if (memRead32(i) == osdsys) {
-			osdsys_p = i;
-			break;
-		}
-	}
-	pxAssert(osdsys_p);
+	wxString discelf;
+	int disctype = GetPS2ElfName(discelf);
 
 	std::string elfname;
+	if (cpuRegs.GPR.n.a0.SD[0] >= 2) // argc >= 2
+		elfname = (char*)PSM(memRead32(cpuRegs.GPR.n.a1.UD[0] + 4)); // argv[1]
 
-	if (!elf_override.IsEmpty())
+	if (g_SkipBiosHack && elfname.empty())
 	{
-		elfname += "host:";
-		elfname += elf_override.ToUTF8();
-	}
-	else
-	{
-		wxString boot2;
-		if (GetPS2ElfName(boot2) == 2)
-			elfname = boot2.ToUTF8();
+		std::string elftoload;
+		if (!elf_override.IsEmpty())
+		{
+			elftoload = "host:";
+			elftoload += elf_override.ToUTF8();
+		}
+		else
+		{
+			if (disctype == 2)
+				elftoload = discelf.ToUTF8();
+		}
+
+		if (!elftoload.empty())
+		{
+#if 0
+			// FIXME: you'd think that changing argc and argv would work but no, need to work out why not
+			// This method would support adding command line arguments to homebrew (and is generally less hacky)
+			// It works if you hook on rom0:PS2LOGO loading, but not on the first call with no arguments
+			cpuRegs.GPR.n.a0.SD[0] = 2; // argc = 2
+			// argv[0] = "EELOAD"
+			strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x40), "EELOAD");
+			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 0, cpuRegs.GPR.n.a1.UD[0] + 0x40);
+			// argv[1] = elftoload
+			strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x47), elftoload.c_str());
+			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 4, cpuRegs.GPR.n.a1.UD[0] + 0x47);
+			memWrite32(cpuRegs.GPR.n.a1.UD[0] + 8, 0);
+			g_GameLoading = true;
+			return;
+#else
+			// The strings are all 64-bit aligned.  Why? I don't know, but they are
+			for (u32 osdsys_str = EELOAD_START; osdsys_str < EELOAD_START + EELOAD_SIZE; osdsys_str += 8) {
+				if (!strcmp((char*)PSM(osdsys_str), "rom0:OSDSYS")) {
+					for (u32 osdsys_ptr = osdsys_str - 4; osdsys_ptr >= EELOAD_START; osdsys_ptr -= 4) {
+						if (memRead32(osdsys_ptr) == osdsys_str) {
+							strcpy((char*)PSM(cpuRegs.GPR.n.a1.UD[0] + 0x40), elftoload.c_str());
+							memWrite32(osdsys_ptr, cpuRegs.GPR.n.a1.UD[0] + 0x40);
+							g_GameLoading = true;
+							return;
+						}
+					}
+				}
+			}
+#endif
+		}
 	}
 
-	if (!elfname.empty())
-	{
-		strcpy((char*)PSM(safemem), elfname.c_str());
-		memWrite32(osdsys_p, safemem);
-	}
-	// else... uh...?
+	if (!g_GameStarted && (disctype == 2 || disctype == 1) && elfname == discelf)
+		g_GameLoading = true;
 }
 
 inline bool isBranchOrJump(u32 addr)
@@ -602,17 +619,19 @@ inline bool isBranchOrJump(u32 addr)
 
 // The next two functions return 0 if no breakpoint is needed,
 // 1 if it's needed on the current pc, 2 if it's needed in the delay slot
+// 3 if needed in both
 
 int isBreakpointNeeded(u32 addr)
 {
+	int bpFlags = 0;
 	if (CBreakPoints::IsAddressBreakPoint(addr))
-		return 1;
+		bpFlags += 1;
 
 	// there may be a breakpoint in the delay slot
 	if (isBranchOrJump(addr) && CBreakPoints::IsAddressBreakPoint(addr+4))
-		return 2;
+		bpFlags += 2;
 
-	return 0;
+	return bpFlags;
 }
 
 int isMemcheckNeeded(u32 pc)

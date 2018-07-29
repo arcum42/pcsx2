@@ -30,17 +30,11 @@ namespace GLState {
 	extern GSVector4i scissor;
 
 	extern bool blend;
-	extern GLenum eq_RGB;
-	extern GLenum eq_A;
-	extern GLenum f_sRGB;
-	extern GLenum f_dRGB;
-	extern GLenum f_sA;
-	extern GLenum f_dA;
-	extern bool r_msk;
-	extern bool g_msk;
-	extern bool b_msk;
-	extern bool a_msk;
-	extern float bf;
+	extern uint16 eq_RGB;
+	extern uint16 f_sRGB;
+	extern uint16 f_dRGB;
+	extern uint8 bf;
+	extern uint32 wrgba;
 
 	extern bool depth;
 	extern GLenum depth_func;
@@ -56,18 +50,16 @@ namespace GLState {
 
 	extern GLuint rt; // render target
 	extern GLuint ds; // Depth-Stencil
-	extern GLuint tex_unit[2]; // shader input texture
-	extern GLuint tex; // Generic texture (for tex operation)
-	extern GLuint64 tex_handle[2]; // shader input texture
+	extern GLuint tex_unit[8]; // shader input texture
+	extern GLuint64 tex_handle[8]; // shader input texture
 
 	extern GLuint ps;
 	extern GLuint gs;
 	extern GLuint vs;
-	extern GLuint program; // monolith program (when sso isn't supported)
-	extern bool dirty_prog;
-	extern bool dirty_subroutine_vs;
-	extern bool dirty_subroutine_ps;
-	extern bool dirty_ressources;
+	extern GLuint program;
+	extern GLuint pipeline;
+
+	extern int64 available_vram;
 
 	extern void Clear();
 }

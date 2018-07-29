@@ -43,10 +43,12 @@ public:
 
 	virtual operator bool() {ASSERT(0); return false;}
 
-	virtual bool Update(const GSVector4i& r, const void* data, int pitch) = 0;
-	virtual bool Map(GSMap& m, const GSVector4i* r = NULL) = 0;
+	virtual bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) = 0;
+	virtual bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) = 0;
 	virtual void Unmap() = 0;
-	virtual bool Save(const string& fn, bool dds = false) = 0;
+	virtual void GenerateMipmap() {}
+	virtual bool Save(const std::string& fn, bool dds = false) = 0;
+	virtual uint32 GetID() { return 0; }
 
 	GSVector2 GetScale() const {return m_scale;}
 	void SetScale(const GSVector2& scale) {m_scale = scale;}
@@ -67,4 +69,7 @@ public:
 	bool LikelyOffset;
 	float OffsetHack_modx;
 	float OffsetHack_mody;
+
+	// Typical size of a RGBA texture
+	virtual uint32 GetMemUsage() { return m_size.x * m_size.y * 4; }
 };

@@ -22,10 +22,47 @@
 #include "stdafx.h"
 #include "GSWndEGL.h"
 
-#if defined(__linux__)
+#if defined(__unix__) && defined(EGL_SUPPORTED)
 
-GSWndEGL::GSWndEGL()
-	: m_NativeWindow(0), m_NativeDisplay(NULL)
+// static method
+int GSWndEGL::SelectPlatform()
+{
+	// Check the supported extension
+	const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	if (!client_extensions) {
+		fprintf(stderr, "EGL: Client extension not supported\n");
+		return 0;
+	}
+	fprintf(stdout, "EGL: Supported extensions: %s\n", client_extensions);
+
+	// Check platform extensions are supported (Note: there are core in 1.5)
+	if (!strstr(client_extensions, "EGL_EXT_platform_base")) {
+		fprintf(stderr, "EGL: Dynamic platform selection isn't supported\n");
+		return 0;
+	}
+
+	// Finally we can select the platform
+#if GS_EGL_X11
+	if (strstr(client_extensions, "EGL_EXT_platform_x11")) {
+		fprintf(stdout, "EGL: select X11 platform\n");
+		return EGL_PLATFORM_X11_KHR;
+	}
+#endif
+#if GS_EGL_WL
+	if (strstr(client_extensions, "EGL_EXT_platform_wayland")) {
+		fprintf(stdout, "EGL: select Wayland platform\n");
+		return EGL_PLATFORM_WAYLAND_KHR;
+	}
+#endif
+
+	fprintf(stderr, "EGL: no compatible platform found\n");
+
+	return 0;
+}
+
+
+GSWndEGL::GSWndEGL(int platform)
+	: m_native_window(nullptr), m_platform(platform)
 {
 }
 
@@ -37,12 +74,13 @@ void GSWndEGL::CreateContext(int major, int minor)
 	{
 		EGL_CONTEXT_MAJOR_VERSION_KHR, major,
 		EGL_CONTEXT_MINOR_VERSION_KHR, minor,
-#ifndef ENABLE_GLES
 #ifdef ENABLE_OGL_DEBUG
 		EGL_CONTEXT_FLAGS_KHR, EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR,
+#else
+		// Open Source isn't happy with an unsupported flags...
+		//EGL_CONTEXT_FLAGS_KHR, GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR,
 #endif
 		EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
-#endif
 		EGL_NONE
 	};
 	EGLint NullContextAttribs[] = { EGL_NONE };
@@ -50,25 +88,21 @@ void GSWndEGL::CreateContext(int major, int minor)
 		EGL_RED_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
 		EGL_BLUE_SIZE, 8,
-		EGL_DEPTH_SIZE, 24,
-#ifndef ENABLE_GLES
+		EGL_DEPTH_SIZE, 0,
 		EGL_RENDERABLE_TYPE, EGL_OPENGL_BIT,
-#endif
 		EGL_NONE
 	};
 
-#ifndef ENABLE_GLES
-	eglBindAPI(EGL_OPENGL_API);
-#endif
+	BindAPI();
 
 	eglChooseConfig(m_eglDisplay, attrList, &eglConfig, 1, &numConfigs);
 	if ( numConfigs == 0 )
 	{
-		fprintf(stderr,"EGL: Failed to get a frame buffer config!\n");
+		fprintf(stderr,"EGL: Failed to get a frame buffer config! (0x%x)\n", eglGetError() );
 		throw GSDXRecoverableError();
 	}
 
-	m_eglSurface = eglCreateWindowSurface(m_eglDisplay, eglConfig, m_NativeWindow, NULL);
+	m_eglSurface = eglCreatePlatformWindowSurface(m_eglDisplay, eglConfig, m_native_window, nullptr);
 	if ( m_eglSurface == EGL_NO_SURFACE )
 	{
 		fprintf(stderr,"EGL: Failed to get a window surface\n");
@@ -100,11 +134,9 @@ void GSWndEGL::CreateContext(int major, int minor)
 void GSWndEGL::AttachContext()
 {
 	if (!IsContextAttached()) {
-		// The setting of the API is local to a thread. This function 
+		// The setting of the API is local to a thread. This function
 		// can be called from 2 threads.
-#ifndef ENABLE_GLES
-		eglBindAPI(EGL_OPENGL_API);
-#endif
+		BindAPI();
 
 		//fprintf(stderr, "Attach the context\n");
 		eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext);
@@ -121,32 +153,29 @@ void GSWndEGL::DetachContext()
 	}
 }
 
-void GSWndEGL::CheckContext()
+void GSWndEGL::PopulateWndGlFunction()
 {
-	fprintf(stderr,"EGL: %s : %s\n", eglQueryString(m_eglDisplay, EGL_VENDOR) , eglQueryString(m_eglDisplay, EGL_VERSION) );
-	fprintf(stderr,"EGL: extensions supported: %s\n", eglQueryString(m_eglDisplay, EGL_EXTENSIONS));
+}
+
+void GSWndEGL::BindAPI()
+{
+	eglBindAPI(EGL_OPENGL_API);
+	EGLenum api = eglQueryAPI();
+	if (api != EGL_OPENGL_API) {
+		fprintf(stderr,"EGL: Failed to bind the OpenGL API got 0x%x instead\n", api);
+		throw GSDXRecoverableError();
+	}
 }
 
 bool GSWndEGL::Attach(void* handle, bool managed)
 {
-	m_NativeWindow = *(Window*)handle;
 	m_managed = managed;
 
-	m_NativeDisplay = XOpenDisplay(NULL);
+	m_native_window = AttachNativeWindow(handle);
+
 	OpenEGLDisplay();
 
-#ifdef ENABLE_GLES
-	// FIXME: update it to GLES 3.1 when  they support it
-	CreateContext(3, 1);
-#else
-	CreateContext(3, 3);
-#endif
-
-	AttachContext();
-
-	CheckContext();
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }
@@ -157,51 +186,30 @@ void GSWndEGL::Detach()
 	// The window still need to be closed
 	DetachContext();
 	eglDestroyContext(m_eglDisplay, m_eglContext);
-	m_eglContext = NULL;
+	m_eglContext = nullptr;
+
 	eglDestroySurface(m_eglDisplay, m_eglSurface);
-	m_eglSurface = NULL;
+	m_eglSurface = nullptr;
+
 	CloseEGLDisplay();
 
-	if (m_NativeDisplay) {
-		XCloseDisplay(m_NativeDisplay);
-		m_NativeDisplay = NULL;
-	}
+	DestroyNativeResources();
 }
 
-bool GSWndEGL::Create(const string& title, int w, int h)
+bool GSWndEGL::Create(const std::string& title, int w, int h)
 {
-	if(m_NativeWindow)
-		throw GSDXRecoverableError();
-
 	if(w <= 0 || h <= 0) {
-		w = theApp.GetConfig("ModeWidth", 640);
-		h = theApp.GetConfig("ModeHeight", 480);
+		w = theApp.GetConfigI("ModeWidth");
+		h = theApp.GetConfigI("ModeHeight");
 	}
 
 	m_managed = true;
 
-	// note this part must be only executed when replaying .gs debug file
-	m_NativeDisplay = XOpenDisplay(NULL);
 	OpenEGLDisplay();
 
-	m_NativeWindow = XCreateSimpleWindow(m_NativeDisplay, DefaultRootWindow(m_NativeDisplay), 0, 0, w, h, 0, 0, 0);
-	XMapWindow (m_NativeDisplay, m_NativeWindow);
+	m_native_window = CreateNativeWindow(w, h);
 
-#ifdef ENABLE_GLES
-	// FIXME: update it to GLES 3.1 when  they support it
-	CreateContext(3, 1);
-#else
-	CreateContext(3, 3);
-#endif
-
-	AttachContext();
-
-	CheckContext();
-
-	PopulateGlFunction();
-
-	if (m_NativeWindow == 0)
-		throw GSDXRecoverableError();
+	FullContextInit();
 
 	return true;
 }
@@ -209,7 +217,7 @@ bool GSWndEGL::Create(const string& title, int w, int h)
 void* GSWndEGL::GetProcAddress(const char* name, bool opt)
 {
 	void* ptr = (void*)eglGetProcAddress(name);
-	if (ptr == NULL) {
+	if (ptr == nullptr) {
 		fprintf(stderr, "Failed to find %s\n", name);
 		if (!opt)
 			throw GSDXRecoverableError();
@@ -217,78 +225,29 @@ void* GSWndEGL::GetProcAddress(const char* name, bool opt)
 	return ptr;
 }
 
-void* GSWndEGL::GetDisplay()
-{
-	// note this part must be only executed when replaying .gs debug file
-	return (void*)m_NativeDisplay;
-}
-
 GSVector4i GSWndEGL::GetClientRect()
 {
-	unsigned int h = 480;
-	unsigned int w = 640;
+	EGLint h = 0;
+	EGLint w = 0;
+	eglQuerySurface(m_eglDisplay, m_eglSurface, EGL_HEIGHT, &h);
+	eglQuerySurface(m_eglDisplay, m_eglSurface, EGL_WIDTH, &w);
 
-	unsigned int borderDummy;
-	unsigned int depthDummy;
-	Window winDummy;
-    int xDummy;
-    int yDummy;
-
-	if (!m_NativeDisplay) m_NativeDisplay = XOpenDisplay(NULL);
-	XGetGeometry(m_NativeDisplay, m_NativeWindow, &winDummy, &xDummy, &yDummy, &w, &h, &borderDummy, &depthDummy);
-
-	return GSVector4i(0, 0, (int)w, (int)h);
+	return GSVector4i(0, 0, w, h);
 }
 
-// Returns FALSE if the window has no title, or if th window title is under the strict
-// management of the emulator.
-
-bool GSWndEGL::SetWindowText(const char* title)
-{
-	if (!m_managed) return true;
-
-	XTextProperty prop;
-
-	memset(&prop, 0, sizeof(prop));
-
-	char* ptitle = (char*)title;
-	if (XStringListToTextProperty(&ptitle, 1, &prop)) {
-		XSetWMName(m_NativeDisplay, m_NativeWindow, &prop);
-	}
-
-	XFree(prop.value);
-	XFlush(m_NativeDisplay);
-
-	return true;
-}
-
-void GSWndEGL::SetVSync(bool enable)
+void GSWndEGL::SetSwapInterval()
 {
 	// 0 -> disable vsync
 	// n -> wait n frame
-	eglSwapInterval(m_eglDisplay, enable);
+	eglSwapInterval(m_eglDisplay, m_vsync);
 }
 
 void GSWndEGL::Flip()
 {
+	if (m_vsync_change_requested.exchange(false))
+		SetSwapInterval();
+
 	eglSwapBuffers(m_eglDisplay, m_eglSurface);
-}
-
-void GSWndEGL::Show()
-{
-	XMapRaised(m_NativeDisplay, m_NativeWindow);
-	XFlush(m_NativeDisplay);
-}
-
-void GSWndEGL::Hide()
-{
-	XUnmapWindow(m_NativeDisplay, m_NativeWindow);
-	XFlush(m_NativeDisplay);
-}
-
-void GSWndEGL::HideFrame()
-{
-	// TODO
 }
 
 void GSWndEGL::CloseEGLDisplay()
@@ -299,13 +258,150 @@ void GSWndEGL::CloseEGLDisplay()
 
 void GSWndEGL::OpenEGLDisplay()
 {
-	// Create an EGL display from the native display
-	m_eglDisplay = eglGetDisplay((EGLNativeDisplayType)m_NativeDisplay);
-	if ( m_eglDisplay == EGL_NO_DISPLAY )
-		throw GSDXRecoverableError();
+	// We only need a native display when we manage the window ourself.
+	// By default, EGL will create its own native display. This way the driver knows
+	// that display will be thread safe and so it can enable multithread optimization.
+	void *native_display = (m_managed) ? CreateNativeDisplay() : nullptr;
 
-	if ( !eglInitialize(m_eglDisplay, NULL, NULL) )
+	// Create an EGL display from the native display
+	m_eglDisplay = eglGetPlatformDisplay(m_platform, native_display, nullptr);
+	if (m_eglDisplay == EGL_NO_DISPLAY) {
+		fprintf(stderr,"EGL: Failed to open a display! (0x%x)\n", eglGetError() );
 		throw GSDXRecoverableError();
+	}
+
+	if (!eglInitialize(m_eglDisplay, nullptr, nullptr)) {
+		fprintf(stderr,"EGL: Failed to initialize the display! (0x%x)\n", eglGetError() );
+		throw GSDXRecoverableError();
+	}
 }
+
+//////////////////////////////////////////////////////////////////////
+// X11 platform
+//////////////////////////////////////////////////////////////////////
+#if GS_EGL_X11
+
+GSWndEGL_X11::GSWndEGL_X11()
+	: GSWndEGL(EGL_PLATFORM_X11_KHR), m_NativeDisplay(nullptr), m_NativeWindow(0)
+{
+}
+
+void *GSWndEGL_X11::CreateNativeDisplay()
+{
+	if (m_NativeDisplay == nullptr)
+		m_NativeDisplay = XOpenDisplay(nullptr);
+
+	return (void*)m_NativeDisplay;
+}
+
+void *GSWndEGL_X11::CreateNativeWindow(int w, int h)
+{
+	const int depth = 0, x = 0, y = 0, border_width = 1;
+#if 0
+	// Old X code in case future code will still require it
+	m_NativeWindow = XCreateSimpleWindow(m_NativeDisplay, DefaultRootWindow(m_NativeDisplay), 0, 0, w, h, 0, 0, 0);
+	XMapWindow (m_NativeDisplay, m_NativeWindow);
+#endif
+
+	if (m_NativeDisplay == nullptr) {
+		fprintf(stderr, "EGL X11: display wasn't created before the window\n");
+		throw GSDXRecoverableError();
+	}
+
+	xcb_connection_t *c = XGetXCBConnection(m_NativeDisplay);
+
+	const xcb_setup_t *setup = xcb_get_setup(c);
+
+	xcb_screen_t *screen = (xcb_setup_roots_iterator (setup)).data;
+
+	m_NativeWindow = xcb_generate_id(c);
+
+	if (m_NativeWindow == 0) {
+		fprintf(stderr, "EGL X11: failed to create the native window\n");
+		throw GSDXRecoverableError();
+	}
+
+	xcb_create_window (c, depth, m_NativeWindow, screen->root, x, y, w, h,
+			border_width, InputOutput, screen->root_visual, 0, nullptr);
+
+	xcb_map_window (c, m_NativeWindow);
+
+	xcb_flush(c);
+
+	return (void*)&m_NativeWindow;
+}
+
+void *GSWndEGL_X11::AttachNativeWindow(void *handle)
+{
+	m_NativeWindow = *(Window*)handle;
+	return handle;
+}
+
+void GSWndEGL_X11::DestroyNativeResources()
+{
+	if (m_NativeDisplay) {
+		XCloseDisplay(m_NativeDisplay);
+		m_NativeDisplay = nullptr;
+	}
+}
+
+bool GSWndEGL_X11::SetWindowText(const char* title)
+{
+	if (!m_managed) return true;
+
+	xcb_connection_t *c = XGetXCBConnection(m_NativeDisplay);
+
+	xcb_change_property(c, XCB_PROP_MODE_REPLACE, m_NativeWindow,
+			XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+			strlen (title), title);
+
+	return true;
+}
+
+#endif
+
+//////////////////////////////////////////////////////////////////////
+// Wayland platform (just a place holder)
+//////////////////////////////////////////////////////////////////////
+#if GS_EGL_WL
+
+GSWndEGL_WL::GSWndEGL_WL()
+	: GSWndEGL(EGL_PLATFORM_WAYLAND_KHR), m_NativeDisplay(nullptr), m_NativeWindow(nullptr)
+{
+}
+
+void *GSWndEGL_WL::CreateNativeDisplay()
+{
+	if (m_NativeDisplay == nullptr)
+		m_NativeDisplay = wl_display_connect(NULL);
+
+	return (void*)m_NativeDisplay;
+}
+
+void *GSWndEGL_WL::CreateNativeWindow(int w, int h)
+{
+	return nullptr;
+}
+
+void *GSWndEGL_WL::AttachNativeWindow(void *handle)
+{
+	m_NativeWindow = (wl_egl_window*)handle;
+	return handle;
+}
+
+void GSWndEGL_WL::DestroyNativeResources()
+{
+	if (m_NativeDisplay) {
+		wl_display_disconnect(m_NativeDisplay);
+		m_NativeDisplay = nullptr;
+	}
+}
+
+bool GSWndEGL_WL::SetWindowText(const char* title)
+{
+	return true;
+}
+
+#endif
 
 #endif

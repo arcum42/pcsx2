@@ -31,7 +31,7 @@
 #ifdef __linux__
 #include "WavFile.h"
 #else
-#include "soundtouch/WavFile.h"
+#include "soundtouch/source/SoundStretch/WavFile.h"
 #endif
 
 char libraryName[256];
@@ -162,7 +162,7 @@ u32 CALLBACK PS2EgetLibType()
 	return PS2E_LT_SPU2;
 }
 
-char* CALLBACK PS2EgetLibName()
+const char* CALLBACK PS2EgetLibName()
 {
 	InitLibraryName();
 	return libraryName;

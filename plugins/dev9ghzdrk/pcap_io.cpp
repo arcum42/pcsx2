@@ -32,12 +32,13 @@ pcap_m_e pcap_mode=switched;
 mac_address virtual_mac   = { 0x76, 0x6D, 0x61, 0x63, 0x30, 0x31 };
 //mac_address virtual_mac   = { 0x6D, 0x76, 0x63, 0x61, 0x31, 0x30 };
 mac_address broadcast_mac = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
+mac_address gateway_mac = { 0x76, 0x6D, 0x61, 0x63, 0x31, 0x32 };
 
 ip_address virtual_ip = { 192, 168, 1, 4};
 
 pcap_t *adhandle;
 int pcap_io_running=0;
-
+extern u8 eeprom[];
 char errbuf[PCAP_ERRBUF_SIZE];
 
 char namebuff[256];
@@ -82,14 +83,31 @@ int pcap_io_init(char *adapter)
 	int dlt;
 	char *dlt_name;
 	emu_printf("Opening adapter '%s'...",adapter);
-
+	u16 checksum;
 	GetMACAddress(adapter,&host_mac);
 	
-	//Lets take the hosts first 3 bytes to bytes to make it unique
-	virtual_mac.bytes[0] = host_mac.bytes[0]; 
+	//Near copy of the host mac, butchered slightly, should be pretty good!
+	eeprom[0] = host_mac.bytes[0];
+	eeprom[1] = host_mac.bytes[1];
+	eeprom[2] = host_mac.bytes[2];
+	eeprom[3] = host_mac.bytes[2];
+	eeprom[4] = host_mac.bytes[5];
+	eeprom[5] = host_mac.bytes[4];
+
+	virtual_mac.bytes[0] = host_mac.bytes[0];
 	virtual_mac.bytes[1] = host_mac.bytes[1];
 	virtual_mac.bytes[2] = host_mac.bytes[2];
-		
+	virtual_mac.bytes[3] = host_mac.bytes[2];
+	virtual_mac.bytes[4] = host_mac.bytes[5];
+	virtual_mac.bytes[5] = host_mac.bytes[4];
+	//The checksum seems to be all the values of the mac added up in 16bit chunks
+	checksum = dev9.eeprom[0] + dev9.eeprom[1] + dev9.eeprom[2] & 0xffff;
+
+	dev9.eeprom[3] = checksum;
+
+	//emu_printf("eeprom Mac set to %x %x %x %x %x %x", eeprom[0], eeprom[1], eeprom[2], eeprom[3], eeprom[4], eeprom[5]);
+	//emu_printf("Checksum %x %x", eeprom[6], eeprom[7]);
+	
 	/* Open the adapter */
 	if ((adhandle= pcap_open_live(adapter,	// name of the device
 							 65536,			// portion of the packet to capture. 
@@ -99,9 +117,12 @@ int pcap_io_init(char *adapter)
 							 errbuf			// error buffer
 							 )) == NULL)
 	{
+		fprintf(stderr, errbuf);
 		fprintf(stderr,"\nUnable to open the adapter. %s is not supported by WinPcap\n", adapter);
 		return -1;
 	}
+
+	
 
 	dlt = pcap_datalink(adhandle);
 	dlt_name = (char*)pcap_datalink_val_to_name(dlt);
@@ -123,9 +144,13 @@ int pcap_io_init(char *adapter)
 		fprintf(stderr,"WARNING: Error setting non-blocking mode. Default mode will be used.\n");
 	}
 
-	packet_log=fopen("logs/packet.log","w");
+	//Changing the LogSetting might not affect logging
+	//directory of winPcap logs if done after Open()
+	const std::string pfile(s_strLogPath + "/packet.log");
+	packet_log = fopen(pfile.c_str(), "w");
 
-	dump_pcap = pcap_dump_open(adhandle,"logs/pkt_log.pcap");
+	const std::string plfile(s_strLogPath + "/pkt_log.pcap");
+	dump_pcap = pcap_dump_open(adhandle, plfile.c_str());
 
 	pcap_io_running=1;
 	emu_printf("Ok.\n");
@@ -304,7 +329,8 @@ void pcap_io_close()
 		fclose(packet_log);
 	if(dump_pcap)
 		pcap_dump_close(dump_pcap);
-	pcap_close(adhandle);  
+	if (adhandle)
+		pcap_close(adhandle);  
 	pcap_io_running=0;
 }
 
@@ -406,6 +432,10 @@ PCAPAdapter::PCAPAdapter()
 bool PCAPAdapter::blocks()
 {
 	return false;
+}
+bool PCAPAdapter::isInitialised()
+{
+	return !!pcap_io_running;
 }
 //gets a packet.rv :true success
 bool PCAPAdapter::recv(NetPacket* pkt)

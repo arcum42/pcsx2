@@ -27,9 +27,14 @@
 
 class GSRendererSW : public GSRenderer
 {
+	static GSVector4 m_pos_scale;
+#if _M_SSE >= 0x501
+	static GSVector8 m_pos_scale2;
+#endif
+
 	class SharedData : public GSDrawScanline::SharedData
 	{
-		__aligned(struct, 16) TextureLevel 
+		struct alignas(16) TextureLevel
 		{
 			GSVector4i r; 
 			GSTextureCacheSW::Texture* t;
@@ -58,9 +63,9 @@ class GSRendererSW : public GSRenderer
 
 	typedef void (GSRendererSW::*ConvertVertexBufferPtr)(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
-	ConvertVertexBufferPtr m_cvb[4][2][2];
+	ConvertVertexBufferPtr m_cvb[4][2][2][2];
 
-	template<uint32 primclass, uint32 tme, uint32 fst>
+	template<uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
 	void ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 protected:
@@ -71,23 +76,24 @@ protected:
 	GSPixelOffset4* m_fzb;
 	GSVector4i m_fzb_bbox;
 	uint32 m_fzb_cur_pages[16];
-	uint32 m_fzb_pages[512]; // uint16 frame/zbuf pages interleaved
-	uint16 m_tex_pages[512];
+	std::atomic<uint32> m_fzb_pages[512]; // uint16 frame/zbuf pages interleaved
+	std::atomic<uint16> m_tex_pages[512];
 	uint32 m_tmp_pages[512 + 1];
 
 	void Reset();
 	void VSync(int field);
 	void ResetDevice();
-	GSTexture* GetOutput(int i);
+	GSTexture* GetOutput(int i, int& y_offset);
+	GSTexture* GetFeedbackOutput();
 
 	void Draw();
-	void Queue(shared_ptr<GSRasterizerData>& item);
+	void Queue(std::shared_ptr<GSRasterizerData>& item);
 	void Sync(int reason);
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);
 
-	void UsePages(const uint32* pages, int type);
-	void ReleasePages(const uint32* pages, int type);
+	void UsePages(const uint32* pages, const int type);
+	void ReleasePages(const uint32* pages, const int type);
 
 	bool CheckTargetPages(const uint32* fb_pages, const uint32* zb_pages, const GSVector4i& r);
 	bool CheckSourcePages(SharedData* sd);
@@ -95,6 +101,8 @@ protected:
 	bool GetScanlineGlobalData(SharedData* data);
 
 public:
+	static void InitVectors();
+
 	GSRendererSW(int threads);
 	virtual ~GSRendererSW();
 };

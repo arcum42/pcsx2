@@ -52,7 +52,7 @@ protected:
 };
 
 void DBLoaderHelper::doError(bool doMsg) {
-	if (doMsg) Console.Error("GameDatabase: Bad file data [%s]", WX_STR(m_dest));
+	if (doMsg) Console.Error(L"GameDatabase: Bad file data [%s]", WX_STR(m_dest));
 	m_keyPair.Clear();
 }
 
@@ -209,7 +209,7 @@ void AppGameDatabase::SaveToFile(const wxString& file) {
 
 		const uint endidx = (blockidx == m_BlockTableWritePos) ? m_CurBlockWritePos : m_GamesPerBlock;
 
-		for( uint gameidx=0; gameidx<=endidx; ++gameidx )
+		for( uint gameidx=0; gameidx<endidx; ++gameidx )
 		{
 			const Game_Data& game( m_BlockTable[blockidx][gameidx] );
 
@@ -229,10 +229,10 @@ AppGameDatabase* Pcsx2App::GetGameDatabase()
 	ScopedLock lock( m_mtx_LoadingGameDB );
 	if( !res.GameDB )
 	{
-		res.GameDB = new AppGameDatabase();
+		res.GameDB = std::make_unique<AppGameDatabase>();
 		res.GameDB->LoadFromFile();
 	}
-	return res.GameDB;
+	return res.GameDB.get();
 }
 
 IGameDatabase* AppHost_GetGameDatabase()

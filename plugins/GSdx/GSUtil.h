@@ -22,20 +22,23 @@
 #pragma once
 
 #include "GS.h"
+#include "xbyak/xbyak_util.h"
 
 struct OCLDeviceDesc
 {
 #ifdef ENABLE_OPENCL
 	cl::Device device;
 #endif
-	string name;
+	std::string name;
 	int version;
-	string tmppath;
+	std::string tmppath;
 };
 
 class GSUtil
 {
 public:
+	static void Init();
+
 	static const char* GetLibName();
 
 	static GS_PRIM_CLASS GetPrimClass(uint32 prim);
@@ -49,19 +52,27 @@ public:
 	static bool HasCompatibleBits(uint32 spsm, uint32 dpsm);
 
 	static bool CheckSSE();
+	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 
 #ifdef ENABLE_OPENCL
-	static void GetDeviceDescs(list<OCLDeviceDesc>& dl);
-	static string GetDeviceUniqueName(cl::Device& device);
+	static void GetDeviceDescs(std::list<OCLDeviceDesc>& dl);
+	static std::string GetDeviceUniqueName(cl::Device& device);
 #endif
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 
 	static bool CheckDirectX();
 	static bool CheckDXGI();
 	static bool CheckD3D11();
+	static GSRendererType GetBestRenderer();
 	static D3D_FEATURE_LEVEL CheckDirect3D11Level(IDXGIAdapter *adapter = NULL, D3D_DRIVER_TYPE type = D3D_DRIVER_TYPE_HARDWARE);
 
 #endif
 };
 
+void GSmkdir(const char* dir);
+std::string GStempdir();
+
+const char* psm_str(int psm);
+
+extern Xbyak::util::Cpu g_cpu;

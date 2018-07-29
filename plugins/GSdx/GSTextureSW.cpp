@@ -21,10 +21,11 @@
 
 #include "stdafx.h"
 #include "GSTextureSW.h"
+#include "GSPng.h"
 
 GSTextureSW::GSTextureSW(int type, int width, int height)
-	: m_mapped(0)
 {
+	m_mapped.clear(std::memory_order_release);
 	m_size = GSVector2i(width, height);
 	m_type = type;
 	m_format = 0;
@@ -37,7 +38,7 @@ GSTextureSW::~GSTextureSW()
 	_aligned_free(m_data);
 }
 
-bool GSTextureSW::Update(const GSVector4i& r, const void* data, int pitch)
+bool GSTextureSW::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
 	GSMap m;
 
@@ -61,15 +62,15 @@ bool GSTextureSW::Update(const GSVector4i& r, const void* data, int pitch)
 	return false;
 }
 
-bool GSTextureSW::Map(GSMap& m, const GSVector4i* r)
+bool GSTextureSW::Map(GSMap& m, const GSVector4i* r, int layer)
 {
 	GSVector4i r2 = r != NULL ? *r : GSVector4i(0, 0, m_size.x, m_size.y);
 
 	if(m_data != NULL && r2.left >= 0 && r2.right <= m_size.x && r2.top >= 0 && r2.bottom <= m_size.y)
 	{
-		if(!_interlockedbittestandset(&m_mapped, 0))
+		if (!m_mapped.test_and_set(std::memory_order_acquire))
 		{
-			m.bits = (uint8*)m_data + ((m_pitch * r2.top + r2.left) << 2);
+			m.bits = (uint8*)m_data + m_pitch * r2.top + (r2.left << 2);
 			m.pitch = m_pitch;
 
 			return true;
@@ -81,97 +82,18 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r)
 
 void GSTextureSW::Unmap()
 {
-	m_mapped = 0;
+	m_mapped.clear(std::memory_order_release);
 }
 
-#ifndef _WINDOWS
-
-#pragma pack(push, 1)
-
-struct BITMAPFILEHEADER
-{
-	uint16 bfType;
-	uint32 bfSize;
-	uint16 bfReserved1;
-	uint16 bfReserved2;
-	uint32 bfOffBits;
-};
-
-struct BITMAPINFOHEADER
-{
-	uint32 biSize;
-	int32 biWidth;
-	int32 biHeight;
-	uint16 biPlanes;
-	uint16 biBitCount;
-	uint32 biCompression;
-	uint32 biSizeImage;
-	int32 biXPelsPerMeter;
-	int32 biYPelsPerMeter;
-	uint32 biClrUsed;
-	uint32 biClrImportant;
-};
-
-#define BI_RGB 0
-
-#pragma pack(pop)
-
-#endif
-
-bool GSTextureSW::Save(const string& fn, bool dds)
+bool GSTextureSW::Save(const std::string& fn, bool dds)
 {
 	if(dds) return false; // not implemented
 
-	if(FILE* fp = fopen(fn.c_str(), "wb"))
-	{
-		BITMAPINFOHEADER bih;
-
-		memset(&bih, 0, sizeof(bih));
-
-		bih.biSize = sizeof(bih);
-		bih.biWidth = m_size.x;
-		bih.biHeight = m_size.y;
-		bih.biPlanes = 1;
-		bih.biBitCount = 32;
-		bih.biCompression = BI_RGB;
-		bih.biSizeImage = m_size.x * m_size.y << 2;
-
-		BITMAPFILEHEADER bfh;
-
-		memset(&bfh, 0, sizeof(bfh));
-
-		uint8* bfType = (uint8*)&bfh.bfType;
-
-		// bfh.bfType = 'MB';
-		bfType[0] = 0x42;
-		bfType[1] = 0x4d;
-		bfh.bfOffBits = sizeof(bfh) + sizeof(bih);
-		bfh.bfSize = bfh.bfOffBits + bih.biSizeImage;
-		bfh.bfReserved1 = bfh.bfReserved2 = 0;
-
-		fwrite(&bfh, 1, sizeof(bfh), fp);
-		fwrite(&bih, 1, sizeof(bih), fp);
-
-		uint8* data = (uint8*)m_data + (m_size.y - 1) * m_pitch;
-
-		for(int h = m_size.y; h > 0; h--, data -= m_pitch)
-		{
-			for(int i = 0; i < m_size.x; i++)
-			{
-				uint32 c = ((uint32*)data)[i];
-
-				c = (c & 0xff00ff00) | ((c & 0x00ff0000) >> 16) | ((c & 0x000000ff) << 16);
-
-				fwrite(&c, 1, sizeof(c), fp);
-			}
-
-			// fwrite(data, 1, m_size.x << 2, fp); // TODO: swap red-blue?
-		}
-
-		fclose(fp);
-
-		return true;
-	}
-
-	return false;
+#ifdef ENABLE_OGL_DEBUG
+	GSPng::Format fmt = GSPng::RGB_A_PNG;
+#else
+	GSPng::Format fmt = GSPng::RGB_PNG;
+#endif
+	int compression = theApp.GetConfigI("png_compression_level");
+	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
 }

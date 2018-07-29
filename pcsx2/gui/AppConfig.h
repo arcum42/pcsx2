@@ -18,6 +18,7 @@
 #include "AppForwardDefs.h"
 #include "PathDefs.h"
 #include "CDVD/CDVDaccess.h"
+#include <memory>
 
 enum DocsModeType
 {
@@ -46,20 +47,17 @@ namespace PathDefs
 	extern wxDirName GetProgramDataDir();
 	extern wxDirName GetDocuments();
 	extern wxDirName GetDocuments( DocsModeType mode );
-	extern wxDirName GetThemes();
 }
 
 extern DocsModeType		DocsFolderMode;				// 
 extern bool				UseDefaultSettingsFolder;	// when TRUE, pcsx2 derives the settings folder from the DocsFolderMode
 extern bool				UseDefaultPluginsFolder;
-extern bool				UseDefaultThemesFolder;
 
 extern wxDirName		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
 extern wxDirName		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
 
 extern wxDirName		InstallFolder;
 extern wxDirName		PluginsFolder;
-extern wxDirName		ThemesFolder;
 
 extern wxDirName GetSettingsFolder();
 extern wxString  GetVmSettingsFilename();
@@ -73,7 +71,7 @@ extern wxDirName GetCheatsWsFolder();
 enum InstallationModeType
 {
 	// Use the user defined folder selections.  These can be anywhere on a user's hard drive,
-	// though by default the binaries (plugins, themes) are located in Install_Dir (registered
+	// though by default the binaries (plugins) are located in Install_Dir (registered
 	// by the installer), and the user files (screenshots, inis) are in the user's documents
 	// folder.  All folders are changable within the GUI.
 	InstallMode_Registered,
@@ -96,6 +94,14 @@ enum AspectRatioType
 	AspectRatio_4_3,
 	AspectRatio_16_9,
 	AspectRatio_MaxCount
+};
+
+enum MemoryCardType
+{
+	MemoryCard_None,
+	MemoryCard_File,
+	MemoryCard_Folder,
+	MemoryCard_MaxCount
 };
 
 // =====================================================================================================
@@ -182,6 +188,7 @@ public:
 	{
 		wxFileName	Filename;	// user-configured location of this memory card
 		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
+		MemoryCardType Type;	// the memory card implementation that should be used
 	};
 
 	// ------------------------------------------------------------------------
@@ -208,8 +215,10 @@ public:
 		wxPoint		WindowPos;
 		bool		IsMaximized;
 		bool		IsFullscreen;
+		bool		EnableVsyncWindowFlag;
 
 		bool		IsToggleFullscreenOnDoubleClick;
+		bool		IsToggleAspectRatioSwitch;
 
 		GSWindowOptions();
 
@@ -232,6 +241,22 @@ public:
 		void SanityCheck();
 	};
 
+	struct UiTemplateOptions {
+		UiTemplateOptions();
+		void LoadSave(IniInterface& conf);
+
+		wxString LimiterUnlimited;
+		wxString LimiterTurbo;
+		wxString LimiterSlowmo;
+		wxString LimiterNormal;
+		wxString OutputFrame;
+		wxString OutputField;
+		wxString OutputProgressive;
+		wxString OutputInterlaced;
+		wxString Paused;
+		wxString TitleTemplate;
+	};
+
 public:
 	wxPoint		MainGuiPosition;
 
@@ -252,10 +277,6 @@ public:
 	wxString	LanguageCode;
 
 	int			RecentIsoCount;		// number of files displayed in the Recent Isos list.
-
-	// String value describing the desktop theme to use for pcsk2 (icons and background images)
-	// The theme name is used to look up files in the themes folder (relative to the executable).
-	wxString	DeskTheme;
 
 	// Specifies the size of icons used in Listbooks; specifically the PCSX2 Properties dialog box.
 	// Realistic values range from 96x96 to 24x24.
@@ -288,8 +309,11 @@ public:
 	bool		EnablePresets;
 	int			PresetIndex;
 
+	bool		AskOnBoot;
+
 	wxString				CurrentIso;
 	wxString				CurrentELF;
+	wxString				CurrentIRX;
 	CDVD_SourceType			CdvdSource;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
@@ -302,6 +326,7 @@ public:
 	FilenameOptions			BaseFilenames;
 	GSWindowOptions			GSWindow;
 	FramerateOptions		Framerate;
+	UiTemplateOptions		Templates;
 	
 	// PCSX2-core emulation options, which are passed to the emu core prior to initiating
 	// an emulation session.  Note these are the options saved into the GUI ini file and
@@ -356,4 +381,4 @@ extern void RelocateLogfile();
 extern void AppConfig_OnChangedSettingsFolder( bool overwrite =  false );
 extern wxConfigBase* GetAppConfig();
 
-extern ScopedPtr<AppConfig> g_Conf;
+extern std::unique_ptr<AppConfig> g_Conf;

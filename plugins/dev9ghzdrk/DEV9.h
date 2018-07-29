@@ -17,6 +17,7 @@
 #define __DEV9_H__
 
 #include <stdio.h>
+#include <string>
 #ifndef EXTERN 
 #define EXTERN  extern
 #endif
@@ -25,9 +26,10 @@
 //#define _WIN32_WINNT 0x0500
 
 #include "PS2Edefs.h"
+#include "PS2Eext.h"
 #include "net.h"
 
-#ifdef __WIN32__
+#ifdef _WIN32
 
 #define usleep(x)	Sleep(x / 1000)
 #include <windows.h>
@@ -125,7 +127,10 @@ void _DEV9close();
 EXTERN  DEV9callback DEV9irq;
 //void DEV9thread();
 
-EXTERN  FILE *dev9Log;
+EXTERN  PluginLog DEV9Log;
+//Yes these are meant to be a lowercase extern
+extern  std::string s_strIniPath;
+extern  std::string s_strLogPath;
 void __Log(char *fmt, ...);
 
 void SysMessage(char *fmt, ...);

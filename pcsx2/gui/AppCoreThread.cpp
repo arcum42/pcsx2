@@ -22,7 +22,7 @@
 
 #include "Debugger/DisassemblyDialog.h"
 
-#include "Utilities/TlsVariable.inl"
+#include "Utilities/Threading.h"
 
 #include "ps2/BiosTools.h"
 #include "GS.h"
@@ -31,6 +31,7 @@
 #include "Elfheader.h"
 #include "Patch.h"
 #include "R5900Exceptions.h"
+#include "Sio.h"
 
 __aligned16 SysMtgsThread mtgsThread;
 __aligned16 AppCoreThread CoreThread;
@@ -48,12 +49,12 @@ protected:
 
 public:
 	wxString GetEventName() const { return L"CoreThreadMethod"; }
-	virtual ~SysExecEvent_InvokeCoreThreadMethod() throw() {}
+	virtual ~SysExecEvent_InvokeCoreThreadMethod() = default;
 	SysExecEvent_InvokeCoreThreadMethod* Clone() const { return new SysExecEvent_InvokeCoreThreadMethod(*this); }
 
 	bool AllowCancelOnExit() const { return false; }
 	bool IsCriticalEvent() const { return m_IsCritical; }
-	
+
 	SysExecEvent_InvokeCoreThreadMethod( FnPtr_CoreThreadMethod method, bool critical=false )
 	{
 		m_method = method;
@@ -86,9 +87,12 @@ AppCoreThread::AppCoreThread() : SysCoreThread()
 	m_resetCdvd = false;
 }
 
-AppCoreThread::~AppCoreThread() throw()
+AppCoreThread::~AppCoreThread()
 {
-	_parent::Cancel();		// use parent's, skips thread affinity check.
+	try {
+		_parent::Cancel();		// use parent's, skips thread affinity check.
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 static void _Cancel()
@@ -109,7 +113,7 @@ void AppCoreThread::Reset()
 		GetSysExecutorThread().PostEvent( SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Reset) );
 		return;
 	}
-		
+
 	_parent::Reset();
 }
 
@@ -187,19 +191,19 @@ void Pcsx2App::SysApplySettings()
 	CoreThread.ApplySettings( g_Conf->EmuOptions );
 
 	CDVD_SourceType cdvdsrc( g_Conf->CdvdSource );
-	if( cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc==CDVDsrc_Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)) )
+	if( cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)) )
 	{
 		CoreThread.ResetCdvd();
 	}
 
-	CDVDsys_SetFile( CDVDsrc_Iso, g_Conf->CurrentIso );
+	CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
 }
 
 void AppCoreThread::OnResumeReady()
 {
 	wxGetApp().SysApplySettings();
 	wxGetApp().PostMethod( AppSaveSettings );
-	
+
 	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
 	_parent::OnResumeReady();
 }
@@ -228,7 +232,7 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
 			++gf;
 		}
 	}
-	
+
 	if (game.keyExists("vuRoundMode"))
 	{
 		SSE_RoundMode vuRM = (SSE_RoundMode)game.getInt("vuRoundMode");
@@ -291,7 +295,13 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
 // applied patches if the game info hasn't changed.  (avoids spam when suspending/resuming
 // or using TAB or other things), but gets verbose again when booting (even if the same game).
 // File scope since it gets reset externally when rebooting
-static wxString curGameKey;
+#define _UNKNOWN_GAME_KEY (L"_UNKNOWN_GAME_KEY")
+static wxString curGameKey = _UNKNOWN_GAME_KEY;
+
+void PatchesVerboseReset()
+{
+	curGameKey = _UNKNOWN_GAME_KEY;
+}
 
 // PatchesCon points to either Console or ConsoleWriter_Null, such that if we're in Devel mode
 // or the user enabled the devel/verbose console it prints all patching info whenever it's applied,
@@ -311,8 +321,16 @@ static void SetupPatchesCon(bool verbose)
 		PatchesCon = &ConsoleWriter_Null;
 }
 
-void AppCoreThread::ApplySettings( const Pcsx2Config& src )
+// fixup = src + command line overrides + game overrides (according to elfCRC).
+// While at it, also [re]loads the relevant patches (but doesn't apply them),
+// updates the console title, and, for good measures, does some (static) sio stuff.
+// Oh, and updates curGameKey. I think that's it.
+// It doesn't require that the emulation is paused, and console writes/title should
+// be thread safe, but it's best if things don't move around much while it runs.
+static Threading::Mutex mtx__ApplySettings;
+static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 {
+	Threading::ScopedLock lock(mtx__ApplySettings);
 	// 'fixup' is the EmuConfig we're going to upload to the emulator, which very well may
 	// differ from the user-configured EmuConfig settings.  So we make a copy here and then
 	// we apply the commandline overrides and database gamefixes, and then upload 'fixup'
@@ -321,7 +339,7 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	// Note: It's important that we apply the commandline overrides *before* database fixes.
 	// The database takes precedence (if enabled).
 
-	Pcsx2Config fixup( src );
+	fixup = src;
 
 	const CommandlineOverrides& overrides( wxGetApp().Overrides );
 	if( overrides.DisableSpeedhacks || !g_Conf->EnableSpeedHacks )
@@ -335,6 +353,12 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	else if( !g_Conf->EnableGameFixes )
 		fixup.Gamefixes.DisableAll();
 
+	if( overrides.ProfilingMode )
+	{
+		fixup.GS.FrameLimitEnable = false;
+		fixup.GS.VsyncEnable = VsyncMode::Off;
+	}
+
 	wxString gameCRC;
 	wxString gameSerial;
 	wxString gamePatch;
@@ -344,43 +368,57 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 	wxString gameName;
 	wxString gameCompat;
+	wxString gameMemCardFilter;
 
-	int numberLoadedCheats;
-	int numberLoadedWideScreenPatches;
-	int numberDbfCheatsLoaded;
+	// The CRC can be known before the game actually starts (at the bios), so when
+	// we have the CRC but we're still at the bios and the settings are changed
+	// (e.g. the user presses TAB to speed up emulation), we don't want to apply the
+	// settings as if the game is already running (title, loadeding patches, etc).
+	bool ingame = (ElfCRC && (g_GameLoading || g_GameStarted));
+	if (ingame)
+		gameCRC.Printf( L"%8.8x", ElfCRC );
+	if (ingame && !DiscSerial.IsEmpty()) gameSerial = L" [" + DiscSerial + L"]";
 
-	if (ElfCRC) gameCRC.Printf( L"%8.8x", ElfCRC );
-	if (!DiscSerial.IsEmpty()) gameSerial = L" [" + DiscSerial  + L"]";
-
-	const wxString newGameKey( SysGetDiscID() );
-	const bool verbose( newGameKey != curGameKey );
+	const wxString newGameKey(ingame ? SysGetDiscID() : SysGetBiosDiscID());
+	const bool verbose( newGameKey != curGameKey && ingame );
+	//Console.WriteLn(L"------> patches verbose: %d   prev: '%s'   new: '%s'", (int)verbose, WX_STR(curGameKey), WX_STR(newGameKey));
 	SetupPatchesCon(verbose);
 
 	curGameKey = newGameKey;
+
+	ForgetLoadedPatches();
 
 	if (!curGameKey.IsEmpty())
 	{
 		if (IGameDatabase* GameDB = AppHost_GetGameDatabase() )
 		{
 			Game_Data game;
-			if (GameDB->findGame(game, curGameKey)) {
+			if (GameDB->findGame(game, curGameKey))
+			{
 				int compat = game.getInt("Compat");
 				gameName   = game.getString("Name");
 				gameName  += L" (" + game.getString("Region") + L")";
 				gameCompat = L" [Status = "+compatToStringWX(compat)+L"]";
+				gameMemCardFilter = game.getString("MemCardFilter");
 			}
 
-			if (EmuConfig.EnablePatches) {
-				if (int patches = InitPatches(gameCRC, game)) {
+			if (fixup.EnablePatches)
+			{
+				if (int patches = LoadPatchesFromGamesDB(gameCRC, game))
+				{
 					gamePatch.Printf(L" [%d Patches]", patches);
 					PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patches);
 				}
-				if (int fixes = loadGameSettings(fixup, game)) {
+				if (int fixes = loadGameSettings(fixup, game))
 					gameFixes.Printf(L" [%d Fixes]", fixes);
-				}
 			}
 		}
 	}
+
+	if (!gameMemCardFilter.IsEmpty())
+		sioSetGameSerial(gameMemCardFilter);
+	else
+		sioSetGameSerial(curGameKey);
 
 	if (gameName.IsEmpty() && gameSerial.IsEmpty() && gameCRC.IsEmpty())
 	{
@@ -391,50 +429,71 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 		gameName = L"Booting PS2 BIOS... ";
 	}
 
-	ResetCheatsCount();
-
 	//Till the end of this function, entry CRC will be 00000000
-	if (!gameCRC.Length()) {
-		if (EmuConfig.EnableWideScreenPatches || EmuConfig.EnableCheats) {
-			Console.WriteLn(Color_Gray, "Patches: No CRC, using 00000000 instead.");
-		}
+	if (!gameCRC.Length())
+	{
+		Console.WriteLn(Color_Gray, "Patches: No CRC found, using 00000000 instead.");
 		gameCRC = L"00000000";
 	}
 
 	// regular cheat patches
-	if (EmuConfig.EnableCheats) {
-		if (numberLoadedCheats = LoadCheats(gameCRC, GetCheatsFolder(), L"Cheats")) {
-			gameCheats.Printf(L" [%d Cheats]", numberLoadedCheats);
-		}
-	}
+	if (fixup.EnableCheats)
+		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(gameCRC, GetCheatsFolder(), L"Cheats"));
 
 	// wide screen patches
-	if (EmuConfig.EnableWideScreenPatches) {
-		if (numberLoadedWideScreenPatches = LoadCheats(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks")) {
+	if (fixup.EnableWideScreenPatches)
+	{
+		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
+		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
+			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
 		}
-		else {
+		else
+		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
 			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
-
-			if (numberDbfCheatsLoaded = LoadCheatsFromZip(gameCRC, cheats_ws_archive)) {
-				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
-				gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
-			}
+			int numberDbfCheatsLoaded = LoadPatchesFromZip(gameCRC, cheats_ws_archive);
+			PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
+			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 		}
 	}
 
+	// When we're booting, the bios loader will set a a title which would be more interesting than this
+	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
+	// users which want to know the status of the patches at the bios can check the console content.
 	wxString consoleTitle = gameName + gameSerial;
-	if (!gameSerial.IsEmpty()) {
-		consoleTitle += L" [" + gameCRC.MakeUpper() + L"]";
-	}
-	consoleTitle += gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
+	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
+	if (ingame)
+		Console.SetTitle(consoleTitle);
 
-	Console.SetTitle(consoleTitle);
+	gsUpdateFrequency(fixup);
+}
 
+// FIXME: This function is not for general consumption. Its only consumer (and
+//        the only place it's declared at) is i5900-32.cpp .
+// It's here specifically to allow loading the patches synchronously (to the caller)
+// when the recompiler detects the game's elf entry point, such that the patches
+// are applied to the elf in memory before it's getting recompiled.
+// TODO: Find a way to pause the recompiler once it detects the elf entry, then
+//       make AppCoreThread::ApplySettings run more normally, and then resume
+//       the recompiler.
+//       The key point is that the patches should be loaded exactly before the elf
+//       is recompiled. Loading them earlier might incorrectly patch the bios memory,
+//       and later might be too late since the code was already recompiled
+void LoadAllPatchesAndStuff(const Pcsx2Config& cfg)
+{
+	Pcsx2Config dummy;
+	PatchesVerboseReset();
+	_ApplySettings(cfg, dummy);
+}
+
+void AppCoreThread::ApplySettings( const Pcsx2Config& src )
+{
 	// Re-entry guard protects against cases where code wants to manually set core settings
 	// which are not part of g_Conf.  The subsequent call to apply g_Conf settings (which is
 	// usually the desired behavior) will be ignored.
+	Pcsx2Config fixup;
+	_ApplySettings(src, fixup);
 
 	static int localc = 0;
 	RecursionGuard guard( localc );
@@ -451,6 +510,9 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	{
 		_parent::ApplySettings( fixup );
 	}
+
+	if (m_ExecMode >= ExecMode_Paused)
+		GSsetVsync(EmuConfig.GS.GetVsync());
 }
 
 // --------------------------------------------------------------------------------------
@@ -471,7 +533,7 @@ void AppCoreThread::OnResumeInThread( bool isSuspended )
 		GetCorePlugins().Close( PluginId_CDVD );
 		CDVDsys_ChangeSource( g_Conf->CdvdSource );
 		cdvdCtrlTrayOpen();
-		m_resetCdvd = false;	
+		m_resetCdvd = false;
 	}
 
 	_parent::OnResumeInThread( isSuspended );
@@ -503,18 +565,15 @@ void AppCoreThread::VsyncInThread()
 
 void AppCoreThread::GameStartingInThread()
 {
-	// Make AppCoreThread::ApplySettings get verbose again even if we're booting
-	// the same game, by making it think that the current CRC is a new one.
-	curGameKey = L"";
-
 	// Simulate a Close/Resume, so that settings get re-applied and the database
 	// lookups and other game-based detections are done.
 
 	m_ExecMode = ExecMode_Paused;
 	OnResumeReady();
 	_reset_stuff_as_needed();
+	ClearMcdEjectTimeoutNow(); // probably safe to do this when a game boots, eliminates annoying prompts
 	m_ExecMode = ExecMode_Opened;
-	
+
 	_parent::GameStartingInThread();
 }
 
@@ -549,7 +608,7 @@ void AppCoreThread::DoCpuExecute()
 		Console.Error( ex.FormatMessage() );
 
 		// [TODO] : Debugger Hook!
-		
+
 		if( ++m_except_threshold > 6 )
 		{
 			// If too many TLB Misses occur, we're probably going to crash and
@@ -608,7 +667,7 @@ void SysExecEvent_CoreThreadClose::InvokeEvent()
 	ScopedCoreThreadClose closed_core;
 	_post_and_wait(closed_core);
 	closed_core.AllowResume();
-}	
+}
 
 
 void SysExecEvent_CoreThreadPause::InvokeEvent()
@@ -618,7 +677,7 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 	ScopedCoreThreadPause paused_core;
 	_post_and_wait(paused_core);
 
-	// All plugins should be initialized and opened upon resuming from 
+	// All plugins should be initialized and opened upon resuming from
 	// a paused state.  If the thread that puased us changed plugin status, it should
 	// have used Close instead.
 	if( CorePluginsAreOpen )
@@ -635,7 +694,7 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 	paused_core.AllowResume();
 
 #endif
-}	
+}
 
 
 // --------------------------------------------------------------------------------------
@@ -654,9 +713,7 @@ BaseScopedCoreThread::BaseScopedCoreThread()
 	m_alreadyScoped		= false;
 }
 
-BaseScopedCoreThread::~BaseScopedCoreThread() throw()
-{
-}
+BaseScopedCoreThread::~BaseScopedCoreThread() = default;
 
 // Allows the object to resume execution upon object destruction.  Typically called as the last thing
 // in the object's scope.  Any code prior to this call that causes exceptions will not resume the emulator,
@@ -689,13 +746,13 @@ void BaseScopedCoreThread::DoResume()
 //  handle the code directly).
 bool BaseScopedCoreThread::PostToSysExec( BaseSysExecEvent_ScopedCore* msg )
 {
-	ScopedPtr<BaseSysExecEvent_ScopedCore> smsg( msg );
+	std::unique_ptr<BaseSysExecEvent_ScopedCore> smsg( msg );
 	if( !smsg || GetSysExecutorThread().IsSelf()) return false;
 
 	msg->SetSyncState(m_sync);
 	msg->SetResumeStates(m_sync_resume, m_mtx_resume);
 
-	GetSysExecutorThread().PostEvent( smsg.DetachPtr() );
+	GetSysExecutorThread().PostEvent( smsg.release() );
 	m_sync.WaitForResult();
 	m_sync.RethrowException();
 
@@ -710,7 +767,7 @@ ScopedCoreThreadClose::ScopedCoreThreadClose()
 		m_alreadyScoped = true;
 		return;
 	}
-	
+
 	if( !PostToSysExec(new SysExecEvent_CoreThreadClose()) )
 	{
 		m_alreadyStopped = CoreThread.IsClosed();
@@ -721,11 +778,14 @@ ScopedCoreThreadClose::ScopedCoreThreadClose()
 	ScopedCore_IsFullyClosed = true;
 }
 
-ScopedCoreThreadClose::~ScopedCoreThreadClose() throw()
+ScopedCoreThreadClose::~ScopedCoreThreadClose()
 {
 	if( m_alreadyScoped ) return;
-	_parent::DoResume();
-	ScopedCore_IsFullyClosed = false;
+	try {
+		_parent::DoResume();
+		ScopedCore_IsFullyClosed = false;
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me )
@@ -748,11 +808,14 @@ ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse
 	ScopedCore_IsPaused = true;
 }
 
-ScopedCoreThreadPause::~ScopedCoreThreadPause() throw()
+ScopedCoreThreadPause::~ScopedCoreThreadPause()
 {
 	if( m_alreadyScoped ) return;
-	_parent::DoResume();
-	ScopedCore_IsPaused = false;
+	try {
+		_parent::DoResume();
+		ScopedCore_IsPaused = false;
+	}
+	DESTRUCTOR_CATCHALL
 }
 
 ScopedCoreThreadPopup::ScopedCoreThreadPopup()
@@ -762,9 +825,9 @@ ScopedCoreThreadPopup::ScopedCoreThreadPopup()
 	// is maximized or fullscreen.
 
 	if( !GSopen2 )
-		m_scoped_core = new ScopedCoreThreadClose();
+		m_scoped_core = std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadClose());
 	else
-		m_scoped_core = new ScopedCoreThreadPause();
+		m_scoped_core = std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadPause());
 };
 
 void ScopedCoreThreadPopup::AllowResume()

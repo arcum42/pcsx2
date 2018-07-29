@@ -5,11 +5,12 @@ EXPORTS
 	PS2EgetLibType		
 	PS2EgetLibName		
 	PS2EgetLibVersion2	
-	PS2EgetCpuPlatform	
-	PS2EsetEmuVersion
+	PS2EgetCpuPlatform
 	GSsetBaseMem		
 	GSinit				
 	GSshutdown			
+	GSosdLog
+	GSosdMonitor
 	GSopen
 	GSopen2				
 	GSclose				
@@ -35,7 +36,6 @@ EXPORTS
 	GSsetupRecording		
 	GSsetGameCRC		
 	GSsetFrameSkip
-	GSsetFrameLimit		
 	GSsetVsync
 	GSsetExclusive
 	GSsetSettingsDir

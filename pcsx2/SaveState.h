@@ -24,7 +24,7 @@
 //  the lower 16 bit value.  IF the change is breaking of all compatibility with old
 //  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
 
-static const u32 g_SaveVersion = (0x9A0A << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A0D << 16) | 0x0000;
 
 // this function is meant to be used in the place of GSfreeze, and provides a safe layer
 // between the GS saving function and the MTGS's needs. :)
@@ -232,7 +232,7 @@ protected:
 	static const int MemoryBaseAllocSize	= _8mb;			// 8 meg base alloc when PS2 main memory is excluded
 
 public:
-	virtual ~memSavingState() throw() { }
+	virtual ~memSavingState() = default;
 	memSavingState( VmStateBuffer& save_to );
 	memSavingState( VmStateBuffer* save_to );
 
@@ -247,7 +247,7 @@ public:
 class memLoadingState : public SaveStateBase
 {
 public:
-	virtual ~memLoadingState() throw();
+	virtual ~memLoadingState() = default;
 
 	memLoadingState( const VmStateBuffer& load_from );
 	memLoadingState( const VmStateBuffer* load_from );

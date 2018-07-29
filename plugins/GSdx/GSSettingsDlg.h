@@ -24,11 +24,11 @@
 #include "GSDialog.h"
 #include "GSSetting.h"
 
-class GSShadeBostDlg : public GSDialog
+class GSShaderDlg : public GSDialog
 {
-	int saturation;
-	int brightness;
-	int contrast;
+	int m_saturation;
+	int m_brightness;
+	int m_contrast;
 
 	void UpdateControls();
 
@@ -37,7 +37,7 @@ protected:
 	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);	
 
 public:
-	GSShadeBostDlg();
+	GSShaderDlg();
 };
 
 class GSHacksDlg : public GSDialog
@@ -47,8 +47,6 @@ class GSHacksDlg : public GSDialog
 	std::string adapter_id;
 	
 	bool isdx9;
-
-	HWND hovered_window;
 
 	void UpdateControls();
 
@@ -66,9 +64,22 @@ public:
 	}
 };
 
+class GSOSDDlg : public GSDialog
+{
+	int m_transparency;
+
+	void UpdateControls();
+
+protected:
+	void OnInit();
+	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
+
+public:
+	GSOSDDlg();
+};
+
 class GSSettingsDlg : public GSDialog
 {
-	list<D3DDISPLAYMODE> m_modes;
 
 	struct Adapter
 	{
@@ -77,12 +88,10 @@ class GSSettingsDlg : public GSDialog
 		D3D_FEATURE_LEVEL level;
 		Adapter(const std::string &n, const std::string &i, const D3D_FEATURE_LEVEL &l) : name(n), id(i), level(l) {}
 	};
-	
-	std::vector<const Adapter> adapters;
 
-	vector<GSSetting> m_ocl_devs;
+	std::vector<Adapter> adapters;
 
-	bool m_IsOpen2;
+	std::vector<GSSetting> m_ocl_devs;
 	uint32 m_lastValidMsaa; // used to revert to previous dialog value if the user changed to invalid one, or lesser one and canceled
 
 	void UpdateRenderers();
@@ -93,9 +102,10 @@ protected:
 	bool OnCommand(HWND hWnd, UINT id, UINT code);
 
 	// Shade Boost
-	GSShadeBostDlg ShadeBoostDlg;
+	GSShaderDlg ShaderDlg;
 	GSHacksDlg HacksDlg;
+	GSOSDDlg OSDDlg;
 
 public:
-	GSSettingsDlg(bool isOpen2);
+	GSSettingsDlg();
 };

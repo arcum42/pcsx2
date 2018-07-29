@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSWndDX.h"
 
-#ifdef _WINDOWS
+#ifdef _WIN32
 GSWndDX::GSWndDX()
 	: m_hWnd(NULL)
 	, m_frame(true)
@@ -79,9 +79,10 @@ LRESULT GSWndDX::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 	return DefWindowProc((HWND)m_hWnd, message, wParam, lParam);
 }
 
-bool GSWndDX::Create(const string& title, int w, int h)
+bool GSWndDX::Create(const std::string& title, int w, int h)
 {
-	if(m_hWnd) return false;
+	if(m_hWnd)
+		throw GSDXRecoverableError();
 
 	m_managed = true;
 
@@ -101,7 +102,7 @@ bool GSWndDX::Create(const string& title, int w, int h)
 	{
 		if(!RegisterClass(&wc))
 		{
-			return false;
+			throw GSDXRecoverableError();
 		}
 	}
 
@@ -134,7 +135,10 @@ bool GSWndDX::Create(const string& title, int w, int h)
 
 	m_hWnd = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
 
-	return m_hWnd != NULL;
+	if (!m_hWnd)
+		throw GSDXRecoverableError();
+
+	return true;
 }
 
 bool GSWndDX::Attach(void* handle, bool managed)

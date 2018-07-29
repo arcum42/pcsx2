@@ -6,29 +6,13 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-#if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
-#	add_subdirectory(cdvdGigaherz)
-#endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDiso" AND CDVDiso)
-	add_subdirectory(CDVDiso/src)
-endif()
-
-# if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDisoEFP" AND CDVDisoEFP)
-# 	add_subdirectory(CDVDisoEFP)
-# endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDlinuz" AND CDVDlinuz)
-	add_subdirectory(CDVDlinuz/Src)
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
+	add_subdirectory(cdvdGigaherz/src)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDnull" AND CDVDnull)
 	add_subdirectory(CDVDnull)
 endif()
-
-# if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDolio" AND CDVDolio)
-# 	add_subdirectory(CDVDolio)
-# endif()
 
 #if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDpeops" AND CDVDpeops)
 #	add_subdirectory(CDVDpeops)
@@ -46,6 +30,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx" AND GSdx)
 	add_subdirectory(GSdx)
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx_legacy" AND GSdx AND GSDX_LEGACY)
+	add_subdirectory(GSdx_legacy)
+endif()
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSnull" AND GSnull)
 	add_subdirectory(GSnull)
 endif()
@@ -56,6 +44,10 @@ endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad" AND onepad)
 	add_subdirectory(onepad)
+endif()
+
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy" AND onepad_legacy)
+	add_subdirectory(onepad_legacy)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PadNull" AND PadNull)

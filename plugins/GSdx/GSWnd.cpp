@@ -25,127 +25,181 @@
 
 void GSWndGL::PopulateGlFunction()
 {
-#ifndef ENABLE_GLES
-	*(void**)&(gl_ActiveTexture) = GetProcAddress("glActiveTexture");
 	*(void**)&(gl_BlendColor) = GetProcAddress("glBlendColor");
-	*(void**)&(gl_AttachShader) = GetProcAddress("glAttachShader");
-	*(void**)&(gl_BindBuffer) = GetProcAddress("glBindBuffer");
-	*(void**)&(gl_BindBufferBase) = GetProcAddress("glBindBufferBase");
-	*(void**)&(gl_BindFramebuffer) = GetProcAddress("glBindFramebuffer");
-	*(void**)&(gl_BindSampler) = GetProcAddress("glBindSampler");
-	*(void**)&(gl_BindVertexArray) = GetProcAddress("glBindVertexArray");
-	*(void**)&(gl_BlendEquationSeparateiARB) = GetProcAddress("glBlendEquationSeparateiARB");
-	*(void**)&(gl_BlendFuncSeparateiARB) = GetProcAddress("glBlendFuncSeparateiARB");
-	*(void**)&(gl_BlitFramebuffer) = GetProcAddress("glBlitFramebuffer");
-	*(void**)&(gl_BufferData) = GetProcAddress("glBufferData");
-	*(void**)&(gl_CheckFramebufferStatus) = GetProcAddress("glCheckFramebufferStatus");
-	*(void**)&(gl_ClearBufferfv) = GetProcAddress("glClearBufferfv");
-	*(void**)&(gl_ClearBufferiv) = GetProcAddress("glClearBufferiv");
-	*(void**)&(gl_ClearBufferuiv) = GetProcAddress("glClearBufferuiv");
-	*(void**)&(gl_ColorMaski) = GetProcAddress("glColorMaski");
-	*(void**)&(gl_DeleteBuffers) = GetProcAddress("glDeleteBuffers");
-	*(void**)&(gl_DeleteFramebuffers) = GetProcAddress("glDeleteFramebuffers");
-	*(void**)&(gl_DeleteSamplers) = GetProcAddress("glDeleteSamplers");
-	*(void**)&(gl_DeleteVertexArrays) = GetProcAddress("glDeleteVertexArrays");
-	*(void**)&(gl_DetachShader) = GetProcAddress("glDetachShader");
-	*(void**)&(gl_DrawBuffers) = GetProcAddress("glDrawBuffers");
-	*(void**)&(gl_DrawElementsBaseVertex) = GetProcAddress("glDrawElementsBaseVertex");
-	*(void**)&(gl_EnableVertexAttribArray) = GetProcAddress("glEnableVertexAttribArray");
-	*(void**)&(gl_FramebufferRenderbuffer) = GetProcAddress("glFramebufferRenderbuffer");
-	*(void**)&(gl_FramebufferTexture2D) = GetProcAddress("glFramebufferTexture2D");
-	*(void**)&(gl_GenBuffers) = GetProcAddress("glGenBuffers");
-	*(void**)&(gl_GenFramebuffers) = GetProcAddress("glGenFramebuffers");
-	*(void**)&(gl_GenSamplers) = GetProcAddress("glGenSamplers");
-	*(void**)&(gl_GenVertexArrays) = GetProcAddress("glGenVertexArrays");
-	*(void**)&(gl_GetBufferParameteriv) = GetProcAddress("glGetBufferParameteriv");
-	*(void**)&(gl_GetDebugMessageLogARB) = GetProcAddress("glGetDebugMessageLogARB");
-	*(void**)&(gl_DebugMessageCallback) = GetProcAddress("glDebugMessageCallback");
-	*(void**)&(gl_GetProgramInfoLog) = GetProcAddress("glGetProgramInfoLog");
-	*(void**)&(gl_GetProgramiv) = GetProcAddress("glGetProgramiv");
-	*(void**)&(gl_GetShaderiv) = GetProcAddress("glGetShaderiv");
-	*(void**)&(gl_GetStringi) = GetProcAddress("glGetStringi");
-	*(void**)&(gl_IsFramebuffer) = GetProcAddress("glIsFramebuffer");
-	*(void**)&(gl_MapBuffer) = GetProcAddress("glMapBuffer");
-	*(void**)&(gl_MapBufferRange) = GetProcAddress("glMapBufferRange");
-	*(void**)&(gl_ProgramParameteri) = GetProcAddress("glProgramParameteri");
-	*(void**)&(gl_SamplerParameterf) = GetProcAddress("glSamplerParameterf");
-	*(void**)&(gl_SamplerParameteri) = GetProcAddress("glSamplerParameteri");
-	*(void**)&(gl_ShaderSource) = GetProcAddress("glShaderSource");
-	*(void**)&(gl_Uniform1i) = GetProcAddress("glUniform1i");
-	*(void**)&(gl_UnmapBuffer) = GetProcAddress("glUnmapBuffer");
-	*(void**)&(gl_VertexAttribIPointer) = GetProcAddress("glVertexAttribIPointer");
-	*(void**)&(gl_VertexAttribPointer) = GetProcAddress("glVertexAttribPointer");
-	*(void**)&(gl_BufferSubData) = GetProcAddress("glBufferSubData");
-	*(void**)&(gl_FenceSync) = GetProcAddress("glFenceSync");
-	*(void**)&(gl_DeleteSync) = GetProcAddress("glDeleteSync");
-	*(void**)&(gl_ClientWaitSync) = GetProcAddress("glClientWaitSync");
-	*(void**)&(gl_FlushMappedBufferRange) = GetProcAddress("glFlushMappedBufferRange");
-	// GL4.0
-	*(void**)&(gl_UniformSubroutinesuiv) = GetProcAddress("glUniformSubroutinesuiv", true);
+
+	// Load mandatory function pointer
+#define GL_EXT_LOAD(ext)     *(void**)&(ext) = GetProcAddress(#ext, false)
+	// Load extra function pointer
+#define GL_EXT_LOAD_OPT(ext) *(void**)&(ext) = GetProcAddress(#ext, true)
+
+	GL_EXT_LOAD(glBlendEquationSeparate);
+	GL_EXT_LOAD(glBlendFuncSeparate);
+	GL_EXT_LOAD(glAttachShader);
+	GL_EXT_LOAD(glBindBuffer);
+	GL_EXT_LOAD(glBindBufferBase);
+	GL_EXT_LOAD(glBindBufferRange);
+	GL_EXT_LOAD(glBindFramebuffer);
+	GL_EXT_LOAD(glBindSampler);
+	GL_EXT_LOAD(glBindVertexArray);
+	GL_EXT_LOAD(glBlitFramebuffer);
+	GL_EXT_LOAD(glBufferData);
+	GL_EXT_LOAD(glCheckFramebufferStatus);
+	GL_EXT_LOAD(glClearBufferfv);
+	GL_EXT_LOAD(glClearBufferiv);
+	GL_EXT_LOAD(glClearBufferuiv);
+	GL_EXT_LOAD(glColorMaski);
+	GL_EXT_LOAD(glDeleteBuffers);
+	GL_EXT_LOAD(glDeleteFramebuffers);
+	GL_EXT_LOAD(glDeleteSamplers);
+	GL_EXT_LOAD(glDeleteVertexArrays);
+	GL_EXT_LOAD(glDetachShader);
+	GL_EXT_LOAD(glDrawBuffers);
+	GL_EXT_LOAD(glDrawElementsBaseVertex);
+	GL_EXT_LOAD(glEnableVertexAttribArray);
+	GL_EXT_LOAD(glFramebufferRenderbuffer);
+	GL_EXT_LOAD(glFramebufferTexture2D);
+	GL_EXT_LOAD(glGenBuffers);
+	GL_EXT_LOAD(glGenFramebuffers);
+	GL_EXT_LOAD(glGenVertexArrays);
+	GL_EXT_LOAD(glGetBufferParameteriv);
+	GL_EXT_LOAD(glGetDebugMessageLogARB);
+	GL_EXT_LOAD(glGetProgramInfoLog);
+	GL_EXT_LOAD(glGetProgramiv);
+	GL_EXT_LOAD(glGetShaderiv);
+	GL_EXT_LOAD(glGetStringi);
+	GL_EXT_LOAD(glIsFramebuffer);
+	GL_EXT_LOAD(glMapBuffer);
+	GL_EXT_LOAD(glMapBufferRange);
+	GL_EXT_LOAD(glProgramParameteri);
+	GL_EXT_LOAD(glSamplerParameterf);
+	GL_EXT_LOAD(glSamplerParameteri);
+	GL_EXT_LOAD(glShaderSource);
+	GL_EXT_LOAD(glUniform1i);
+	GL_EXT_LOAD(glUnmapBuffer);
+	GL_EXT_LOAD(glVertexAttribIPointer);
+	GL_EXT_LOAD(glVertexAttribPointer);
+	GL_EXT_LOAD(glBufferSubData);
+	GL_EXT_LOAD(glFenceSync);
+	GL_EXT_LOAD(glDeleteSync);
+	GL_EXT_LOAD(glClientWaitSync);
+	GL_EXT_LOAD(glFlushMappedBufferRange);
+	// Query object
+	GL_EXT_LOAD_OPT(glBeginQuery);
+	GL_EXT_LOAD_OPT(glEndQuery);
+	GL_EXT_LOAD_OPT(glGetQueryiv);
+	GL_EXT_LOAD_OPT(glGetQueryObjectiv);
+	GL_EXT_LOAD_OPT(glGetQueryObjectuiv);
+	GL_EXT_LOAD_OPT(glQueryCounter);
+	GL_EXT_LOAD_OPT(glGetQueryObjecti64v);
+	GL_EXT_LOAD_OPT(glGetQueryObjectui64v);
+	GL_EXT_LOAD_OPT(glGetInteger64v);
+	GL_EXT_LOAD_OPT(glCreateQueries);
+	GL_EXT_LOAD_OPT(glDeleteQueries);
 	// GL4.1
-	*(void**)&(gl_CreateShaderProgramv) = GetProcAddress("glCreateShaderProgramv", true);
-	*(void**)&(gl_BindProgramPipeline) = GetProcAddress("glBindProgramPipeline", true);
-	*(void**)&(gl_DeleteProgramPipelines) = GetProcAddress("glDeleteProgramPipelines", true);
-	*(void**)&(gl_GenProgramPipelines) = GetProcAddress("glGenProgramPipelines", true);
-	*(void**)&(gl_GetProgramPipelineiv) = GetProcAddress("glGetProgramPipelineiv", true);
-	*(void**)&(gl_GetProgramPipelineInfoLog) = GetProcAddress("glGetProgramPipelineInfoLog", true);
-	*(void**)&(gl_ValidateProgramPipeline) = GetProcAddress("glValidateProgramPipeline", true);
-	*(void**)&(gl_UseProgramStages) = GetProcAddress("glUseProgramStages", true);
-	*(void**)&(gl_ProgramUniform1i) = GetProcAddress("glProgramUniform1i", true); // but no GL4.2
-	// NO GL4.1
-	*(void**)&(gl_DeleteProgram) = GetProcAddress("glDeleteProgram");
-	*(void**)&(gl_DeleteShader) = GetProcAddress("glDeleteShader");
-	*(void**)&(gl_CompileShader) = GetProcAddress("glCompileShader");
-	*(void**)&(gl_CreateProgram) = GetProcAddress("glCreateProgram");
-	*(void**)&(gl_CreateShader) = GetProcAddress("glCreateShader");
-	*(void**)&(gl_UseProgram) = GetProcAddress("glUseProgram");
-	*(void**)&(gl_GetShaderInfoLog) = GetProcAddress("glGetShaderInfoLog");
-	*(void**)&(gl_LinkProgram) = GetProcAddress("glLinkProgram");
+	GL_EXT_LOAD(glCreateShaderProgramv);
+	GL_EXT_LOAD(glBindProgramPipeline);
+	GL_EXT_LOAD(glDeleteProgramPipelines);
+	GL_EXT_LOAD(glGetProgramPipelineiv);
+	GL_EXT_LOAD(glGetProgramPipelineInfoLog);
+	GL_EXT_LOAD(glValidateProgramPipeline);
+	GL_EXT_LOAD(glUseProgramStages);
+	GL_EXT_LOAD_OPT(glGetProgramBinary);
+	GL_EXT_LOAD_OPT(glViewportIndexedf);
+	GL_EXT_LOAD_OPT(glViewportIndexedfv);
+	GL_EXT_LOAD_OPT(glScissorIndexed);
+	GL_EXT_LOAD_OPT(glScissorIndexedv);
+	// NO GL4.1 (or broken driver...)
+	GL_EXT_LOAD(glDeleteProgram);
+	GL_EXT_LOAD(glDeleteShader);
+	GL_EXT_LOAD(glCompileShader);
+	GL_EXT_LOAD(glCreateProgram);
+	GL_EXT_LOAD(glCreateShader);
+	GL_EXT_LOAD(glUseProgram);
+	GL_EXT_LOAD(glGetShaderInfoLog);
+	GL_EXT_LOAD(glLinkProgram);
 	// GL4.2
-	*(void**)&(gl_BindImageTexture) = GetProcAddress("glBindImageTexture", true);
-	*(void**)&(gl_MemoryBarrier) = GetProcAddress("glMemoryBarrier", true);
-	*(void**)&(gl_TexStorage2D) = GetProcAddress("glTexStorage2D");
+	GL_EXT_LOAD_OPT(glBindImageTexture);
+	GL_EXT_LOAD_OPT(glMemoryBarrier);
 	// GL4.3
-	*(void**)&(gl_CopyImageSubData) = GetProcAddress("glCopyImageSubData", true);
+	GL_EXT_LOAD_OPT(glCopyImageSubData);
+	GL_EXT_LOAD_OPT(glInvalidateTexImage);
+	GL_EXT_LOAD(glPushDebugGroup);
+	GL_EXT_LOAD(glPopDebugGroup);
+	GL_EXT_LOAD(glDebugMessageInsert);
+	GL_EXT_LOAD(glDebugMessageControl);
+	GL_EXT_LOAD(glDebugMessageCallback);
+	GL_EXT_LOAD(glObjectLabel);
+	GL_EXT_LOAD(glObjectPtrLabel);
 	// GL4.4
-	*(void**)&(gl_ClearTexImage) = GetProcAddress("glClearTexImage", true);
-	*(void**)&(gl_BufferStorage) = GetProcAddress("glBufferStorage", true);
-	// GL_ARB_bindless_texture (GL5?)
-	*(void**)&(gl_GetTextureSamplerHandleARB) = GetProcAddress("glGetTextureSamplerHandleARB", true);
-	*(void**)&(gl_MakeTextureHandleResidentARB) = GetProcAddress("glMakeTextureHandleResidentARB", true);
-	*(void**)&(gl_MakeTextureHandleNonResidentARB) = GetProcAddress("glMakeTextureHandleNonResidentARB", true);
-	*(void**)&(gl_UniformHandleui64vARB) = GetProcAddress("glUniformHandleui64vARB", true);
-	*(void**)&(gl_ProgramUniformHandleui64vARB) = GetProcAddress("glProgramUniformHandleui64vARB", true);
+	GL_EXT_LOAD_OPT(glClearTexImage);
+	GL_EXT_LOAD_OPT(glClearTexSubImage);
+	GL_EXT_LOAD(glBufferStorage);
 
 	// GL4.5
-	*(void**)&(gl_CreateTextures) = GetProcAddress("glCreateTextures", true);
-	*(void**)&(gl_TextureStorage2D) = GetProcAddress("glTextureStorage2D", true);
-	*(void**)&(gl_TextureSubImage2D) = GetProcAddress("glTextureSubImage2D", true);
-	*(void**)&(gl_CopyTextureSubImage2D) = GetProcAddress("glCopyTextureSubImage2D", true);
-	*(void**)&(gl_BindTextureUnit) = GetProcAddress("glBindTextureUnit", true);
-	*(void**)&(gl_GetTextureImage) = GetProcAddress("glGetTextureImage", true);
+	GL_EXT_LOAD_OPT(glCreateTextures);
+	GL_EXT_LOAD_OPT(glTextureStorage2D);
+	GL_EXT_LOAD_OPT(glTextureSubImage2D);
+	GL_EXT_LOAD_OPT(glCopyTextureSubImage2D);
+	GL_EXT_LOAD_OPT(glBindTextureUnit);
+	GL_EXT_LOAD_OPT(glGetTextureImage);
+	GL_EXT_LOAD_OPT(glTextureParameteri);
+	GL_EXT_LOAD_OPT(glGenerateTextureMipmap);
 
-	*(void**)&(gl_CreateFramebuffers) = GetProcAddress("glCreateFramebuffers", true);
-	*(void**)&(gl_ClearNamedFramebufferfv) = GetProcAddress("glClearNamedFramebufferfv", true);
-	*(void**)&(gl_ClearNamedFramebufferuiv) = GetProcAddress("glClearNamedFramebufferuiv", true);
-	*(void**)&(gl_ClearNamedFramebufferiv) = GetProcAddress("glClearNamedFramebufferiv", true);
-	*(void**)&(gl_NamedFramebufferTexture) = GetProcAddress("glNamedFramebufferTexture", true);
-	*(void**)&(gl_NamedFramebufferDrawBuffers) = GetProcAddress("glNamedFramebufferDrawBuffers", true);
-	*(void**)&(gl_NamedFramebufferReadBuffer) = GetProcAddress("glNamedFramebufferReadBuffer", true);
-	*(void**)&(gl_CheckNamedFramebufferStatus) = GetProcAddress("glCheckNamedFramebufferStatus", true);
+	GL_EXT_LOAD_OPT(glCreateFramebuffers);
+	GL_EXT_LOAD_OPT(glClearNamedFramebufferfv);
+	GL_EXT_LOAD_OPT(glClearNamedFramebufferuiv);
+	GL_EXT_LOAD_OPT(glClearNamedFramebufferiv);
+	GL_EXT_LOAD_OPT(glNamedFramebufferTexture);
+	GL_EXT_LOAD_OPT(glNamedFramebufferDrawBuffers);
+	GL_EXT_LOAD_OPT(glNamedFramebufferReadBuffer);
+	GL_EXT_LOAD_OPT(glNamedFramebufferParameteri);
+	GL_EXT_LOAD_OPT(glCheckNamedFramebufferStatus);
 
-	*(void**)&(gl_CreateBuffers) = GetProcAddress("glCreateBuffers", true);
-	*(void**)&(gl_NamedBufferStorage) = GetProcAddress("glNamedBufferStorage", true);
-	*(void**)&(gl_NamedBufferData) = GetProcAddress("glNamedBufferData", true);
-	*(void**)&(gl_NamedBufferSubData) = GetProcAddress("glNamedBufferSubData", true);
-	*(void**)&(gl_MapNamedBuffer) = GetProcAddress("glMapNamedBuffer", true);
-	*(void**)&(gl_MapNamedBufferRange) = GetProcAddress("glMapNamedBufferRange", true);
-	*(void**)&(gl_UnmapNamedBuffer) = GetProcAddress("glUnmapNamedBuffer", true);
+	GL_EXT_LOAD_OPT(glCreateBuffers);
+	GL_EXT_LOAD_OPT(glNamedBufferStorage);
+	GL_EXT_LOAD_OPT(glNamedBufferData);
+	GL_EXT_LOAD_OPT(glNamedBufferSubData);
+	GL_EXT_LOAD_OPT(glMapNamedBuffer);
+	GL_EXT_LOAD_OPT(glMapNamedBufferRange);
+	GL_EXT_LOAD_OPT(glUnmapNamedBuffer);
+	GL_EXT_LOAD_OPT(glFlushMappedNamedBufferRange);
 
-	*(void**)&(gl_CreateSamplers) = GetProcAddress("glCreateSamplers", true);
-	*(void**)&(gl_CreateProgramPipelines) = GetProcAddress("glCreateProgramPipelines", true);
+	GL_EXT_LOAD_OPT(glCreateSamplers);
+	GL_EXT_LOAD_OPT(glCreateProgramPipelines);
 
-	*(void**)&(gl_ClipControl) = GetProcAddress("glClipControl", true);
+	GL_EXT_LOAD_OPT(glClipControl);
+	GL_EXT_LOAD_OPT(glTextureBarrier);
+	GL_EXT_LOAD_OPT(glGetTextureSubImage);
 
+#ifdef _WIN32
+	*(void**)&(gl_ActiveTexture) = GetProcAddress("glActiveTexture");
+	GL_EXT_LOAD(glTexStorage2D);
+	GL_EXT_LOAD(glGenSamplers);
+	GL_EXT_LOAD(glGenProgramPipelines);
+	GL_EXT_LOAD(glGenerateMipmap);
 #endif
+
+	// Check openGL requirement as soon as possible so we can switch to another
+	// renderer/device
+	GLLoader::check_gl_requirements();
+}
+
+void GSWndGL::FullContextInit()
+{
+	CreateContext(3, 3);
+	AttachContext();
+	PopulateGlFunction();
+	PopulateWndGlFunction();
+}
+
+void GSWndGL::SetVSync(int vsync)
+{
+	if (!HasLateVsyncSupport() && vsync < 0)
+		m_vsync = -vsync; // Late vsync not supported, fallback to standard vsync
+	else
+		m_vsync = vsync;
+
+	// The WGL/GLX/EGL swap interval function must be called on the rendering
+	// thread or else the change won't be properly applied.
+	m_vsync_change_requested = true;
 }

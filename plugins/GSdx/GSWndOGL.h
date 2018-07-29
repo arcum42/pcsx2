@@ -21,26 +21,31 @@
 
 #include "GSWnd.h"
 
-#if defined(__linux__) && !defined(ENABLE_GLES)
+#if defined(__unix__)
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-class GSWndOGL : public GSWndGL
+class GSWndOGL final : public GSWndGL
 {
 	Window     m_NativeWindow;
 	Display*   m_NativeDisplay;
 	GLXContext m_context;
+	bool       m_has_late_vsync;
 
-	PFNGLXSWAPINTERVALEXTPROC m_swapinterval;
+	PFNGLXSWAPINTERVALEXTPROC  m_swapinterval_ext;
+	PFNGLXSWAPINTERVALMESAPROC m_swapinterval_mesa;
 
+	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
-	void CheckContext();
+
+	void SetSwapInterval();
+	bool HasLateVsyncSupport() { return m_has_late_vsync; }
 
 public:
 	GSWndOGL();
 	virtual ~GSWndOGL() {};
 
-	bool Create(const string& title, int w, int h);
+	bool Create(const std::string& title, int w, int h);
 	bool Attach(void* handle, bool managed = true);
 	void Detach();
 
@@ -57,7 +62,6 @@ public:
 	void Hide();
 	void HideFrame();
 	void Flip();
-	void SetVSync(bool enable);
 };
 
 #endif

@@ -21,33 +21,43 @@
 # Misc option
 #-------------------------------------------------------------------------------
 option(DISABLE_SVU "Disable superVU (don't use it)")
+option(DISABLE_BUILD_DATE "Disable including the binary compile date")
+
+if(DISABLE_BUILD_DATE OR openSUSE)
+    message(STATUS "Disabling the inclusion of the binary compile date.")
+    add_definitions(-DDISABLE_BUILD_DATE)
+endif()
+
+option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
 
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(GLSL_API "Replace zzogl CG backend by GLSL (experimental option)")
-option(EGL_API "Use EGL on zzogl (experimental/developer option)")
-option(GLES_API "Use GLES on GSdx (experimental/developer option)")
-option(REBUILD_SHADER "Rebuild glsl/cg shader (developer option)")
+option(GLSL_API "Replace ZZogl CG backend by GLSL (experimental option)")
+option(EGL_API "Use EGL on ZZogl/GSdx (experimental/developer option)")
+option(OPENCL_API "Add OpenCL suppport on GSdx")
+option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
+option(GSDX_LEGACY "Build a GSdx legacy plugin compatible with GL3.3")
 
 #-------------------------------------------------------------------------------
 # Path and lib option
 #-------------------------------------------------------------------------------
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
+option(DISABLE_CHEATS_ZIP "Disable including the cheats_ws.zip file")
+option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
-option(SDL2_API "Use SDL2 on spu2x and onepad (experimental/wxWidget mustn't be built with SDL1.2 support")
-option(WX28_API "Force wxWidget 2.8 lib (deprecated)")
+option(SDL2_API "Use SDL2 on spu2x and onepad (wxWidget mustn't be built with SDL1.2 support" ON)
 option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 support)")
 
 if(PACKAGE_MODE)
     if(NOT DEFINED PLUGIN_DIR)
-        set(PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/lib/games/pcsx2")
+        set(PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/lib/games/PCSX2")
     endif()
 
     if(NOT DEFINED GAMEINDEX_DIR)
-        set(GAMEINDEX_DIR "${CMAKE_INSTALL_PREFIX}/share/games/pcsx2")
+        set(GAMEINDEX_DIR "${CMAKE_INSTALL_PREFIX}/share/games/PCSX2")
     endif()
 
     if(NOT DEFINED BIN_DIR)
@@ -55,7 +65,11 @@ if(PACKAGE_MODE)
     endif()
 
     if(NOT DEFINED DOC_DIR)
-        set(DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/pcsx2")
+        set(DOC_DIR "${CMAKE_INSTALL_PREFIX}/share/doc/PCSX2")
+    endif()
+
+    if(NOT DEFINED MAN_DIR)
+        set(MAN_DIR "${CMAKE_INSTALL_PREFIX}/share/man")
     endif()
 
     # Compile all source codes with those defines
@@ -70,6 +84,76 @@ option(USE_ASAN "Enable address sanitizer")
 if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     set(USE_CLANG TRUE)
     message(STATUS "Building with Clang/LLVM.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
+    set(USE_ICC TRUE)
+    message(STATUS "Building with Intel's ICC.")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(USE_GCC TRUE)
+    message(STATUS "Building with GNU GCC")
+else()
+    message(FATAL_ERROR "Unknow compiler: ${CMAKE_CXX_COMPILER_ID}")
+endif()
+
+#-------------------------------------------------------------------------------
+# Select the support of plugin
+#-------------------------------------------------------------------------------
+option(BUILTIN_GS           "Disable support of GS plugin (developer option)")
+option(BUILTIN_PAD          "Disable support of PAD plugin (developer option)")
+option(BUILTIN_SPU2         "Disable support of SPU2 plugin (developer option)")
+option(BUILTIN_USB          "Disable support of USB plugin (developer option)")
+option(BUILTIN_FW           "Disable support of FW plugin (developer option)")
+option(BUILTIN_DEV9         "Disable support of DEV9 plugin (developer option)")
+option(BUILTIN_CDVD         "Disable support of CDVD plugin (developer option)")
+
+set(PLUGIN_SUPPORT "")
+if(BUILTIN_GS)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_GS_PLUGIN")
+endif()
+if(BUILTIN_PAD)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_PAD_PLUGIN")
+endif()
+if(BUILTIN_SPU2)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_SPU2_PLUGIN")
+endif()
+if(BUILTIN_USB)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_USB_PLUGIN")
+endif()
+if(BUILTIN_FW)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_FW_PLUGIN")
+endif()
+if(BUILTIN_DEV)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_DEV_PLUGIN")
+endif()
+if(BUILTIN_CDVD)
+    set(PLUGIN_SUPPORT "${PLUGIN_SUPPORT} -DBUILTIN_CDVD_PLUGIN")
+endif()
+
+#-------------------------------------------------------------------------------
+# if no build type is set, use Devel as default
+# Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
+# Ensure that the value set by the User is correct to avoid some bad behavior later
+#-------------------------------------------------------------------------------
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release|Prof")
+	set(CMAKE_BUILD_TYPE Devel)
+	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
+endif()
+# AVX2 doesn't play well with gdb
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    SET(DISABLE_ADVANCE_SIMD ON)
+endif()
+
+# Initially strip was disabled on release build but it is not stackstrace friendly!
+# It only cost several MB so disbable it by default
+option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
+
+if(NOT DEFINED CMAKE_BUILD_PO)
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_BUILD_PO TRUE)
+        message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
+    else()
+        set(CMAKE_BUILD_PO FALSE)
+        message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
+    endif()
 endif()
 
 #-------------------------------------------------------------------------------
@@ -117,14 +201,26 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
     #     - Only plugins. No package will link to them.
     set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
-    if (DISABLE_ADVANCE_SIMD)
-        set(ARCH_FLAG "-msse -msse2 -march=i686")
-    else()
-        # AVX requires some fix of the ABI (mangling) (default 2)
-        # Note: V6 requires GCC 4.7
-        #set(ARCH_FLAG "-march=native -fabi-version=6")
-        set(ARCH_FLAG "-march=native")
+    if(NOT DEFINED ARCH_FLAG)
+        if (DISABLE_ADVANCE_SIMD)
+            if (USE_ICC)
+                set(ARCH_FLAG "-msse2")
+            else()
+                set(ARCH_FLAG "-msse -msse2 -mfxsr -march=i686")
+            endif()
+        else()
+            # AVX requires some fix of the ABI (mangling) (default 2)
+            # Note: V6 requires GCC 4.7
+            #set(ARCH_FLAG "-march=native -fabi-version=6")
+            set(ARCH_FLAG "-march=native")
+        endif()
     endif()
+
+    # Don't bother porting SuperVU
+    if (NOT Linux)
+        set(DISABLE_SVU TRUE)
+    endif()
+
     add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
     set(_ARCH_32 1)
     set(_M_X86 1)
@@ -136,11 +232,17 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
     # SuperVU will not be ported
     set(DISABLE_SVU TRUE)
 
-    if (DISABLE_ADVANCE_SIMD)
-        set(ARCH_FLAG "-msse -msse2")
-    else()
-        #set(ARCH_FLAG "-march=native -fabi-version=6")
-        set(ARCH_FLAG "-march=native")
+    if(NOT DEFINED ARCH_FLAG)
+        if (DISABLE_ADVANCE_SIMD)
+            if (USE_ICC)
+                set(ARCH_FLAG "-msse2")
+            else()
+                set(ARCH_FLAG "-msse -msse2 -mfxsr")
+            endif()
+        else()
+            #set(ARCH_FLAG "-march=native -fabi-version=6")
+            set(ARCH_FLAG "-march=native")
+        endif()
     endif()
     add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1)
     set(_ARCH_64 1)
@@ -152,31 +254,6 @@ else()
 
     message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
-
-#-------------------------------------------------------------------------------
-# if no build type is set, use Devel as default
-# Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
-# Ensure that the value set by the User is correct to avoid some bad behavior later
-#-------------------------------------------------------------------------------
-if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release")
-	set(CMAKE_BUILD_TYPE Devel)
-	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
-endif()
-
-# Initially strip was disabled on release build but it is not stackstrace friendly!
-# It only cost several MB so disbable it by default
-option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
-
-if(NOT DEFINED CMAKE_BUILD_PO)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_BUILD_PO TRUE)
-        message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    else()
-        set(CMAKE_BUILD_PO FALSE)
-        message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-    endif()
-endif()
-
 
 #-------------------------------------------------------------------------------
 # Control GCC flags
@@ -219,47 +296,111 @@ endif()
 #-------------------------------------------------------------------------------
 # Set some default compiler flags
 #-------------------------------------------------------------------------------
-set(COMMON_FLAG "-pipe -std=c++0x -fvisibility=hidden -pthread")
+option(USE_LTO "Enable LTO optimization")
+option(USE_PGO_GENERATE "Enable PGO optimization (generate profile)")
+option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
+
+# Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
+# Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
+set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse")
 if (DISABLE_SVU)
     set(COMMON_FLAG "${COMMON_FLAG} -DDISABLE_SVU")
+endif()
+if(USE_VTUNE)
+    set(COMMON_FLAG "${COMMON_FLAG} -DENABLE_VTUNE")
 endif()
 set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
 # -Wno-missing-field-initializers: standard allow to init only the begin of struct/array in static init. Just a silly warning.
+# Note: future GCC (aka GCC 5.1.1) has less false positive so warning could maybe put back
 # -Wno-unused-function: warn for function not used in release build
-# -Wno-unused-variable: just annoying to manage different level of logging, a couple of extra var won't kill any serious compiler.
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
-set(DEFAULT_WARNINGS "-Wall -Wno-attributes -Wno-missing-field-initializers -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value ")
+set(DEFAULT_WARNINGS "-Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers ")
+if (NOT USE_ICC)
+    set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-unused-value ")
+endif()
+
 # -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
-set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=4 ")
+if (USE_ICC)
+    set(AGGRESSIVE_WARNING "-Wstrict-aliasing ")
+else()
+    set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=1 ")
+endif()
 
 if (USE_CLANG)
     # -Wno-deprecated-register: glib issue...
-    set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register")
-    set(COMMON_FLAG "${COMMON_FLAG} -no-integrated-as")
+    set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register -Wno-c++14-extensions")
+    set(DBG "-g -fno-omit-frame-pointer")
+elseif (USE_ICC)
+    set(DBG "-g -fno-omit-frame-pointer")
+elseif (USE_GCC)
+    set(DBG "-ggdb3 -fno-omit-frame-pointer")
+endif()
+
+if (USE_LTO)
+    include(ProcessorCount)
+    ProcessorCount(ncpu)
+    set(LTO_FLAGS "-fuse-linker-plugin -flto=${ncpu}")
+    set(DBG "") # not supported with LTO
+    set(CMAKE_AR /usr/bin/gcc-ar CACHE STRING "Archiver" FORCE)
+    set(CMAKE_RANLIB /usr/bin/gcc-ranlib CACHE STRING "ranlib" FORCE)
+    set(CMAKE_NM /usr/bin/gcc-nm CACHE STRING "nm" FORCE)
+else()
+    set(LTO_FLAGS "")
+endif()
+
+if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
+    set(PGO_FLAGS "-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
+endif()
+
+if (USE_PGO_GENERATE)
+    set(PGO_FLAGS "${PGO_FLAGS} -fprofile-generate")
+endif()
+
+if(USE_PGO_OPTIMIZE)
+    set(PGO_FLAGS "${PGO_FLAGS} -fprofile-use")
 endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
-    set(DEBUG_FLAG "-g")
+    set(DEBUG_FLAG "${DBG} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -D_DEBUG")
 elseif(CMAKE_BUILD_TYPE MATCHES "Devel")
-    set(DEBUG_FLAG "-g -DNDEBUG")
+    set(DEBUG_FLAG "${DBG} -DNDEBUG -DPCSX2_DEVBUILD -D_DEVEL")
 elseif(CMAKE_BUILD_TYPE MATCHES "Release")
     set(DEBUG_FLAG "-DNDEBUG")
+elseif(CMAKE_BUILD_TYPE MATCHES "Prof")
+    # Keep frame pointer and debug information for profiler tool
+    set(DEBUG_FLAG "-g -fno-omit-frame-pointer -DNDEBUG")
 endif()
 
 if (USE_ASAN)
-    set(ASAN_FLAG "-fsanitize=address -fno-omit-frame-pointer -g -DASAN_WORKAROUND")
-    if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-        set(ASAN_FLAG "${ASAN_FLAG} -mpreferred-stack-boundary=4 -mincoming-stack-boundary=2")
-    endif()
+    set(ASAN_FLAG "-fsanitize=address ${DBG} -DASAN_WORKAROUND")
 else()
     set(ASAN_FLAG "")
 endif()
 
+if(NOT DEFINED OPTIMIZATION_FLAG)
+    if (CMAKE_BUILD_TYPE STREQUAL Debug)
+        if (USE_GCC)
+            set(OPTIMIZATION_FLAG -Og)
+        else()
+            set(OPTIMIZATION_FLAG -O0)
+        endif()
+    else()
+        set(OPTIMIZATION_FLAG -O2)
+    endif()
+endif()
+
+if (NOT DEFINED PGO)
+    set(PGO "none")
+    set(GCOV_LIBRARIES "")
+else()
+    set(GCOV_LIBRARIES "-lgcov")
+endif()
+
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG}")
+set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PGO_FLAGS} ${PLUGIN_SUPPORT}")
 # c++ only flags
-set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
+set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -std=c++11 -Wno-invalid-offsetof")
 
 #-------------------------------------------------------------------------------
 # Allow user to set some default flags
@@ -307,6 +448,6 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
 #-------------------------------------------------------------------------------
 if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
     if (GTK3_API)
-        message(FATAL_ERROR "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
+        message(WARNING "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
     endif()
 endif()

@@ -35,10 +35,10 @@ public:
 	explicit GSTexture9(IDirect3DTexture9* texture);
 	virtual ~GSTexture9();
 
-	bool Update(const GSVector4i& r, const void* data, int pitch);
-	bool Map(GSMap& m, const GSVector4i* r);
+	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
+	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
 	void Unmap();
-	bool Save(const string& fn, bool dds = false);
+	bool Save(const std::string& fn, bool dds = false);
 
 	operator IDirect3DSurface9*();
 	operator IDirect3DTexture9*();

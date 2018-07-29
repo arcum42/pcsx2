@@ -27,25 +27,60 @@
 #include "GSTextureCacheOGL.h"
 #include "GSVertexHW.h"
 
-// FIXME does it need a GSVertexHWOGL ??? Data order can be easily programmed on opengl (the only potential
-// issue is the unsupported praga push/pop
-// Note it impact GSVertexTrace.cpp => void GSVertexTrace::Update(const GSVertexHWOGL* v, int count, GS_PRIM_CLASS primclass)
-class GSRendererOGL : public GSRendererHW
-//class GSRendererOGL : public GSRendererHW<GSVertexHWOGL>
+class GSRendererOGL final : public GSRendererHW
 {
+	enum PRIM_OVERLAP {
+		PRIM_OVERLAP_UNKNOW,
+		PRIM_OVERLAP_YES,
+		PRIM_OVERLAP_NO
+	};
+
+	enum ACC_BLEND {
+		ACC_BLEND_NONE = 0,
+		ACC_BLEND_FREE = 1,
+		ACC_BLEND_SPRITE = 2,
+		ACC_BLEND_CCLIP_DALPHA = 3,
+		ACC_BLEND_FULL = 4,
+		ACC_BLEND_ULTRA = 5
+	};
+
 	private:
-		GSVector2 m_pixelcenter;
-		bool m_logz;
-		bool m_fba;
-		bool UserHacks_AlphaHack;
-		bool UserHacks_AlphaStencil;
-		bool UserHacks_DateGL4;
+		bool m_accurate_date;
+		int m_sw_blending;
+		PRIM_OVERLAP m_prim_overlap;
+		std::vector<size_t> m_drawlist;
+
 		unsigned int UserHacks_TCOffset;
 		float UserHacks_TCO_x, UserHacks_TCO_y;
+		bool UserHacks_unscale_pt_ln;
+		int UserHacks_HPO;
+		TriFiltering UserHacks_tri_filter;
 
-	protected:
-		void EmulateGS();
-		void SetupIA();
+		GSDeviceOGL::VSConstantBuffer vs_cb;
+		GSDeviceOGL::PSConstantBuffer ps_cb;
+
+		GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
+
+		bool m_require_one_barrier;
+		bool m_require_full_barrier;
+
+		GSDeviceOGL::VSSelector m_vs_sel;
+		GSDeviceOGL::GSSelector m_gs_sel;
+		GSDeviceOGL::PSSelector m_ps_sel;
+
+		GSDeviceOGL::PSSamplerSelector		m_ps_ssel;
+		GSDeviceOGL::OMColorMaskSelector	m_om_csel;
+		GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
+
+	private:
+		inline void ResetStates();
+		inline void SetupIA(const float& sx, const float& sy);
+		inline void EmulateTextureShuffleAndFbmask();
+		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
+		inline void EmulateBlending(bool DATE_GL42);
+		inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
+		inline void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
+		inline void EmulateZbuffer();
 
 	public:
 		GSRendererOGL();
@@ -53,7 +88,9 @@ class GSRendererOGL : public GSRendererHW
 
 		bool CreateDevice(GSDevice* dev);
 
-		void UpdateFBA(GSTexture* rt);
+		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) final;
 
-		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
+		PRIM_OVERLAP PrimitiveOverlap();
+
+		void SendDraw();
 };

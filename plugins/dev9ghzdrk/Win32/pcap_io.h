@@ -143,7 +143,7 @@ typedef struct _full_arp_packet
 
 extern mac_address virtual_mac;
 extern mac_address broadcast_mac;
-
+extern mac_address gateway_mac;
 extern ip_address virtual_ip;
 
 #define mac_compare(a,b) (memcmp(&(a),&(b),6))
@@ -168,6 +168,7 @@ class PCAPAdapter : public NetAdapter
 public:
 	PCAPAdapter();
 	virtual bool blocks();
+	virtual bool isInitialised();
 	//gets a packet.rv :true success
 	virtual bool recv(NetPacket* pkt);
 	//sends the packet and deletes it when done (if successful).rv :true success

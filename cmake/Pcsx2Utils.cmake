@@ -24,7 +24,6 @@ function(detectOperatingSystem)
                     message(STATUS "Build Fedora specific")
                 elseif("${OS_RELEASE}" MATCHES "^.*ID=.*suse.*$")
                     set(openSUSE TRUE PARENT_SCOPE)
-                    add_definitions(-DopenSUSE)
                     message(STATUS "Build openSUSE specific")
                 endif()
             endif()
@@ -38,6 +37,7 @@ endfunction()
 
 function(write_svnrev_h)
     set(PCSX2_WC_TIME 0)
+    set(PCSX2_GIT_REV "")
     if (GIT_FOUND AND EXISTS ${PROJECT_SOURCE_DIR}/.git)
         EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} show -s --format=%ci HEAD
             OUTPUT_VARIABLE PCSX2_WC_TIME
@@ -45,11 +45,15 @@ function(write_svnrev_h)
         # Output: "YYYY-MM-DD HH:MM:SS +HHMM" (last part is time zone, offset from UTC)
         string(REGEX REPLACE "[%:\\-]" "" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
         string(REGEX REPLACE "([0-9]+) ([0-9]+).*" "\\1\\2" PCSX2_WC_TIME "${PCSX2_WC_TIME}")
+
+        EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} describe --always
+            OUTPUT_VARIABLE PCSX2_GIT_REV
+            OUTPUT_STRIP_TRAILING_WHITESPACE)
     endif()
     if ("${PCSX2_WC_TIME}" STREQUAL "")
         set(PCSX2_WC_TIME 0)
     endif()
-    file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0")
+    file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0\n#define GIT_REV \"${PCSX2_GIT_REV}\"")
 endfunction()
 
 function(check_compiler_version version_warn version_err)
@@ -58,13 +62,15 @@ function(check_compiler_version version_warn version_err)
         string(STRIP "${GCC_VERSION}" GCC_VERSION)
         if(GCC_VERSION VERSION_LESS ${version_err})
             message(FATAL_ERROR "PCSX2 doesn't support your old GCC ${GCC_VERSION}! Please upgrade it!
-            
+
             The minimum supported version is ${version_err} but ${version_warn} is warmly recommended")
         else()
             if(GCC_VERSION VERSION_LESS ${version_warn})
                 message(WARNING "PCSX2 will stop supporting GCC ${GCC_VERSION} in the near future. Please upgrade to at least GCC ${version_warn}.")
             endif()
         endif()
+
+        set(GCC_VERSION "${GCC_VERSION}" PARENT_SCOPE)
     endif()
 endfunction()
 
@@ -127,7 +133,7 @@ macro(add_pcsx2_executable exe srcs libs flags)
     target_link_libraries(${exe} ${libs})
     append_flags(${exe} "${flags}")
     if(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
-        target_link_libraries(${lib} "${USER_CMAKE_LD_FLAGS}")
+        target_link_libraries(${exe} "${USER_CMAKE_LD_FLAGS}")
     endif(NOT USER_CMAKE_LD_FLAGS STREQUAL "")
     if(PACKAGE_MODE)
         install(TARGETS ${exe} DESTINATION ${BIN_DIR})
@@ -135,3 +141,22 @@ macro(add_pcsx2_executable exe srcs libs flags)
         install(TARGETS ${exe} DESTINATION ${CMAKE_SOURCE_DIR}/bin)
     endif(PACKAGE_MODE)
 endmacro(add_pcsx2_executable)
+
+# Helper macro to generate resources on linux (based on glib)
+macro(add_custom_glib_res out xml prefix)
+    set(RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/res")
+    set(RESOURCE_FILES "${ARGN}")
+    # Note: trying to combine --generate-source and --generate-header doesn't work.
+    # It outputs whichever one comes last into the file named by the first
+    add_custom_command(
+        OUTPUT ${out}.h
+        COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-header
+            --c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.h
+        DEPENDS res/${xml} ${RESOURCE_FILES})
+
+    add_custom_command(
+        OUTPUT ${out}.cpp
+        COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-source
+            --c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.cpp
+        DEPENDS res/${xml} ${RESOURCE_FILES})
+endmacro()

@@ -1,43 +1,10 @@
-/******************************************************************************
-
- Copyright (c) 2001 Advanced Micro Devices, Inc.
-
- LIMITATION OF LIABILITY:  THE MATERIALS ARE PROVIDED *AS IS* WITHOUT ANY
- EXPRESS OR IMPLIED WARRANTY OF ANY KIND INCLUDING WARRANTIES OF MERCHANTABILITY,
- NONINFRINGEMENT OF THIRD-PARTY INTELLECTUAL PROPERTY, OR FITNESS FOR ANY
- PARTICULAR PURPOSE.  IN NO EVENT SHALL AMD OR ITS SUPPLIERS BE LIABLE FOR ANY
- DAMAGES WHATSOEVER (INCLUDING, WITHOUT LIMITATION, DAMAGES FOR LOSS OF PROFITS,
- BUSINESS INTERRUPTION, LOSS OF INFORMATION) ARISING OUT OF THE USE OF OR
- INABILITY TO USE THE MATERIALS, EVEN IF AMD HAS BEEN ADVISED OF THE POSSIBILITY
- OF SUCH DAMAGES.  BECAUSE SOME JURISDICTIONS PROHIBIT THE EXCLUSION OR LIMITATION
- OF LIABILITY FOR CONSEQUENTIAL OR INCIDENTAL DAMAGES, THE ABOVE LIMITATION MAY
- NOT APPLY TO YOU.
-
- AMD does not assume any responsibility for any errors which may appear in the
- Materials nor any responsibility to support or update the Materials.  AMD retains
- the right to make changes to its test specifications at any time, without notice.
-
- NO SUPPORT OBLIGATION: AMD is not obligated to furnish, support, or make any
- further information, software, technical information, know-how, or show-how
- available to you.
-
- So that all may benefit from your experience, please report  any  problems
- or  suggestions about this software to 3dsdk.support@amd.com
-
- AMD Developer Technologies, M/S 585
- Advanced Micro Devices, Inc.
- 5900 E. Ben White Blvd.
- Austin, TX 78741
- 3dsdk.support@amd.com
-******************************************************************************/
-
 // GH: AMD memcpy was removed. The remaining part (memcmp_mmx) is likely from Zerofrog.
 // Hopefully memcmp_mmx will be dropped in the future.
 
 #include "PrecompiledHeader.h"
 
 #ifdef _MSC_VER
-#pragma warning(disable:4414)
+#pragma warning(disable : 4414)
 #endif
 
 // Inline assembly syntax for use with Visual C++
@@ -48,11 +15,11 @@
 // returns 0 is equal, nonzero value if not equal
 // ~10 times faster than standard memcmp
 // (zerofrog)
-u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize)
+u8 memcmp_mmx(const void *src1, const void *src2, int cmpsize)
 {
-	pxAssert( (cmpsize&7) == 0 );
+    pxAssert((cmpsize & 7) == 0);
 
-	__asm {
+    __asm {
 		mov ecx, cmpsize
 		mov edx, src1
 		mov esi, src2
@@ -60,7 +27,7 @@ u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize)
 		cmp ecx, 32
 		jl Done4
 
-		// custom test first 8 to make sure things are ok
+        // custom test first 8 to make sure things are ok
 		movq mm0, [esi]
 		movq mm1, [esi+8]
 		pcmpeqd mm0, [edx]
@@ -70,7 +37,7 @@ u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize)
 		pmovmskb eax, mm0
 		movq mm3, [esi+24]
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je NextComp
 		mov eax, 1
@@ -86,7 +53,7 @@ NextComp:
 		add esi, 32
 		add edx, 32
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je ContinueTest
 		mov eax, 1
@@ -121,7 +88,7 @@ Cmp8:
 		pand mm0, mm7
 		pmovmskb eax, mm0
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je Continue
 		mov eax, 1
@@ -154,7 +121,7 @@ Done8:
 		add esi, 32
 		add edx, 32
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		je Done4
 		mov eax, 1
@@ -173,7 +140,7 @@ Done4:
 		pand mm0, mm2
 		pmovmskb eax, mm0
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		setne al
 		jmp End
@@ -189,7 +156,7 @@ Done2:
 		pand mm0, mm1
 		pmovmskb eax, mm0
 
-		// check if eq
+        // check if eq
 		cmp eax, 0xff
 		setne al
 		jmp End
@@ -215,7 +182,7 @@ Done:
 
 End:
 		emms
-	}
+    }
 }
 
 #endif

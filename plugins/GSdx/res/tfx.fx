@@ -2,7 +2,6 @@
 #define FMT_32 0
 #define FMT_24 1
 #define FMT_16 2
-#define FMT_PAL 4 /* flag bit */
 
 // And I say this as an ATI user.
 #define ATI_SUCKS 1
@@ -18,6 +17,8 @@
 #ifndef GS_IIP
 #define GS_IIP 0
 #define GS_PRIM 3
+#define GS_POINT 0
+#define GS_LINE 0
 #endif
 
 #ifndef PS_FST
@@ -39,6 +40,9 @@
 #define PS_SPRITEHACK 0
 #define PS_TCOFFSETHACK 0
 #define PS_POINT_SAMPLER 0
+#define PS_SHUFFLE 0
+#define PS_READ_BA 0
+#define PS_PAL_FMT 0
 #endif
 
 struct VS_INPUT
@@ -89,7 +93,7 @@ cbuffer cb0
 {
 	float4 VertexScale;
 	float4 VertexOffset;
-	float2 TextureScale;
+	float4 Texture_Scale_Offset;
 };
 
 cbuffer cb1
@@ -103,6 +107,11 @@ cbuffer cb1
 	float2 TA;
 	uint4 MskFix;
 	float4 TC_OffsetHack;
+};
+
+cbuffer cb2
+{
+	float2 PointSize;
 };
 
 float4 sample_c(float2 uv)
@@ -153,6 +162,7 @@ float4 sample_rt(float2 uv)
 #define PS_LTF 0
 #define PS_COLCLIP 0
 #define PS_DATE 0
+#define PS_PAL_FMT 0
 #endif
 
 struct VS_INPUT
@@ -192,7 +202,7 @@ float4 vs_params[3];
 
 #define VertexScale vs_params[0]
 #define VertexOffset vs_params[1]
-#define TextureScale vs_params[2].xy
+#define Texture_Scale_Offset vs_params[2]
 
 float4 ps_params[7];
 
@@ -223,7 +233,9 @@ float4 sample_rt(float2 uv)
 
 #endif
 
-float4 wrapuv(float4 uv)
+#define PS_AEM_FMT (PS_FMT & 3)
+
+float4 clamp_wrap_uv(float4 uv)
 {
 	if(PS_WMS == PS_WMT)
 	{
@@ -309,24 +321,6 @@ float4 wrapuv(float4 uv)
 	return uv;
 }
 
-float2 clampuv(float2 uv)
-{
-	if(PS_WMS == 2 && PS_WMT == 2) 
-	{
-		uv = clamp(uv, MinF, MinMax.zw);
-	}
-	else if(PS_WMS == 2)
-	{
-		uv.x = clamp(uv.x, MinF.x, MinMax.z);
-	}
-	else if(PS_WMT == 2)
-	{
-		uv.y = clamp(uv.y, MinF.y, MinMax.w);
-	}
-	
-	return uv;
-}
-
 float4x4 sample_4c(float4 uv)
 {
 	float4x4 c;
@@ -347,11 +341,32 @@ float4 sample_4a(float4 uv)
 	c.y = sample_c(uv.zy).a;
 	c.z = sample_c(uv.xw).a;
 	c.w = sample_c(uv.zw).a;
-	
-	#if SHADER_MODEL <= 0x300
-	if(PS_RT) c *= 128.0f / 255;
-	#endif
 
+#if SHADER_MODEL <= 0x300
+
+	if (PS_RT) c *= 128.0f / 255;
+	// D3D9 doesn't support integer operations
+
+#else
+
+	// Denormalize value
+	uint4 i = uint4(c * 255.0f + 0.5f);
+
+	if (PS_PAL_FMT == 1)
+	{
+		// 4HL
+		c = float4(i & 0xFu) / 255.0f;
+	}
+	else if (PS_PAL_FMT == 2)
+	{
+		// 4HH
+		c = float4(i >> 4u) / 255.0f;
+	}
+
+#endif
+
+	// Most of texture will hit this code so keep normalized float value
+	// 8 bits
 	return c * 255./256 + 0.5/256;
 }
 
@@ -379,15 +394,9 @@ float4 sample(float2 st, float q)
 	float4x4 c;
 	float2 dd;
 
-/*	
-	if(!PS_LTF && PS_FMT <= FMT_16 && PS_WMS < 2 && PS_WMT < 2)
+	if (PS_LTF == 0 && PS_AEM_FMT == FMT_32 && PS_PAL_FMT == 0 && PS_WMS < 2 && PS_WMT < 2)
 	{
 		c[0] = sample_c(st);
-	}
-*/
-	if (!PS_LTF && PS_FMT <= FMT_16 && PS_WMS < 3 && PS_WMT < 3)
-	{
-		c[0] = sample_c(clampuv(st));
 	}
 	else
 	{
@@ -403,32 +412,29 @@ float4 sample(float2 st, float q)
 			uv = st.xyxy;
 		}
 
-		uv = wrapuv(uv);
+		uv = clamp_wrap_uv(uv);
 
-		if(PS_FMT & FMT_PAL)
-		{
+#if PS_PAL_FMT != 0
 			c = sample_4p(sample_4a(uv));
-		}
-		else
-		{
+#else
 			c = sample_4c(uv);
-		}
+#endif
 	}
 
 	[unroll]
 	for (uint i = 0; i < 4; i++)
 	{
-		if((PS_FMT & ~FMT_PAL) == FMT_32)
+		if(PS_AEM_FMT == FMT_32)
 		{
 			#if SHADER_MODEL <= 0x300
 			if(PS_RT) c[i].a *= 128.0f / 255;
 			#endif
 		}
-		else if((PS_FMT & ~FMT_PAL) == FMT_24)
+		else if(PS_AEM_FMT == FMT_24)
 		{
 			c[i].a = !PS_AEM || any(c[i].rgb) ? TA.x : 0;
 		}
-		else if((PS_FMT & ~FMT_PAL) == FMT_16)
+		else if(PS_AEM_FMT == FMT_16)
 		{
 			c[i].a = c[i].a >= 0.5 ? TA.y : !PS_AEM || any(c[i].rgb) ? TA.x : 0; 
 		}
@@ -513,40 +519,50 @@ void atst(float4 c)
 {
 	float a = trunc(c.a * 255 + 0.01);
 	
-	if(PS_ATST == 0) // never
-	{
-		discard;
-	}
-	else if(PS_ATST == 1) // always
+#if 0
+    switch(Uber_ATST) {
+        case 0:
+            break;
+        case 1:
+            if (a > AREF) discard;
+            break;
+        case 2:
+            if (a < AREF) discard;
+            break;
+        case 3:
+            if (abs(a - AREF) > 0.5f) discard;
+            break;
+        case 4:
+            if (abs(a - AREF) < 0.5f) discard;
+            break;
+    }
+
+#endif
+
+#if 1
+	if(PS_ATST == 0)
 	{
 		// nothing to do
 	}
-	else if(PS_ATST == 2) // l
+	else if(PS_ATST == 1)
 	{
 		#if PS_SPRITEHACK == 0
-		clip(AREF - a - 0.5f);
-		#endif				
+		if (a > AREF) discard;
+		#endif		
 	}
-	else if(PS_ATST == 3) // le
+	else if(PS_ATST == 2)
 	{
-		clip(AREF - a + 0.5f);
+		if (a < AREF) discard;	
 	}
-	else if(PS_ATST == 4) // e
+	else if(PS_ATST == 3)
 	{
-		clip(0.5f - abs(a - AREF));
+		 if (abs(a - AREF) > 0.5f) discard;
 	}
-	else if(PS_ATST == 5) // ge
+	else if(PS_ATST == 4)
 	{
-		clip(a - AREF + 0.5f);
+		if (abs(a - AREF) < 0.5f) discard;
 	}
-	else if(PS_ATST == 6) // g
-	{
-		clip(a - AREF - 0.5f);
-	}
-	else if(PS_ATST == 7) // ne
-	{
-		clip(abs(a - AREF) - 0.5f);
-	}
+#endif
 }
 
 float4 fog(float4 c, float f)
@@ -619,12 +635,14 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	{
 		if(VS_FST)
 		{
-			output.t.xy = input.uv * TextureScale;
-			output.t.w = 1.0f;
+			float2 uv = input.uv - Texture_Scale_Offset.zw;
+
+			output.t.xy = uv * Texture_Scale_Offset.xy;
+			output.t.zw = uv;
 		}
 		else
 		{
-			output.t.xy = input.st;
+			output.t.xy = input.st - Texture_Scale_Offset.zw;
 			output.t.w = input.q;
 		}
 	}
@@ -640,7 +658,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	return output;
 }
 
-#if GS_PRIM == 0
+#if GS_PRIM == 0 && GS_POINT == 0
 
 [maxvertexcount(1)]
 void gs_main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> stream)
@@ -648,17 +666,102 @@ void gs_main(point VS_OUTPUT input[1], inout PointStream<VS_OUTPUT> stream)
 	stream.Append(input[0]);
 }
 
-#elif GS_PRIM == 1
+#elif GS_PRIM == 0 && GS_POINT == 1
+
+[maxvertexcount(6)]
+void gs_main(point VS_OUTPUT input[1], inout TriangleStream<VS_OUTPUT> stream)
+{
+	// Transform a point to a NxN sprite
+	VS_OUTPUT Point = input[0];
+
+	// Get new position
+	float4 lt_p = input[0].p;
+	float4 rb_p = input[0].p + float4(PointSize.x, PointSize.y, 0.0f, 0.0f);
+	float4 lb_p = rb_p;
+	float4 rt_p = rb_p;
+	lb_p.x = lt_p.x;
+	rt_p.y = lt_p.y;
+
+	// Triangle 1
+	Point.p = lt_p;
+	stream.Append(Point);
+
+	Point.p = lb_p;
+	stream.Append(Point);
+
+	Point.p = rt_p;
+	stream.Append(Point);
+
+	// Triangle 2
+	Point.p = lb_p;
+	stream.Append(Point);
+
+	Point.p = rt_p;
+	stream.Append(Point);
+
+	Point.p = rb_p;
+	stream.Append(Point);
+}
+
+#elif GS_PRIM == 1 && GS_LINE == 0
 
 [maxvertexcount(2)]
 void gs_main(line VS_OUTPUT input[2], inout LineStream<VS_OUTPUT> stream)
 {
-	#if GS_IIP == 0
+#if GS_IIP == 0
 	input[0].c = input[1].c;
-	#endif
+#endif
 
 	stream.Append(input[0]);
 	stream.Append(input[1]);
+}
+
+#elif GS_PRIM == 1 && GS_LINE == 1
+
+[maxvertexcount(6)]
+void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
+{
+	// Transform a line to a thick line-sprite
+	VS_OUTPUT left = input[0];
+	VS_OUTPUT right = input[1];
+	float2 lt_p = input[0].p.xy;
+	float2 rt_p = input[1].p.xy;
+
+	// Potentially there is faster math
+	float2 line_vector = normalize(rt_p.xy - lt_p.xy);
+	float2 line_normal = float2(line_vector.y, -line_vector.x);
+	float2 line_width = (line_normal * PointSize) / 2;
+
+	lt_p -= line_width;
+	rt_p -= line_width;
+	float2 lb_p = input[0].p.xy + line_width;
+	float2 rb_p = input[1].p.xy + line_width;
+
+	#if GS_IIP == 0
+	left.c = right.c;
+	#endif
+
+	// Triangle 1
+	left.p.xy = lt_p;
+	stream.Append(left);
+
+	left.p.xy = lb_p;
+	stream.Append(left);
+
+	right.p.xy = rt_p;
+	stream.Append(right);
+	stream.RestartStrip();
+
+	// Triangle 2
+	left.p.xy = lb_p;
+	stream.Append(left);
+
+	right.p.xy = rt_p;
+	stream.Append(right);
+
+	right.p.xy = rb_p;
+	stream.Append(right);
+	stream.RestartStrip();
 }
 
 #elif GS_PRIM == 2
@@ -681,27 +784,30 @@ void gs_main(triangle VS_OUTPUT input[3], inout TriangleStream<VS_OUTPUT> stream
 [maxvertexcount(4)]
 void gs_main(line VS_OUTPUT input[2], inout TriangleStream<VS_OUTPUT> stream)
 {
-	input[0].p.z = input[1].p.z;
-	input[0].t.zw = input[1].t.zw;
+	VS_OUTPUT lt = input[0];
+	VS_OUTPUT rb = input[1];
 
-	#if GS_IIP == 0
-	input[0].c = input[1].c;
-	#endif
+	// flat depth
+	lt.p.z = rb.p.z;
+	// flat fog and texture perspective
+	lt.t.zw = rb.t.zw;
 
-	VS_OUTPUT lb = input[1];
+	// flat color
+	lt.c = rb.c;
 
-	lb.p.x = input[0].p.x;
-	lb.t.x = input[0].t.x;
+	// Swap texture and position coordinate
+	VS_OUTPUT lb = rb;
+	lb.p.x = lt.p.x;
+	lb.t.x = lt.t.x;
 
-	VS_OUTPUT rt = input[1];
+	VS_OUTPUT rt = rb;
+	rt.p.y = lt.p.y;
+	rt.t.y = lt.t.y;
 
-	rt.p.y = input[0].p.y;
-	rt.t.y = input[0].t.y;
-
-	stream.Append(input[0]);
+	stream.Append(lt);
 	stream.Append(lb);
 	stream.Append(rt);
-	stream.Append(input[1]);
+	stream.Append(rb);
 }
 
 #endif
@@ -711,6 +817,38 @@ PS_OUTPUT ps_main(PS_INPUT input)
 	float4 c = ps_color(input);
 
 	PS_OUTPUT output;
+
+	if (PS_SHUFFLE){
+		uint4 denorm_c = uint4(c * 255.0f + 0.5f);
+		uint2 denorm_TA = uint2(float2(TA.xy) * 255.0f + 0.5f);
+
+		// Mask will take care of the correct destination
+		if (PS_READ_BA){
+			c.rb = c.bb;
+		}
+		else {
+			c.rb = c.rr;
+		}
+		c.g = c.a;
+		if (PS_READ_BA){
+			if (denorm_c.a & 0x80)
+				c.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f;
+			else
+				c.a = float((denorm_c.a & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f;
+
+			//c.g = c.a;
+		}
+		else {
+			if (denorm_c.g & 0x80)
+				c.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.y & 0x80u)) / 255.0f;
+			else
+				c.a = float((denorm_c.g & 0x7Fu) | (denorm_TA.x & 0x80u)) / 255.0f;
+
+			//c.g = c.a;
+		}
+		//Probably not right :/
+		//c.g = c.b;
+	}
 
 	output.c1 = c.a * 2; // used for alpha blending
 
@@ -764,14 +902,16 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	
 	if(VS_TME)
 	{
+		float2 t = input.t - Texture_Scale_Offset.zw;
 		if(VS_FST)
 		{
-            output.t.xy = input.t * TextureScale;
-			output.t.w = 1.0f;
+
+			output.t.xy = t * Texture_Scale_Offset.xy;
+			output.t.zw = t;
 		}
 		else
 		{
-			output.t.xy = input.t;
+			output.t.xy = t;
 			output.t.w = input.p.w;
 		}
 	}

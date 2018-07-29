@@ -36,48 +36,42 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 {
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[TEX0.PSM];
 
-	Texture* t = NULL;
+	auto& m = m_map[TEX0.TBP0 >> 5];
 
-	list<Texture*>& m = m_map[TEX0.TBP0 >> 5];
-
-	for(list<Texture*>::iterator i = m.begin(); i != m.end(); i++)
+	for(auto i = m.begin(); i != m.end(); ++i)
 	{
-		Texture* t2 = *i;
+		Texture* t = *i;
 
-		if(((TEX0.u32[0] ^ t2->m_TEX0.u32[0]) | ((TEX0.u32[1] ^ t2->m_TEX0.u32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
+		if(((TEX0.u32[0] ^ t->m_TEX0.u32[0]) | ((TEX0.u32[1] ^ t->m_TEX0.u32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
 		{
 			continue;
 		}
 
-		if((psm.trbpp == 16 || psm.trbpp == 24) && TEX0.TCC && TEXA != t2->m_TEXA)
+		if((psm.trbpp == 16 || psm.trbpp == 24) && TEX0.TCC && TEXA != t->m_TEXA)
 		{
 			continue;
 		}
 
-		if(tw0 != 0 && t2->m_tw != tw0)
+		if(tw0 != 0 && t->m_tw != tw0)
 		{
 			continue;
 		}
 
-		m.splice(m.begin(), m, i);
-
-		t = t2;
-
+		// Lookup hit
+		m.MoveFront(i.Index());
 		t->m_age = 0;
-
-		break;
+		return t;
 	}
 
-	if(t == NULL)
+	// Lookup miss
+	Texture* t = new Texture(m_state, tw0, TEX0, TEXA);
+
+	m_textures.insert(t);
+
+	for(const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
 	{
-		t = new Texture(m_state, tw0, TEX0, TEXA);
-
-		m_textures.insert(t);
-
-		for(const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
-		{
-			m_map[*p].push_front(t);
-		}
+		const uint32 page = *p;
+		t->m_erase_it[page] = m_map[page].InsertFront(t);
 	}
 
 	return t;
@@ -87,25 +81,19 @@ void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 {
 	for(const uint32* p = pages; *p != GSOffset::EOP; p++)
 	{
-		uint32 page = *p;
-
-		const list<Texture*>& map = m_map[page];
-
-		for(list<Texture*>::const_iterator i = map.begin(); i != map.end(); i++)
+		const uint32 page = *p;
+		
+		for(Texture* t : m_map[page])
 		{
-			Texture* t = *i;
-
 			if(GSUtil::HasSharedBits(psm, t->m_sharedbits))
 			{
 				uint32* RESTRICT valid = t->m_valid;
 
 				if(t->m_repeating)
 				{
-					vector<GSVector2i>& l = t->m_p2t[page];
-
-					for(vector<GSVector2i>::iterator j = l.begin(); j != l.end(); j++)
+					for(const GSVector2i& j : t->m_p2t[page])
 					{
-						valid[j->x] &= j->y;
+						valid[j.x] &= j.y;
 					}
 				}
 				else
@@ -121,41 +109,37 @@ void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 
 void GSTextureCacheSW::RemoveAll()
 {
-	for_each(m_textures.begin(), m_textures.end(), delete_object());
+	for(auto i : m_textures) delete i;
 
 	m_textures.clear();
 
-	for(int i = 0; i < MAX_PAGES; i++)
+	for(auto& l : m_map)
 	{
-		m_map[i].clear();
+		l.clear();
 	}
 }
 
 void GSTextureCacheSW::IncAge()
 {
-	for(hash_set<Texture*>::iterator i = m_textures.begin(); i != m_textures.end(); )
+	for(auto i = m_textures.begin(); i != m_textures.end(); )
 	{
-		hash_set<Texture*>::iterator j = i++;
-
-		Texture* t = *j;
+		Texture* t = *i;
 
 		if(++t->m_age > 10)
 		{
-			m_textures.erase(j);
+			i = m_textures.erase(i);
 
 			for(const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
 			{
-				list<Texture*>& m = m_map[*p];
-
-				for(list<Texture*>::iterator i = m.begin(); i != m.end(); )
-				{
-					list<Texture*>::iterator j = i++;
-
-					if(*j == t) {m.erase(j); break;}
-				}
+				const uint32 page = *p;
+				m_map[page].EraseIndex(t->m_erase_it[page]);
 			}
 
 			delete t;
+		}
+		else
+		{
+			++i;
 		}
 	}
 }
@@ -179,20 +163,13 @@ GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0&
 	}
 
 	memset(m_valid, 0, sizeof(m_valid));
-	memset(m_pages.bm, 0, sizeof(m_pages.bm));
 
 	m_sharedbits = GSUtil::HasSharedBitsPtr(m_TEX0.PSM);
 
 	m_offset = m_state->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 	m_pages.n = m_offset->GetPages(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH));
-
-	for(const uint32* p = m_pages.n; *p != GSOffset::EOP; p++)
-	{
-		uint32 page = *p;
-
-		m_pages.bm[page >> 5] |= 1 << (page & 31);
-	}
+	memcpy(m_pages.bm, m_offset->GetPagesAsBits(TEX0), sizeof(m_pages.bm));
 
 	m_repeating = m_TEX0.IsRepeating(); // repeating mode always works, it is just slightly slower
 
@@ -251,7 +228,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	GSLocalMemory& mem = m_state->m_mem;
 
-	const GSOffset* RESTRICT o = m_offset;
+	const GSOffset* RESTRICT off = m_offset;
 
 	uint32 blocks = 0;
 
@@ -274,25 +251,22 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
 		{
-			uint32 base = o->block.row[y];
+			uint32 base = off->block.row[y];
 
 			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
-				uint32 block = base + o->block.col[x];
+				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
 
-				if(block < MAX_BLOCKS)
+				uint32 row = i >> 5;
+				uint32 col = 1 << (i & 31);
+
+				if((m_valid[row] & col) == 0)
 				{
-					uint32 row = i >> 5;
-					uint32 col = 1 << (i & 31);
+					m_valid[row] |= col;
 
-					if((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
+					(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
 
-						(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}
@@ -301,25 +275,22 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	{
 		for(int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
 		{
-			uint32 base = o->block.row[y];
+			uint32 base = off->block.row[y];
 
 			for(int x = r.left; x < r.right; x += bs.x)
 			{
-				uint32 block = base + o->block.col[x];
+				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
 
-				if(block < MAX_BLOCKS)
+				uint32 row = block >> 5;
+				uint32 col = 1 << (block & 31);
+
+				if((m_valid[row] & col) == 0)
 				{
-					uint32 row = block >> 5;
-					uint32 col = 1 << (block & 31);
+					m_valid[row] |= col;
 
-					if((m_valid[row] & col) == 0)
-					{
-						m_valid[row] |= col;
+					(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
 
-						(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
-
-						blocks++;
-					}
+					blocks++;
 				}
 			}
 		}
@@ -335,7 +306,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 #include "GSTextureSW.h"
 
-bool GSTextureCacheSW::Texture::Save(const string& fn, bool dds) const
+bool GSTextureCacheSW::Texture::Save(const std::string& fn, bool dds) const
 {
 	const uint32* RESTRICT clut = m_state->m_mem.m_clut;
 
@@ -370,7 +341,7 @@ bool GSTextureCacheSW::Texture::Save(const string& fn, bool dds) const
 
 		t.Unmap();
 
-		return t.Save(fn.c_str());
+		return t.Save(fn);
 	}
 
 	return false;

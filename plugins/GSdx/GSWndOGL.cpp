@@ -22,9 +22,9 @@
 #include "stdafx.h"
 #include "GSWndOGL.h"
 
-#if defined(__linux__) && !defined(ENABLE_GLES)
+#if defined(__unix__)
 GSWndOGL::GSWndOGL()
-	: m_NativeWindow(0), m_NativeDisplay(NULL), m_swapinterval(NULL)
+	: m_NativeWindow(0), m_NativeDisplay(nullptr), m_context(0), m_has_late_vsync(false), m_swapinterval_ext(nullptr), m_swapinterval_mesa(nullptr)
 {
 }
 
@@ -52,7 +52,7 @@ void GSWndOGL::CreateContext(int major, int minor)
 		GLX_RED_SIZE        , 8,
 		GLX_GREEN_SIZE      , 8,
 		GLX_BLUE_SIZE       , 8,
-		GLX_DEPTH_SIZE      , 24,
+		GLX_DEPTH_SIZE      , 0,
 		GLX_DOUBLEBUFFER    , True,
 		None
 	};
@@ -81,6 +81,9 @@ void GSWndOGL::CreateContext(int major, int minor)
 		GLX_CONTEXT_MINOR_VERSION_ARB, minor,
 #ifdef ENABLE_OGL_DEBUG
 		GLX_CONTEXT_FLAGS_ARB, GLX_CONTEXT_DEBUG_BIT_ARB,
+#else
+		// Open Source isn't happy with an unsupported flags...
+		//GLX_CONTEXT_FLAGS_ARB, GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR,
 #endif
 		GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB,
 		None
@@ -119,16 +122,13 @@ void GSWndOGL::DetachContext()
 	}
 }
 
-void GSWndOGL::CheckContext()
+void GSWndOGL::PopulateWndGlFunction()
 {
-	int glxMajorVersion, glxMinorVersion;
-	glXQueryVersion(m_NativeDisplay, &glxMajorVersion, &glxMinorVersion);
-	if (glXIsDirect(m_NativeDisplay, m_context))
-		fprintf(stderr, "glX-Version %d.%d with Direct Rendering\n", glxMajorVersion, glxMinorVersion);
-	else {
-		fprintf(stderr, "glX-Version %d.%d with Indirect Rendering !!! It won't support properly opengl\n", glxMajorVersion, glxMinorVersion);
-		throw GSDXRecoverableError();
-	}
+	m_swapinterval_ext  = (PFNGLXSWAPINTERVALEXTPROC) glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
+	m_swapinterval_mesa = (PFNGLXSWAPINTERVALMESAPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalMESA");
+
+	const char* ext = glXQueryExtensionsString(m_NativeDisplay, DefaultScreen(m_NativeDisplay));
+	m_has_late_vsync = m_swapinterval_ext && ext && strstr(ext, "GLX_EXT_swap_control");
 }
 
 bool GSWndOGL::Attach(void* handle, bool managed)
@@ -138,15 +138,7 @@ bool GSWndOGL::Attach(void* handle, bool managed)
 
 	m_NativeDisplay = XOpenDisplay(NULL);
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	CheckContext();
-
-	m_swapinterval = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }
@@ -164,14 +156,14 @@ void GSWndOGL::Detach()
 	}
 }
 
-bool GSWndOGL::Create(const string& title, int w, int h)
+bool GSWndOGL::Create(const std::string& title, int w, int h)
 {
 	if(m_NativeWindow)
 		throw GSDXRecoverableError();
 
 	if(w <= 0 || h <= 0) {
-		w = theApp.GetConfig("ModeWidth", 640);
-		h = theApp.GetConfig("ModeHeight", 480);
+		w = theApp.GetConfigI("ModeWidth");
+		h = theApp.GetConfigI("ModeHeight");
 	}
 
 	m_managed = true;
@@ -185,15 +177,7 @@ bool GSWndOGL::Create(const string& title, int w, int h)
 	if (m_NativeWindow == 0)
 		throw GSDXRecoverableError();
 
-	CreateContext(3, 3);
-
-	AttachContext();
-
-	CheckContext();
-
-	m_swapinterval = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddress((const GLubyte*) "glXSwapIntervalEXT");
-
-	PopulateGlFunction();
+	FullContextInit();
 
 	return true;
 }
@@ -254,16 +238,21 @@ bool GSWndOGL::SetWindowText(const char* title)
 	return true;
 }
 
-void GSWndOGL::SetVSync(bool enable)
+void GSWndOGL::SetSwapInterval()
 {
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if (m_swapinterval) m_swapinterval(m_NativeDisplay, m_NativeWindow, (int)enable);
+	if      (m_swapinterval_ext)  m_swapinterval_ext(m_NativeDisplay, m_NativeWindow, m_vsync);
+	else if (m_swapinterval_mesa) m_swapinterval_mesa(m_vsync);
+	else						 fprintf(stderr, "Failed to set VSync\n");
 }
 
 void GSWndOGL::Flip()
 {
+	if (m_vsync_change_requested.exchange(false))
+		SetSwapInterval();
+
 	glXSwapBuffers(m_NativeDisplay, m_NativeWindow);
 }
 

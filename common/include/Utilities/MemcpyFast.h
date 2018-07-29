@@ -15,26 +15,26 @@
 
 #pragma once
 
-#ifdef __linux__
-#	include "lnx_memzero.h"
-#else
-#	include "win_memzero.h"
-#endif
-
 // For 32-bit MSVC compiles, memcmp performs much worse than memcmp_mmx and
 // other implementations. So for this combination only, prefer memcmp_mmx
 #if defined(_MSC_VER) && !defined(_M_X86_64)
-extern u8 memcmp_mmx(const void* src1, const void* src2, int cmpsize);
+extern u8 memcmp_mmx(const void *src1, const void *src2, int cmpsize);
 #else
 #define memcmp_mmx memcmp
 #endif
 
-// Only used in the Windows version of memzero.h. But it's in Misc.cpp for some reason.
-void _memset16_unaligned( void* dest, u16 data, size_t size );
+// This method can clear any object-like entity -- which is anything that is not a pointer.
+// Structures, static arrays, etc.  No need to include sizeof() crap, this does it automatically
+// for you!
+template <typename T>
+static __fi void memzero(T &object)
+{
+    memset(&object, 0, sizeof(T));
+}
 
-#define memcpy_fast					memcpy
-#define memcpy_aligned(d,s,c)		memcpy(d,s,c)
-#define memcpy_const					memcpy
-#define memcpy_constA				memcpy
-#define memcpy_qwc_					memcpy
-#define memcpy_qwc(d,s,c)			memcpy(d,s,c*16)
+// This method clears an object with the given 8 bit value.
+template <u8 data, typename T>
+static __fi void memset8(T &object)
+{
+    memset(&object, data, sizeof(T));
+}

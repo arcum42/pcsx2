@@ -22,6 +22,7 @@
 #pragma once
 
 #include "GSRendererHW.h"
+#include "GSDeviceDX.h"
 
 class GSRendererDX : public GSRendererHW
 {
@@ -33,15 +34,39 @@ class GSRendererDX : public GSRendererHW
 	bool UserHacks_AlphaStencil;
 
 protected:
+	void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
+	void EmulateZbuffer();
+	void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
+	void EmulateTextureSampler(const GSTextureCache::Source* tex);
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex);
-	virtual void SetupIA() = 0;
+	virtual void EmulateTextureShuffleAndFbmask() = 0;
+	virtual void SetupIA(const float& sx, const float& sy) = 0;
 	virtual void UpdateFBA(GSTexture* rt) {}
 
 	unsigned int UserHacks_TCOffset;
 	float UserHacks_TCO_x, UserHacks_TCO_y;
+	int UserHacks_HPO;
+
+	bool DATE;
+
+	GSDrawingContext* context;
+	GSDrawingEnvironment env;
+
+	GSDeviceDX* dev;
+
+	GSDeviceDX::OMDepthStencilSelector om_dssel;
+	GSDeviceDX::OMBlendSelector om_bsel;
+
+	GSDeviceDX::PSSelector m_ps_sel;
+	GSDeviceDX::PSSamplerSelector m_ps_ssel;
+	GSDeviceDX::GSSelector m_gs_sel;
+
+	GSDeviceDX::PSConstantBuffer ps_cb;
+	GSDeviceDX::VSConstantBuffer vs_cb;
+	GSDeviceDX::GSConstantBuffer gs_cb;
 
 public:
-	GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter = GSVector2(0, 0));
+	GSRendererDX(GSTextureCache* tc, const GSVector2& pixelcenter = GSVector2(0));
 	virtual ~GSRendererDX();
 
 };

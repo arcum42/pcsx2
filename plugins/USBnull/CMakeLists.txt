@@ -8,30 +8,14 @@ endif()
 
 # plugin name
 set(Output USBnull-0.7.0)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	set(USBnullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(USBnullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(USBnullFinalFlags ${OptimizationFlags})
-
-endif()
+set(USBnullFinalFlags "")
 
 # USBnull sources
 set(USBnullSources
-	Config.cpp
 	USB.cpp)
 
 # USBnull headers
 set(USBnullHeaders
-	Config.h
 	USB.h)
 
 # USBnull Linux sources
@@ -44,14 +28,12 @@ set(USBnullLinuxHeaders
 
 # USBnull Windows sources
 set(USBnullWindowsSources
-	Windows/Config.cpp
 	Windows/USBnull.def
-	Windows/USBnull.rc
-	Windows/Win32.cpp)
+)
 
 # USBnull Windows headers
 set(USBnullWindowsHeaders
-	Windows/resource.h)
+)
 
 set(USBnullFinalSources
 	${USBnullSources}
@@ -64,4 +46,8 @@ set(USBnullFinalLibs
 	${GTK2_LIBRARIES}
 )
 
-add_pcsx2_plugin(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")
+if(BUILTIN_USB)
+    add_pcsx2_lib(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")
+else()
+    add_pcsx2_plugin(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")
+endif()

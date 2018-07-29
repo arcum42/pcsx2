@@ -6,100 +6,20 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 
-# library name
 set(Output Utilities)
 
-# set common flags
-set(CommonFlags 
-	-fno-strict-aliasing
+set(CommonFlags
     )
 
-# set optimization flags
-set(OptimizationFlags
-	-falign-functions
-	-falign-jumps
-	-falign-labels
-	-falign-loops
-	-fcaller-saves
-	-fcprop-registers
-	-fcrossjumping
-	-fcse-follow-jumps
-	-fcse-skip-blocks
-	-fdefer-pop
-	-fdelete-null-pointer-checks
-	-fgcse
-	-fgcse-lm
-	-fif-conversion
-	-fif-conversion2
-	-fmerge-constants
-	-foptimize-sibling-calls
-	-fpeephole2
-	-fregmove
-	-freorder-blocks
-	-freorder-functions 
-	-frerun-cse-after-loop
-	-fsched-interblock
-	-fsched-spec
-	-fstrict-overflow
-	-fthread-jumps
-	-ftree-ccp
-	-ftree-ch
-	-ftree-copyrename
-	-ftree-dce
-	-ftree-dominator-opts
-	-ftree-fre
-	-ftree-lrs
-	-ftree-pre
-	-ftree-sra
-	-ftree-ter
-	-ftree-vrp
-	-funit-at-a-time)
-
-#Clang doesn't support a few common flags that GCC does.
-if(NOT USE_CLANG)
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags} -fno-guess-branch-probability -fno-dse -fno-tree-dse
-	)
-endif(NOT USE_CLANG) 
-
-# Debug - Build
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	
-	# add defines
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags} -DPCSX2_DEBUG -DPCSX2_DEVBUILD
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-# Devel - Build
-if(CMAKE_BUILD_TYPE STREQUAL Devel)
-	
-	# add defines
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags} ${OptimizationFlags} -DPCSX2_DEVBUILD
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Devel)
-
-# Release - Build
-if(CMAKE_BUILD_TYPE STREQUAL Release)
-	
-	# add defines
-	set(UtilitiesFinalFlags
-		${UtilitiesFinalFlags}
-		${CommonFlags} ${OptimizationFlags}
-	)
-endif(CMAKE_BUILD_TYPE STREQUAL Release)
+set(UtilitiesFinalFlags ${CommonFlags})
 
 # variable with all sources of this library
 set(UtilitiesSources
+	VirtualMemory.cpp
+	AlignedMalloc.cpp
 	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
-    ../../include/Utilities/SafeArray.inl
-    ../../include/Utilities/TlsVariable.inl
-	AlignedMalloc.cpp
+	../../include/Utilities/SafeArray.inl
 	CheckedStaticBox.cpp
 	Console.cpp
 	EventSource.cpp
@@ -108,23 +28,20 @@ set(UtilitiesSources
 	HashTools.cpp
 	IniInterface.cpp
 	Linux/LnxHostSys.cpp
-	Linux/LnxMisc.cpp
-	Linux/LnxThreads.cpp
 	Mutex.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
+	Perf.cpp
 	pxCheckBox.cpp
 	pxRadioPanel.cpp
 	pxStaticText.cpp
 	pxStreams.cpp
 	pxTranslate.cpp
 	pxWindowTextWriter.cpp
-	Semaphore.cpp
+	RwMutex.cpp
 	StringHelpers.cpp
 	ThreadingDialogs.cpp
 	ThreadTools.cpp
-	vssprintf.cpp
-	VirtualMemory.cpp
 	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
@@ -141,7 +58,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/FixedPointTypes.h
 	../../include/Utilities/General.h
 	../../include/Utilities/HashMap.h
-	../../include/Utilities/lnx_memzero.h
+	../../include/Utilities/MakeUnique.h
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl
 	../../include/Utilities/Path.h
@@ -152,9 +69,9 @@ set(UtilitiesHeaders
 	../../include/Utilities/pxStaticText.h
 	../../include/Utilities/pxStreams.h
 	../../include/Utilities/RedtapeWindows.h
+	../../include/Utilities/RwMutex.h
 	../../include/Utilities/SafeArray.h
 	../../include/Utilities/ScopedAlloc.h
-	../../include/Utilities/ScopedPtr.h
 	../../include/Utilities/ScopedPtrMT.h
 	../../include/Utilities/StringHelpers.h
 	../../include/Utilities/Threading.h
@@ -163,7 +80,30 @@ set(UtilitiesHeaders
 	../../include/Utilities/wxAppWithHelpers.h
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h
-	PrecompiledHeader.h)
+	PrecompiledHeader.h
+	ThreadingInternal.h
+)
+
+if(APPLE)
+	LIST(APPEND UtilitiesSources
+		Darwin/DarwinThreads.cpp
+		Darwin/DarwinMisc.cpp
+		Darwin/DarwinSemaphore.cpp
+	)
+elseif(Windows)
+	LIST(APPEND UtilitiesSources
+		x86/MemcpyFast.cpp
+		Windows/WinThreads.cpp
+		Windows/WinHostSys.cpp
+		Windows/WinMisc.cpp
+	)
+else()
+	LIST(APPEND UtilitiesSources
+		Linux/LnxThreads.cpp
+		Linux/LnxMisc.cpp
+		Semaphore.cpp
+	)
+endif()
 
 set(UtilitiesFinalSources
 	${UtilitiesSources}

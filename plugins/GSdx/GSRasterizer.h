@@ -24,11 +24,11 @@
 #include "GS.h"
 #include "GSVertexSW.h"
 #include "GSFunctionMap.h"
-#include "GSThread.h"
 #include "GSAlignedClass.h"
 #include "GSPerfMon.h"
+#include "GSThread_CXX11.h"
 
-__aligned(class, 32) GSRasterizerData : public GSAlignedClass<32>
+class alignas(32) GSRasterizerData : public GSAlignedClass<32>
 {
 	static int s_counter;
 
@@ -115,20 +115,21 @@ class IRasterizer : public GSAlignedClass<32>
 public:
 	virtual ~IRasterizer() {}
 
-	virtual void Queue(shared_ptr<GSRasterizerData> data) = 0;
+	virtual void Queue(const std::shared_ptr<GSRasterizerData>& data) = 0;
 	virtual void Sync() = 0;
 	virtual bool IsSynced() const = 0;
 	virtual int GetPixels(bool reset = true) = 0;
 	virtual void PrintStats() = 0;
 };
 
-__aligned(class, 32) GSRasterizer : public IRasterizer
+class alignas(32) GSRasterizer : public IRasterizer
 {
 protected:
 	GSPerfMon* m_perfmon;
 	IDrawScanline* m_ds;
 	int m_id;
 	int m_threads;
+	int m_thread_height;
 	uint8* m_scanline;
 	GSVector4i m_scissor;
 	GSVector4 m_fscissor_x;
@@ -138,7 +139,7 @@ protected:
 
 	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
 
-	template<bool scissor_test> 
+	template<bool scissor_test>
 	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const uint32* index, int index_count);
 	void DrawLine(const GSVertexSW* vertex, const uint32* index);
 	void DrawTriangle(const GSVertexSW* vertex, const uint32* index);
@@ -170,7 +171,7 @@ public:
 
 	// IRasterizer
 
-	void Queue(shared_ptr<GSRasterizerData> data);
+	void Queue(const std::shared_ptr<GSRasterizerData>& data);
 	void Sync() {}
 	bool IsSynced() const {return true;}
 	int GetPixels(bool reset);
@@ -180,24 +181,14 @@ public:
 class GSRasterizerList : public IRasterizer
 {
 protected:
-	class GSWorker : public GSJobQueue<shared_ptr<GSRasterizerData> >
-	{
-		GSRasterizer* m_r;
-
-	public:
-		GSWorker(GSRasterizer* r);
-		virtual ~GSWorker();
-
-		int GetPixels(bool reset);
-
-		// GSJobQueue
-
-		void Process(shared_ptr<GSRasterizerData>& item);
-	};
+	using GSWorker = GSJobQueue<std::shared_ptr<GSRasterizerData>, 65536>;
 
 	GSPerfMon* m_perfmon;
-	vector<GSWorker*> m_workers;
+	// Worker threads depend on the rasterizers, so don't change the order.
+	std::vector<std::unique_ptr<GSRasterizer>> m_r;
+	std::vector<std::unique_ptr<GSWorker>> m_workers;
 	uint8* m_scanline;
+	int m_thread_height;
 
 	GSRasterizerList(int threads, GSPerfMon* perfmon);
 
@@ -212,22 +203,23 @@ public:
 		{
 			return new GSRasterizer(new DS(), 0, 1, perfmon);
 		}
-		else
+
+		GSRasterizerList* rl = new GSRasterizerList(threads, perfmon);
+
+		for(int i = 0; i < threads; i++)
 		{
-			GSRasterizerList* rl = new GSRasterizerList(threads, perfmon);
-
-			for(int i = 0; i < threads; i++)
-			{
-				rl->m_workers.push_back(new GSWorker(new GSRasterizer(new DS(), i, threads, perfmon)));
-			}
-
-			return rl;
+			rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new DS(), i, threads, perfmon)));
+			auto &r = *rl->m_r[i];
+			rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
+				[&r](std::shared_ptr<GSRasterizerData> &item) { r.Draw(item.get()); })));
 		}
+
+		return rl;
 	}
 
 	// IRasterizer
 
-	void Queue(shared_ptr<GSRasterizerData> data);
+	void Queue(const std::shared_ptr<GSRasterizerData>& data);
 	void Sync();
 	bool IsSynced() const;
 	int GetPixels(bool reset);

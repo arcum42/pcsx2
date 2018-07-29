@@ -25,13 +25,15 @@
 
 #ifdef ENABLE_OPENCL
 
-__aligned(struct, 32) GSVertexCL
+struct alignas(32) GSVertexCL
 {
 	GSVector4 p, t;
 };
 
 class GSRendererCL : public GSRenderer
 {
+	static GSVector4 m_pos_scale;
+
 	typedef void (GSRendererCL::*ConvertVertexBufferPtr)(GSVertexCL* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 	ConvertVertexBufferPtr m_cvb[4][2][2];
@@ -108,6 +110,7 @@ class GSRendererCL : public GSRenderer
 			uint32 noscissor:1; // 53
 			uint32 tpsm:4; // 54
 			uint32 aem:1; // 58
+			uint32 merged:1; // 59
 			// TODO
 		};
 
@@ -144,10 +147,11 @@ class GSRendererCL : public GSRenderer
 		}
 	};
 
-	__aligned(struct, 32) TFXParameter
+	struct alignas(32) TFXParameter
 	{
 		GSVector4i scissor;
 		GSVector4i dimx; // 4x4 signed char
+		TFXSelector sel;
 		uint32 fbp, zbp, bw;
 		uint32 fm, zm;
 		uint32 fog; // rgb
@@ -172,6 +176,7 @@ class GSRendererCL : public GSRenderer
 		GSVector4i* src_pages; // read by any texture level
 		GSVector4i* dst_pages; // f/z writes to it
 		uint32 fbp, zbp, bw;
+		uint32 fpsm, zpsm, tpsm;
 #ifdef DEBUG
 		TFXParameter* pb;
 #endif
@@ -189,8 +194,8 @@ class GSRendererCL : public GSRenderer
 		std::map<uint32, cl::Kernel> tile_map;
 		std::map<uint64, cl::Kernel> tfx_map;
 
-		cl::Kernel Build(const char* entry, ostringstream& opt);
-		void AddDefs(ostringstream& opt);
+		cl::Kernel Build(const char* entry, std::ostringstream& opt);
+		void AddDefs(std::ostringstream& opt);
 
 	public:
 		std::vector<OCLDeviceDesc> devs;
@@ -218,7 +223,7 @@ class GSRendererCL : public GSRenderer
 	};
 
 	CL m_cl;
-	std::list<shared_ptr<TFXJob>> m_jobs;
+	std::list<std::shared_ptr<TFXJob>> m_jobs;
 	uint32 m_vb_start;
 	uint32 m_vb_count;
 	uint32 m_pb_start;
@@ -226,22 +231,29 @@ class GSRendererCL : public GSRenderer
 	bool m_synced;
 
 	void Enqueue();
-	void EnqueueTFX(std::list<shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim);
-	void UpdateTextureCache(TFXJob* job);
+	void EnqueueTFX(std::list<std::shared_ptr<TFXJob>>& jobs, uint32 bin_count, const cl_uchar4& bin_dim);
+	void JoinTFX(std::list<std::shared_ptr<TFXJob>>& jobs);
+	bool UpdateTextureCache(TFXJob* job);
 	void InvalidateTextureCache(TFXJob* job);
+	void UsePages(uint32* pages);
+	void ReleasePages(uint32* pages);
+
+	static void CL_CALLBACK ReleasePageEvent(cl_event event, cl_int event_command_exec_status, void* user_data);
 
 protected:
 	GSTexture* m_texture[2];
 	uint8* m_output;
 	
 	GSVector4i m_rw_pages[2][4]; // pages that may be read or modified by the rendering queue, f/z rw, tex r
-	GSVector4i m_tc_pages[4]; // invalidated texture cache pages (split this into 8:24?)
-	GSVector4i m_tmp_pages[4]; // TODO: this should be block level, too many overlaps inside pages with render targets
+	GSVector4i m_tc_pages[4]; // invalidated texture cache pages (split this into 8:24?) // TODO: this should be block level, too many overlaps inside pages with render targets
+	GSVector4i m_tmp_pages[4];
+	uint32 m_tmp_pages2[MAX_PAGES + 1];
+	std::array<std::atomic<uint32>, 512> m_rw_pages_rendering; // pages that are currently in-use
 
 	void Reset();
 	void VSync(int field);
 	void ResetDevice();
-	GSTexture* GetOutput(int i);
+	GSTexture* GetOutput(int i, int& y_offset);
 
 	void Draw();
 	void Sync(int reason);
@@ -251,6 +263,8 @@ protected:
 	bool SetupParameter(TFXJob* job, TFXParameter* pb, GSVertexCL* vertex, size_t vertex_count, const uint32* index, size_t index_count);
 
 public:
+	static void InitVectors();
+
 	GSRendererCL();
 	virtual ~GSRendererCL();
 };

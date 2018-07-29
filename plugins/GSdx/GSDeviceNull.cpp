@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSDeviceNull.h"
 
-bool GSDeviceNull::Create(GSWnd* wnd)
+bool GSDeviceNull::Create(const std::shared_ptr<GSWnd> &wnd)
 {
 	if(!GSDevice::Create(wnd))
 		return false;
@@ -34,10 +34,7 @@ bool GSDeviceNull::Create(GSWnd* wnd)
 
 bool GSDeviceNull::Reset(int w, int h)
 {
-	if(!GSDevice::Reset(w, h))
-		return false;
-
-	return true;
+	return GSDevice::Reset(w, h);
 }
 
 GSTexture* GSDeviceNull::CreateSurface(int type, int w, int h, bool msaa, int format)

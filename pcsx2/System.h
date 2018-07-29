@@ -87,23 +87,23 @@ namespace HostMemoryMap
 	// microVU0 recompiler code cache area (64mb)
 	static const uptr mVU1rec	= 0x40000000;
 #endif
-	
+
 }
 
 // --------------------------------------------------------------------------------------
 //  SysMainMemory
 // --------------------------------------------------------------------------------------
-// This class provides the main memory for the virtual machines.  
+// This class provides the main memory for the virtual machines.
 class SysMainMemory
 {
 protected:
 	eeMemoryReserve			m_ee;
 	iopMemoryReserve		m_iop;
 	vuMemoryReserve			m_vu;
-	
+
 public:
 	SysMainMemory();
-	virtual ~SysMainMemory() throw();
+	virtual ~SysMainMemory();
 
 	virtual void ReserveAll();
 	virtual void CommitAll();
@@ -119,10 +119,10 @@ class SysAllocVM
 {
 public:
 	SysAllocVM();
-	virtual ~SysAllocVM() throw();
+	virtual ~SysAllocVM();
 
 protected:
-	void CleanupMess() throw();
+	void CleanupMess() noexcept;
 };
 
 // --------------------------------------------------------------------------------------
@@ -135,10 +135,10 @@ protected:
 	ScopedExcept m_RecExceptionIOP;
 
 public:
-	ScopedPtr<CpuInitializerSet> CpuProviders;
+	std::unique_ptr<CpuInitializerSet> CpuProviders;
 
 	SysCpuProviderPack();
-	virtual ~SysCpuProviderPack() throw();
+	virtual ~SysCpuProviderPack();
 
 	void ApplyConfig() const;
 #ifndef DISABLE_SVU
@@ -150,8 +150,8 @@ public:
 	bool IsRecAvailable_EE() const		{ return !m_RecExceptionEE; }
 	bool IsRecAvailable_IOP() const		{ return !m_RecExceptionIOP; }
 
-	BaseException* GetException_EE() const	{ return m_RecExceptionEE; }
-	BaseException* GetException_IOP() const	{ return m_RecExceptionIOP; }
+	BaseException* GetException_EE() const	{ return m_RecExceptionEE.get(); }
+	BaseException* GetException_IOP() const	{ return m_RecExceptionIOP.get(); }
 
 	bool IsRecAvailable_MicroVU0() const;
 	bool IsRecAvailable_MicroVU1() const;
@@ -164,7 +164,7 @@ public:
 	BaseException* GetException_SuperVU1() const;
 
 protected:
-	void CleanupMess() throw();
+	void CleanupMess() noexcept;
 };
 
 // GetCpuProviders - this function is not implemented by PCSX2 core -- it must be
@@ -179,6 +179,7 @@ extern u8 *SysMmapEx(uptr base, u32 size, uptr bounds, const char *caller="Unnam
 extern void vSyncDebugStuff( uint frame );
 extern void NTFS_CompressFile( const wxString& file, bool compressStatus=true );
 
+extern wxString SysGetBiosDiscID();
 extern wxString SysGetDiscID();
 
 extern SysMainMemory& GetVmMemory();

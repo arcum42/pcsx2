@@ -23,9 +23,7 @@
 class BaseApplicableConfigPanel;
 class BaseApplicableDialog;
 
-BEGIN_DECLARE_EVENT_TYPES()
-	DECLARE_EVENT_TYPE( pxEvt_ApplySettings, -1 )
-END_DECLARE_EVENT_TYPES()
+wxDECLARE_EVENT(pxEvt_ApplySettings, wxCommandEvent);
 
 namespace Exception
 {
@@ -97,7 +95,7 @@ struct ApplyStateStruct
 	void StartWizard();
 	bool ApplyAll();
 	bool ApplyPage( int pageid );
-	void DoCleanup() throw();
+	void DoCleanup() noexcept;
 };
 
 class IApplyState
@@ -120,7 +118,7 @@ class BaseApplicableDialog
 
 public:
 	BaseApplicableDialog() {}
-	virtual ~BaseApplicableDialog() throw();
+	virtual ~BaseApplicableDialog();
 
 	// Must return the same thing as GetNameStatic; a name ideal for use in uniquely
 	// identifying dialogs.  (this version is the 'instance' version, which is called
@@ -163,7 +161,7 @@ protected:
 	EventListenerHelper_AppStatus<BaseApplicableConfigPanel>	m_AppStatusHelper;
 
 public:
-	virtual ~BaseApplicableConfigPanel() throw();
+	virtual ~BaseApplicableConfigPanel();
 
 	BaseApplicableConfigPanel( wxWindow* parent, wxOrientation orient=wxVERTICAL );
 	BaseApplicableConfigPanel( wxWindow* parent, wxOrientation orient, const wxString& staticLabel );
@@ -238,7 +236,7 @@ public:
 		const wxBitmap& bitmap = wxNullBitmap
 	);
 
-	virtual ~ApplicableWizardPage() throw() { m_ApplyState.DoCleanup(); }
+	virtual ~ApplicableWizardPage() { m_ApplyState.DoCleanup(); }
 	
 	virtual bool PrepForApply();
 };

@@ -2,12 +2,18 @@
 #						Search all libraries on the system
 #-------------------------------------------------------------------------------
 ## Use cmake package to find module
-find_package(ALSA)
-find_package(BZip2)
+if (Linux)
+    find_package(ALSA)
+endif()
+find_package(Freetype) # GSdx OSD
 find_package(Gettext) # translation tool
-find_package(Git)
-find_package(JPEG)
+if(EXISTS ${PROJECT_SOURCE_DIR}/.git)
+    find_package(Git)
+endif()
+find_package(LibLZMA)
 find_package(OpenGL)
+find_package(PNG)
+find_package(Vtune)
 # The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)
 # Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
@@ -23,15 +29,11 @@ else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
 
-if(WX28_API)
-    list(APPEND wxWidgets_CONFIG_OPTIONS --version=2.8)
-else()
-    list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
-endif()
+list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
 
-if(GTK3_API)
+if(GTK3_API AND NOT APPLE)
     list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-else()
+elseif(NOT APPLE)
     list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
 endif()
 
@@ -43,16 +45,23 @@ endif()
 # FindwxWidgets only searches for wx-config.
 if(CMAKE_CROSSCOMPILING)
     # May need to fix the filenames for lib32-wx3.0.
-    if(NOT WX28_API AND ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386" AND EXISTS "/usr/bin/wx-config32-3.0")
-        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-3.0")
-    elseif(WX28_API AND ${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386" AND EXISTS "/usr/bin/wx-config32-2.8")
-        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-2.8")
+    if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
+        if (Fedora AND EXISTS "/usr/bin/wx-config-3.0")
+            set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
+        endif()
+        if (EXISTS "/usr/bin/wx-config32")
+            set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32")
+        endif()
+        if (EXISTS "/usr/bin/wx-config32-3.0")
+            set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-3.0")
+        endif()
     endif()
 else()
-    if(NOT WX28_API AND EXISTS "/usr/bin/wx-config-3.0")
+    if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk2u-3.0-config")
+    endif()
+    if(EXISTS "/usr/bin/wx-config-3.0")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
-    elseif(WX28_API AND EXISTS "/usr/bin/wx-config-2.8")
-        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-2.8")
     endif()
 endif()
 
@@ -60,17 +69,36 @@ find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
 
 ## Use pcsx2 package to find module
-include(FindCg)
-include(FindGlew)
 include(FindLibc)
+
+## Only needed by the extra plugins
+if(EXTRA_PLUGINS)
+    include(FindCg)
+    include(FindGlew)
+    find_package(JPEG)
+endif()
 
 ## Use CheckLib package to find module
 include(CheckLib)
 if(Linux)
     check_lib(AIO aio libaio.h)
+    # There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
+    # When cross compiling, pkg-config will be skipped so we have to look for
+    # udev (it'll automatically be prefixed with lib). But when not cross
+    # compiling, we have to look for libudev.pc. Argh. Hence the silliness below.
+    if(CMAKE_CROSSCOMPILING)
+        check_lib(LIBUDEV udev libudev.h)
+    else()
+        check_lib(LIBUDEV libudev libudev.h)
+    endif()
 endif()
-check_lib(EGL EGL EGL/egl.h)
-check_lib(GLESV2 GLESv2 GLES3/gl3ext.h) # NOTE: looking for GLESv3, not GLESv2
+if(EGL_API)
+    check_lib(EGL EGL EGL/egl.h)
+    check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
+endif()
+if(OPENCL_API)
+    check_lib(OPENCL OpenCL CL/cl.hpp)
+endif()
 check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 check_lib(SOUNDTOUCH SoundTouch soundtouch/SoundTouch.h)
 
@@ -117,10 +145,6 @@ if(ALSA_FOUND)
 	include_directories(${ALSA_INCLUDE_DIRS})
 endif()
 
-if(BZIP2_FOUND)
-	include_directories(${BZIP2_INCLUDE_DIR})
-endif()
-
 if(CG_FOUND)
 	include_directories(${CG_INCLUDE_DIRS})
 endif()
@@ -139,6 +163,10 @@ endif()
 
 if(SDL_FOUND AND NOT SDL2_API)
 	include_directories(${SDL_INCLUDE_DIR})
+endif()
+
+if(USE_VTUNE AND VTUNE_FOUND)
+    include_directories(${VTUNE_INCLUDE_DIRS})
 endif()
 
 if(wxWidgets_FOUND)
@@ -164,4 +192,10 @@ include_directories(${CMAKE_SOURCE_DIR}/common/include
 # Note: wxWidgets_INCLUDE_DIRS must be defined
 #----------------------------------------
 include(ApiValidation)
+
 WX_vs_SDL()
+
+# Blacklist bad GCC
+if(GCC_VERSION VERSION_EQUAL "7.0" OR GCC_VERSION VERSION_EQUAL "7.1")
+    GCC7_BUG()
+endif()

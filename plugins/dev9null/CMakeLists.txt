@@ -8,30 +8,14 @@ endif()
 
 # plugin name
 set(Output dev9null-0.5.0)
-
-set(OptimizationFlags
-    -O2
-    )
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(dev9nullFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(dev9nullFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(dev9nullFinalFlags ${OptimizationFlags})
-
-endif()
+set(dev9nullFinalFlags "")
 
 # dev9null sources
 set(dev9nullSources
-	Config.cpp
 	DEV9.cpp)
 
 # dev9null headers
 set(dev9nullHeaders
-	Config.h
 	DEV9.h)
 
 # dev9null Linux sources
@@ -61,4 +45,8 @@ set(dev9nullFinalLibs
 	${GTK2_LIBRARIES}
 )
 
-add_pcsx2_plugin(${Output} "${dev9nullFinalSources}" "${dev9nullFinalLibs}" "${dev9nullFinalFlags}")
+if(BUILTIN_DEV9)
+    add_pcsx2_lib(${Output} "${dev9nullFinalSources}" "${dev9nullFinalLibs}" "${dev9nullFinalFlags}")
+else()
+    add_pcsx2_plugin(${Output} "${dev9nullFinalSources}" "${dev9nullFinalLibs}" "${dev9nullFinalFlags}")
+endif()

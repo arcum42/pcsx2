@@ -147,7 +147,7 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 	m_msg_preset->Bold();
 	
 	//I'm unable to do without the next 2 rows.. what am I missing?
-	m_msg_preset->SetMinWidth(150);
+	m_msg_preset->SetMinWidth(250);
 	m_msg_preset->Unwrapped();
 
 
@@ -157,9 +157,9 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 	*m_extraButtonSizer += 5;
 	*m_extraButtonSizer += m_msg_preset     | pxMiddle;
 
-	Connect( m_slider_presets->GetId(),	wxEVT_SCROLL_THUMBTRACK,		wxScrollEventHandler( Dialogs::SysConfigDialog::Preset_Scroll ) );
-	Connect( m_slider_presets->GetId(),	wxEVT_SCROLL_CHANGED,			wxScrollEventHandler( Dialogs::SysConfigDialog::Preset_Scroll ) );
-	Connect( m_check_presets->GetId(), 	wxEVT_COMMAND_CHECKBOX_CLICKED,	wxCommandEventHandler( Dialogs::SysConfigDialog::Presets_Toggled ) );
+	Bind(wxEVT_SCROLL_THUMBTRACK, &Dialogs::SysConfigDialog::Preset_Scroll, this, m_slider_presets->GetId());
+	Bind(wxEVT_SCROLL_CHANGED, &Dialogs::SysConfigDialog::Preset_Scroll, this, m_slider_presets->GetId());
+	Bind(wxEVT_CHECKBOX, &Dialogs::SysConfigDialog::Presets_Toggled, this, m_check_presets->GetId());
 }
 
 
@@ -229,12 +229,14 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 	AddOkCancel();
 	AddPresetsControl();
 
+	SetSizerAndFit(GetSizer());
+
 	if( wxGetApp().Overrides.HasCustomHacks() )
 		wxGetApp().PostMethod( CheckHacksOverrides );
 }
 
 Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("Components Selectors - %s")),  650 )
+	: BaseConfigurationDialog( parent, AddAppName(_("Components Selectors - %s")),  750 )
 {
 	ScopedBusyCursor busy( Cursor_ReallyBusy );
 
@@ -248,61 +250,25 @@ Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
 	AddListbook();
 	AddOkCancel();
 
+	SetSizerAndFit(GetSizer());
+
 	if( wxGetApp().Overrides.HasPluginsOverride() )
 		wxGetApp().PostMethod( CheckPluginsOverrides );
 }
 
-
-Dialogs::InterfaceConfigDialog::InterfaceConfigDialog(wxWindow *parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("Appearance/Themes - %s")), 400 )
-{
-	ScopedBusyCursor busy( Cursor_ReallyBusy );
-
-	CreateListbook( wxGetApp().GetImgList_Config() );
-	const AppImageIds::ConfigIds& cfgid( wxGetApp().GetImgId().Config );
-
-	AddPage<AppearanceThemesPanel>	( pxL("Appearance"),	cfgid.Appearance );
-
-	AddListbook();
-	AddOkCancel();
-
-	//*this += new Panels::LanguageSelectionPanel( this ) | pxCenter;
-	//wxDialogWithHelpers::AddOkCancel( NULL, false );
-}
-
 Dialogs::InterfaceLanguageDialog::InterfaceLanguageDialog(wxWindow* parent)
-	: BaseConfigurationDialog(parent, _("Language selector"), 400)
+	: BaseConfigurationDialog(parent, _("Language Selector"), 400)
 {
 	*this += 5;
 
 	// Keep this in English - same as the menu item.
-	*this += Heading(L"New language will affect newly opened windows.\n");
-	*this += Heading(L"Full change will happen after restarting PCSX2.");
+	*this += Heading(L"Language switch will only affect newly opened windows.\n");
+	*this += Heading(L"Full change will not apply until PCSX2 is restarted.");
 	*this += new Panels::LanguageSelectionPanel(this, false) | StdCenter();
 
 	AddOkCancel();
-}
 
-// ------------------------------------------------------------------------
-Panels::AppearanceThemesPanel::AppearanceThemesPanel( wxWindow* parent )
-	: BaseApplicableConfigPanel( parent )
-{
-
-}
-
-AppearanceThemesPanel::~AppearanceThemesPanel() throw()
-{
-
-}
-
-void AppearanceThemesPanel::Apply()
-{
-
-}
-
-void AppearanceThemesPanel::AppStatusEvent_OnSettingsApplied()
-{
-
+	SetSizerAndFit(GetSizer());
 }
 
 bool g_ConfigPanelChanged = false;

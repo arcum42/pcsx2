@@ -30,17 +30,17 @@ class GSDeviceDX : public GSDevice
 public:
 	#pragma pack(push, 1)
 
-	__aligned(struct, 32) VSConstantBuffer
+	struct alignas(32) VSConstantBuffer
 	{
 		GSVector4 VertexScale;
 		GSVector4 VertexOffset;
-		GSVector4 TextureScale;
+		GSVector4 Texture_Scale_Offset;
 
 		struct VSConstantBuffer()
 		{
 			VertexScale = GSVector4::zero();
 			VertexOffset = GSVector4::zero();
-			TextureScale = GSVector4::zero();
+			Texture_Scale_Offset = GSVector4::zero();
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -48,15 +48,12 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			GSVector4i b0 = b[0];
-			GSVector4i b1 = b[1];
-			GSVector4i b2 = b[2];
-
-			if(!((a[0] == b0) & (a[1] == b1) & (a[2] == b2)).alltrue())
+			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
 			{
-				a[0] = b0;
-				a[1] = b1;
-				a[2] = b2;
+				a[0] = b[0];
+				a[1] = b[1];
+				a[2] = b[2];
+				a[3] = b[3];
 
 				return true;
 			}
@@ -76,7 +73,6 @@ public:
 				uint32 fst:1;
 				uint32 logz:1;
 				uint32 rtcopy:1;
-				uint32 wildhack:2;
 			};
 
 			uint32 key;
@@ -87,7 +83,7 @@ public:
 		VSSelector() : key(0) {}
 	};
 
-	__aligned(struct, 32) PSConstantBuffer
+	struct alignas(32) PSConstantBuffer
 	{
 		GSVector4 FogColor_AREF;
 		GSVector4 HalfTexel;
@@ -113,26 +109,34 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			GSVector4i b0 = b[0];
-			GSVector4i b1 = b[1];
-			GSVector4i b2 = b[2];
-			GSVector4i b3 = b[3];
-			GSVector4i b4 = b[4];
-			GSVector4i b5 = b[5];
-
-			if(!((a[0] == b0) /*& (a[1] == b1)*/ & (a[2] == b2) & (a[3] == b3) & (a[4] == b4) & (a[5] == b5)).alltrue()) // if WH matches HalfTexel does too
+			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5])).alltrue()) // if WH matches HalfTexel does too
 			{
-				a[0] = b0;
-				a[1] = b1;
-				a[2] = b2;
-				a[3] = b3;
-				a[4] = b4;
-				a[5] = b5;
+				a[0] = b[0];
+				a[1] = b[1];
+				a[2] = b[2];
+				a[3] = b[3];
+				a[4] = b[4];
+				a[5] = b[5];
 
 				return true;
 			}
 
 			return false;
+		}
+	};
+
+	struct alignas(32) GSConstantBuffer
+	{
+		GSVector2 PointSize;
+
+		struct GSConstantBuffer()
+		{
+			PointSize = GSVector2(0);
+		}
+
+		__forceinline bool Update(const GSConstantBuffer* cb)
+		{
+			return true;
 		}
 	};
 
@@ -144,14 +148,19 @@ public:
 			{
 				uint32 iip:1;
 				uint32 prim:2;
+				uint32 point:1;
+				uint32 line:1;
+
+				uint32 _free:27;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x7;}
+		operator uint32() {return key;}
 
 		GSSelector() : key(0) {}
+		GSSelector(uint32 k) : key(k) {}
 	};
 
 	struct PSSelector
@@ -160,31 +169,47 @@ public:
 		{
 			struct
 			{
-				uint32 fst:1;
-				uint32 wms:2;
-				uint32 wmt:2;
-				uint32 fmt:3;
+				// *** Word 1
+				// Format
+				uint32 fmt:4;
+				// Alpha extension/Correction
 				uint32 aem:1;
+				uint32 fba:1;
+				// Fog
+				uint32 fog:1;
+				// Pixel test
+				uint32 date:2;
+				uint32 atst:3;
+				// Color sampling
+				uint32 fst:1;
 				uint32 tfx:3;
 				uint32 tcc:1;
-				uint32 atst:3;
-				uint32 fog:1;
-				uint32 clr1:1;
-				uint32 fba:1;
-				uint32 aout:1;
-				uint32 rt:1;
+				uint32 wms:2;
+				uint32 wmt:2;
 				uint32 ltf:1;
+				// Shuffle and fbmask effect
+				uint32 shuffle:1;
+				uint32 read_ba:1;
+
+				// *** Word 2
+				// Blend and Colclip
+				uint32 clr1:1;
+				uint32 rt:1;
 				uint32 colclip:2;
-				uint32 date:2;
+
+				// Hack
+				uint32 aout:1;
 				uint32 spritehack:1;
 				uint32 tcoffsethack:1;
 				uint32 point_sampler:1;
+
+				uint32 _free:32;
 			};
 
-			uint32 key;
+			uint64 key;
 		};
 
-		operator uint32() {return key & 0xfffffff;}
+		operator uint64() {return key;}
 
 		PSSelector() : key(0) {}
 	};
@@ -273,9 +298,15 @@ public:
 	#pragma pack(pop)
 
 protected:
-	struct {D3D_FEATURE_LEVEL level; string model, vs, gs, ps, cs;} m_shader;
+	struct {D3D_FEATURE_LEVEL level; std::string model, vs, gs, ps, cs;} m_shader;
 	uint32 m_msaa;
 	DXGI_SAMPLE_DESC m_msaa_desc;
+
+	static HMODULE s_d3d_compiler_dll;
+	static decltype(&D3DCompile) s_pD3DCompile;
+	// Older version doesn't support D3D_COMPILE_STANDARD_FILE_INCLUDE, which
+	// could be useful for external shaders.
+	static bool s_old_d3d_compiler_dll;
 
 	GSTexture* FetchSurface(int type, int w, int h, bool msaa, int format);
 
@@ -287,7 +318,7 @@ public:
 	void GetFeatureLevel(D3D_FEATURE_LEVEL& level) const {level = m_shader.level;}
 
 	virtual void SetupVS(VSSelector sel, const VSConstantBuffer* cb) = 0;
-	virtual void SetupGS(GSSelector sel) = 0;
+	virtual void SetupGS(GSSelector sel, const GSConstantBuffer* cb) = 0;
 	virtual void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel) = 0;
 	virtual void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix) = 0;
 
@@ -296,7 +327,10 @@ public:
 	virtual bool HasStencil() = 0;
 	virtual bool HasDepth32() = 0;
 
-	template<class T> void PrepareShaderMacro(vector<T>& dst, const T* src)
+	static bool LoadD3DCompiler();
+	static void FreeD3DCompiler();
+
+	template<class T> void PrepareShaderMacro(std::vector<T>& dst, const T* src)
 	{
 		dst.clear();
 

@@ -29,6 +29,39 @@
 // Note only a subset of the opcodes are supported. It is intended as a cheap debugger
 //#define PRINT_REG_CONTENT
 
+// Note: Perf is not important
+static void vssappendf(std::string &dest, const char *format, va_list args)
+{
+    char first_try[128]; // this function is called 99% (100%?) of the times for small string
+    va_list args_copy;
+    va_copy(args_copy, args);
+
+    s32 size = std::vsnprintf(first_try, 128, format, args_copy) + 1;
+
+    va_end(args_copy);
+
+    if (size < 0)
+        return;
+    if (size < 128) {
+        dest += first_try;
+        return;
+    }
+
+    std::vector<char> output(size + 1);
+    std::vsnprintf(output.data(), size, format, args);
+
+    dest += output.data();
+}
+
+void ssappendf(std::string &dest, const char *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    vssappendf(dest, format, args);
+    va_end(args);
+}
+
+
 unsigned long opcode_addr;
 u32 disasmOpcode;
 bool disSimplify;
@@ -650,9 +683,9 @@ void P_COP2_Unknown( std::string& output )
 
 void label_decode( std::string& output, u32 addr )
 {
-	std::string buf;
-	ssprintf(buf, "->$0x%08X", addr);
-	output += buf;
+	char buffer[32];
+	sprintf(buffer, "->$0x%08X", addr);
+	output += std::string(buffer);
 }
 
 void jump_decode( std::string& output )
@@ -783,7 +816,7 @@ void BNE( std::string& output )
 	else if (disSimplify && rs != 0 && rt == 0)
 		disBranch(output, "bnez", rs);
 	else
-		disBranch(output, "bne", rt, rs);
+		disBranch(output, "bne", rs, rt);
 }
 
 void BLEZ( std::string& output )   { disBranch(output, "blez", DECODE_RS); }
@@ -847,7 +880,7 @@ void BNEL( std::string& output )
 	else if (disSimplify && rs != 0 && rt == 0)
 		disBranch(output, "bnezl", rs);
 	else
-		disBranch(output, "bnel", rt, rs);
+		disBranch(output, "bnel", rs, rt);
 }
 
 void BLEZL( std::string& output )  { disBranch(output, "blezl", DECODE_RS); }
@@ -868,6 +901,9 @@ void disMemAccess( std::string& output, const char* name, int cop = 0)
 		break;
 	case 2:
 		rt = COP2_REG_FP[DECODE_FT];
+		break;
+	default:
+		rt = "???";
 		break;
 	}
 

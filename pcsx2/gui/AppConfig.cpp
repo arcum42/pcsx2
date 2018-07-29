@@ -24,6 +24,7 @@
 
 #include <wx/stdpaths.h>
 #include "DebugTools/Debug.h"
+#include <memory>
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // PathDefs Namespace -- contains default values for various pcsx2 path names and locations.
@@ -72,6 +73,18 @@ namespace PathDefs
 			return retval;
 		}
 
+		const wxDirName& Bios()
+		{
+			static const wxDirName retval(L"bios");
+			return retval;
+		}
+
+		const wxDirName& Cheats()
+		{
+			static const wxDirName retval(L"cheats");
+			return retval;
+		}
+
 		const wxDirName& CheatsWS()
 		{
 			static const wxDirName retval(L"cheats_ws");
@@ -89,12 +102,6 @@ namespace PathDefs
 			static const wxDirName retval( L"dumps" );
 			return retval;
 		}
-
-		const wxDirName& Themes()
-		{
-			static const wxDirName retval( L"themes" );
-			return retval;
-		}
 		
 		const wxDirName& Docs()
 		{
@@ -107,7 +114,7 @@ namespace PathDefs
 	// (currently it's the CWD, but in the future I intend to move all binaries to a "bin"
 	// sub folder, in which case the approot will become "..") [- Air?]
 
-	//The installer installs the folders which are relative to AppRoot (that's plugins/themes/langs)
+	//The installer installs the folders which are relative to AppRoot (that's plugins/langs)
 	//  relative to the exe folder, and not relative to cwd. So the exe should be default AppRoot. - avih
 	const wxDirName& AppRoot()
 	{
@@ -184,12 +191,12 @@ namespace PathDefs
 
 	wxDirName GetBios()
 	{
-		return GetDocuments() + wxDirName( L"bios" );
+		return GetDocuments() + Base::Bios();;
 	}
 
 	wxDirName GetCheats()
 	{
-		return AppRoot() + wxDirName( L"cheats" );
+		return GetDocuments() + Base::Cheats();
 	}
 
 	wxDirName GetCheatsWS()
@@ -225,11 +232,6 @@ namespace PathDefs
 #endif
 	}
 
-	wxDirName GetThemes()
-	{
-		return AppRoot() + Base::Themes();
-	}
-
 	wxDirName GetSettings()
 	{
 		return GetDocuments() + Base::Settings();
@@ -251,7 +253,6 @@ namespace PathDefs
 		{
 			case FolderId_Plugins:		return GetPlugins();
 			case FolderId_Settings:		return GetSettings();
-			case FolderId_Themes:		return GetThemes();
 			case FolderId_Bios:			return GetBios();
 			case FolderId_Snapshots:	return GetSnapshots();
 			case FolderId_Savestates:	return GetSavestates();
@@ -275,7 +276,6 @@ wxDirName& AppConfig::FolderOptions::operator[]( FoldersEnum_t folderidx )
 	{
 		case FolderId_Plugins:		return PluginsFolder;
 		case FolderId_Settings:		return SettingsFolder;
-		case FolderId_Themes:		return ThemesFolder;
 		case FolderId_Bios:			return Bios;
 		case FolderId_Snapshots:	return Snapshots;
 		case FolderId_Savestates:	return Savestates;
@@ -303,7 +303,6 @@ bool AppConfig::FolderOptions::IsDefault( FoldersEnum_t folderidx ) const
 	{
 		case FolderId_Plugins:		return UseDefaultPluginsFolder;
 		case FolderId_Settings:		return UseDefaultSettingsFolder;
-		case FolderId_Themes:		return UseDefaultThemesFolder;
 		case FolderId_Bios:			return UseDefaultBios;
 		case FolderId_Snapshots:	return UseDefaultSnapshots;
 		case FolderId_Savestates:	return UseDefaultSavestates;
@@ -332,11 +331,6 @@ void AppConfig::FolderOptions::Set( FoldersEnum_t folderidx, const wxString& src
 		case FolderId_Settings:
 			SettingsFolder = src;
 			UseDefaultSettingsFolder = useDefault;
-		break;
-
-		case FolderId_Themes:
-			ThemesFolder = src;
-			UseDefaultThemesFolder = useDefault;
 		break;
 
 		case FolderId_Bios:
@@ -516,13 +510,12 @@ AppConfig::AppConfig()
 	, SysSettingsTabName( L"Cpu" )
 	, McdSettingsTabName( L"none" )
 	, ComponentsTabName( L"Plugins" )
-	, AppSettingsTabName( L"Appearance" )
+	, AppSettingsTabName( L"none" )
 	, GameDatabaseTabName( L"none" )
-	, DeskTheme( L"default" )
 {
 	LanguageId			= wxLANGUAGE_DEFAULT;
 	LanguageCode		= L"default";
-	RecentIsoCount		= 12;
+	RecentIsoCount		= 20;
 	Listbook_ImageSize	= 32;
 	Toolbar_ImageSize	= 24;
 	Toolbar_ShowLabels	= true;
@@ -536,13 +529,16 @@ AppConfig::AppConfig()
 	EnablePresets		= true;
 	PresetIndex			= 1;
 
-	CdvdSource			= CDVDsrc_Iso;
+	CdvdSource			= CDVD_SourceType::Iso;
 
 	// To be moved to FileMemoryCard pluign (someday)
 	for( uint slot=0; slot<8; ++slot )
 	{
 		Mcd[slot].Enabled	= !FileMcd_IsMultitapSlot(slot);	// enables main 2 slots
 		Mcd[slot].Filename	= FileMcd_GetDefaultName( slot );
+
+		// Folder memory card is autodetected later.
+		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
 	}
 
 	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
@@ -577,13 +573,12 @@ void App_LoadSaveInstallSettings( IniInterface& ini )
 	ini.Entry( L"SettingsFolder",			SettingsFolder,				PathDefs::GetSettings() );
 
 	// "Install_Dir" conforms to the NSIS standard install directory key name.
-	// Attempt to load plugins and themes based on the Install Folder.
+	// Attempt to load plugins based on the Install Folder.
 
 	ini.Entry( L"Install_Dir",				InstallFolder,				(wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath()) );
 	SetFullBaseDir( InstallFolder );
 
 	//ini.Entry( L"PluginsFolder",			PluginsFolder,				InstallFolder + PathDefs::Base::Plugins() );
-	ini.Entry( L"ThemesFolder",				ThemesFolder,				InstallFolder + PathDefs::Base::Themes() );
 
 	ini.Flush();
 }
@@ -637,7 +632,6 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( LanguageCode );
 	IniEntry( RecentIsoCount );
 	IniEntry( GzipIsoIndexTemplate );
-	IniEntry( DeskTheme );
 	IniEntry( Listbook_ImageSize );
 	IniEntry( Toolbar_ImageSize );
 	IniEntry( Toolbar_ShowLabels );
@@ -647,12 +641,14 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	CurrentIso = res.GetFullPath();
 
 	IniEntry( CurrentELF );
+	IniEntry( CurrentIRX );
 
 	IniEntry( EnableSpeedHacks );
 	IniEntry( EnableGameFixes );
 
 	IniEntry( EnablePresets );
 	IniEntry( PresetIndex );
+	IniEntry( AskOnBoot );
 	
 	#ifdef __WXMSW__
 	IniEntry( McdCompressNTFS );
@@ -674,6 +670,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 	BaseFilenames	.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
 	Framerate		.LoadSave( ini );
+	Templates		.LoadSave( ini );
 
 	ini.Flush();
 }
@@ -722,6 +719,7 @@ AppConfig::FolderOptions::FolderOptions()
 	, MemoryCards	( PathDefs::GetMemoryCards() )
 	, Langs			( PathDefs::GetLangs() )
 	, Logs			( PathDefs::GetLogs() )
+	, Cheats		( PathDefs::GetCheats() )
 	, CheatsWS      ( PathDefs::GetCheatsWS() )
 
 	, RunIso( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
@@ -828,8 +826,10 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	WindowPos				= wxDefaultPosition;
 	IsMaximized				= false;
 	IsFullscreen			= false;
+	EnableVsyncWindowFlag	= false;
 
-    IsToggleFullscreenOnDoubleClick = true;
+	IsToggleFullscreenOnDoubleClick = true;
+	IsToggleAspectRatioSwitch = false;
 }
 
 void AppConfig::GSWindowOptions::SanityCheck()
@@ -865,8 +865,10 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 	IniEntry( WindowPos );
 	IniEntry( IsMaximized );
 	IniEntry( IsFullscreen );
+	IniEntry( EnableVsyncWindowFlag );
 
-    IniEntry( IsToggleFullscreenOnDoubleClick );
+	IniEntry( IsToggleFullscreenOnDoubleClick );
+	IniEntry( IsToggleAspectRatioSwitch );
 
 	static const wxChar* AspectRatioNames[] =
 	{
@@ -913,6 +915,36 @@ void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( SkipOnLimit );
 	IniEntry( SkipOnTurbo );
+}
+
+AppConfig::UiTemplateOptions::UiTemplateOptions()
+{
+	LimiterUnlimited	= L"Max";
+	LimiterTurbo		= L"Turbo";
+	LimiterSlowmo		= L"Slowmo";
+	LimiterNormal		= L"Normal";
+	OutputFrame			= L"Frame";
+	OutputField			= L"Field";
+	OutputProgressive	= L"Progressive";
+	OutputInterlaced	= L"Interlaced";
+	Paused				= L"<PAUSED> ";
+	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+}
+
+void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path(ini, L"UiTemplates");
+
+	IniEntry(LimiterUnlimited);
+	IniEntry(LimiterTurbo);
+	IniEntry(LimiterSlowmo);
+	IniEntry(LimiterNormal);
+	IniEntry(OutputFrame);
+	IniEntry(OutputField);
+	IniEntry(OutputProgressive);
+	IniEntry(OutputInterlaced);
+	IniEntry(Paused);
+	IniEntry(TitleTemplate);
 }
 
 int AppConfig::GetMaxPresetIndex()
@@ -993,7 +1025,7 @@ bool AppConfig::IsOkApplyPreset(int n)
 	EmuOptions.Gamefixes			= default_Pcsx2Config.Gamefixes;
 	EmuOptions.Speedhacks			= default_Pcsx2Config.Speedhacks;
 	EmuOptions.Speedhacks.bitset	= 0; //Turn off individual hacks to make it visually clear they're not used.
-	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread; // MTVU is not modified by presets
+	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread;
 	EnableSpeedHacks = true;
 
 	//Actual application of current preset over the base settings which all presets use (mostly pcsx2's default values).
@@ -1006,7 +1038,7 @@ bool AppConfig::IsOkApplyPreset(int n)
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 2);
 		
 		case 4 :	//set EE cyclerate to 2 clicks (maximum)
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 2);
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -2);
 
 		case 3 :	//Set VU cycle steal to 1 click, set VU clamp mode to 'none'
 					vuUsed?0:(vuUsed=true, EmuOptions.Speedhacks.VUCycleSteal = 1);
@@ -1016,7 +1048,7 @@ bool AppConfig::IsOkApplyPreset(int n)
 
 		//best balanced hacks combo?
 		case 2 :	//set EE cyclerate to 1 click.
-					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = 1);
+					eeUsed?0:(eeUsed=true, EmuOptions.Speedhacks.EECycleRate = -1);
 					// EE timing hack appears to break the BIOS text and cause slowdowns in a few titles.
 					//EnableGameFixes = true;
 					//EmuOptions.Gamefixes.EETimingHack = true;
@@ -1025,11 +1057,13 @@ bool AppConfig::IsOkApplyPreset(int n)
 					EmuOptions.Speedhacks.IntcStat = true;
 					EmuOptions.Speedhacks.WaitLoop = true;
 					EmuOptions.Speedhacks.vuFlagHack = true;
+					break;
 
 		case 0 :	//Base preset: Mostly pcsx2's defaults.
-					
-		
+					//Force disable MTVU hack on safest preset as it has lots of issues (Crashes/Slow downs) on various games.
+					EmuOptions.Speedhacks.vuThread = false;
 					break;
+
 		default:	Console.WriteLn("Developer Warning: Preset #%d is not implemented. (--> Using application default).", n);
 	}
 
@@ -1064,7 +1098,7 @@ void RelocateLogfile()
 	if( emuLog == NULL )
 	{
 		emuLogName = newlogname;
-		emuLog = fopen( emuLogName.ToUTF8(), "wb" );
+		emuLog = wxFopen( emuLogName, "wb" );
 	}
 
 	wxGetApp().EnableAllLogging();
@@ -1124,7 +1158,7 @@ protected:
 	wxString	m_empty;
 
 public:
-	virtual ~pxDudConfig() {}
+	virtual ~pxDudConfig() = default;
 
 	virtual void SetPath(const wxString& ) {}
 	virtual const wxString& GetPath() const { return m_empty; }
@@ -1171,14 +1205,14 @@ class AppIniSaver : public IniSaver
 {
 public:
 	AppIniSaver();
-	virtual ~AppIniSaver() throw() {}
+	virtual ~AppIniSaver() = default;
 };
 
 class AppIniLoader : public IniLoader
 {
 public:
 	AppIniLoader();
-	virtual ~AppIniLoader() throw() {}
+	virtual ~AppIniLoader() = default;
 };
 
 AppIniSaver::AppIniSaver()
@@ -1197,7 +1231,7 @@ static void LoadUiSettings()
 	ConLog_LoadSaveSettings( loader );
 	SysTraceLog_LoadSaveSettings( loader );
 
-	g_Conf = new AppConfig();
+	g_Conf = std::make_unique<AppConfig>();
 	g_Conf->LoadSave( loader );
 
 	if( !wxFile::Exists( g_Conf->CurrentIso ) )
@@ -1211,8 +1245,8 @@ static void LoadVmSettings()
 	// Load virtual machine options and apply some defaults overtop saved items, which
 	// are regulated by the PCSX2 UI.
 
-	ScopedPtr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
-	IniLoader vmloader( vmini );
+	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
+	IniLoader vmloader( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmloader );
 	g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
 
@@ -1248,8 +1282,8 @@ static void SaveUiSettings()
 
 static void SaveVmSettings()
 {
-	ScopedPtr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
-	IniSaver vmsaver( vmini );
+	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
+	IniSaver vmsaver( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmsaver );
 
 	sApp.DispatchVmSettingsEvent( vmsaver );
@@ -1257,15 +1291,15 @@ static void SaveVmSettings()
 
 static void SaveRegSettings()
 {
-	ScopedPtr<wxConfigBase> conf_install;
+	std::unique_ptr<wxConfigBase> conf_install;
 
 	if (InstallationMode == InstallMode_Portable) return;
 
 	// sApp. macro cannot be use because you need the return value of OpenInstallSettingsFile method
-	if( Pcsx2App* __app_ = (Pcsx2App*)wxApp::GetInstance() ) conf_install = (*__app_).OpenInstallSettingsFile();
+	if( Pcsx2App* __app_ = (Pcsx2App*)wxApp::GetInstance() ) conf_install = std::unique_ptr<wxConfigBase>((*__app_).OpenInstallSettingsFile());
 	conf_install->SetRecordDefaults(false);
 
-	App_SaveInstallSettings( conf_install );
+	App_SaveInstallSettings( conf_install.get() );
 }
 
 void AppSaveSettings()
@@ -1273,11 +1307,11 @@ void AppSaveSettings()
 	// If multiple SaveSettings messages are requested, we want to ignore most of them.
 	// Saving settings once when the GUI is idle should be fine. :)
 
-	static u32 isPosted = false;
+	static std::atomic<bool> isPosted(false);
 
 	if( !wxThread::IsMain() )
 	{
-		if( !AtomicExchange(isPosted, true) )
+		if( !isPosted.exchange(true) )
 			wxGetApp().PostIdleMethod( AppSaveSettings );
 
 		return;
@@ -1289,7 +1323,7 @@ void AppSaveSettings()
 	SaveVmSettings();
 	SaveRegSettings(); // save register because of PluginsFolder change
 
-	AtomicExchange( isPosted, false );
+	isPosted = false;
 }
 
 

@@ -30,6 +30,9 @@ protected:
 	int Get8bitFormat() {return DXGI_FORMAT_A8_UNORM;}
 
 	void Read(Target* t, const GSVector4i& r);
+	void Read(Source* t, const GSVector4i& r);
+
+	virtual bool CanConvertDepth() { return false; }
 
 public:
 	GSTextureCache11(GSRenderer* r);

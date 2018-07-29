@@ -74,11 +74,11 @@ class GSDevice9 : public GSDeviceDX
 {
 	GSTexture* CreateSurface(int type, int w, int h, bool msaa, int format);
 
-	void DoMerge(GSTexture* st[2], GSVector4* sr, GSTexture* dt, GSVector4* dr, bool slbg, bool mmod, const GSVector4& c);
-	void DoInterlace(GSTexture* st, GSTexture* dt, int shader, bool linear, float yoffset = 0);
-	void DoFXAA(GSTexture* st, GSTexture* dt);
-	void DoShadeBoost(GSTexture* st, GSTexture* dt);
-	void DoExternalFX(GSTexture* st, GSTexture* dt);
+	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c);
+	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0);
+	void DoFXAA(GSTexture* sTex, GSTexture* dTex);
+	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex);
+	void DoExternalFX(GSTexture* sTex, GSTexture* dTex);
 
 	void InitExternalFX();
 	void InitFXAA();
@@ -172,12 +172,12 @@ public: // TODO
 
 	// Shaders...
 
-	hash_map<uint32, GSVertexShader9 > m_vs;
-	hash_map<uint32, CComPtr<IDirect3DPixelShader9> > m_ps;
-	hash_map<uint32, Direct3DSamplerState9* > m_ps_ss;
-	hash_map<uint32, Direct3DDepthStencilState9* > m_om_dss;
-	hash_map<uint32, Direct3DBlendState9* > m_om_bs;
-	hash_map<uint32, GSTexture*> m_mskfix;
+	std::unordered_map<uint32, GSVertexShader9> m_vs;
+	std::unordered_map<uint64, CComPtr<IDirect3DPixelShader9>> m_ps;
+	std::unordered_map<uint32, Direct3DSamplerState9*> m_ps_ss;
+	std::unordered_map<uint32, Direct3DDepthStencilState9*> m_om_dss;
+	std::unordered_map<uint32, Direct3DBlendState9*> m_om_bs;
+	std::unordered_map<uint32, GSTexture*> m_mskfix;
 
 	GSTexture* CreateMskFix(uint32 size, uint32 msk, uint32 fix);
 
@@ -185,12 +185,12 @@ public:
 	GSDevice9();
 	virtual ~GSDevice9();
 
-	bool Create(GSWnd* wnd);
+	bool Create(const std::shared_ptr<GSWnd> &wnd);
 	bool Reset(int w, int h);
 	bool IsLost(bool update);
 	void Flip();
 
-	void SetVSync(bool enable);
+	void SetVSync(int vsync);
 
 	void BeginScene();
 	void DrawPrimitive();
@@ -199,7 +199,7 @@ public:
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c);
 	void ClearRenderTarget(GSTexture* t, uint32 c);
-	void ClearDepth(GSTexture* t, float c);
+	void ClearDepth(GSTexture* t);
 	void ClearStencil(GSTexture* t, uint8 c);
 
 	GSTexture* CreateRenderTarget(int w, int h, bool msaa, int format = 0);
@@ -209,13 +209,13 @@ public:
 
 	GSTexture* Resolve(GSTexture* t);
 
-	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sr, int w, int h, int format = 0);
+	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0);
 
-	void CopyRect(GSTexture* st, GSTexture* dt, const GSVector4i& r);
+	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r);
 
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, int shader = 0, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, bool linear = true);
-	void StretchRect(GSTexture* st, const GSVector4& sr, GSTexture* dt, const GSVector4& dr, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, Direct3DBlendState9* bs, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, bool linear = true);
+	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, IDirect3DPixelShader9* ps, const float* ps_cb, int ps_cb_len, Direct3DBlendState9* bs, bool linear = true);
 
 	void IASetVertexBuffer(const void* vertex, size_t stride, size_t count);
 	bool IAMapVertexBuffer(void** vertex, size_t stride, size_t count);
@@ -237,14 +237,11 @@ public:
 	IDirect3DDevice9* operator->() {return m_dev;}
 	operator IDirect3DDevice9*() {return m_dev;}
 
-	void CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
-	void CompileShader(uint32 id, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps);
-
-	void CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
-	void CompileShader(const char* fn, const string& entry, const D3DXMACRO* macro, IDirect3DPixelShader9** ps);
+	void CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DVertexShader9** vs, const D3DVERTEXELEMENT9* layout, int count, IDirect3DVertexDeclaration9** il);
+	void CompileShader(const char *source, size_t size, const char *filename, const std::string& entry, const D3D_SHADER_MACRO* macro, IDirect3DPixelShader9** ps);
 
 	void SetupVS(VSSelector sel, const VSConstantBuffer* cb);
-	void SetupGS(GSSelector sel) {}
+	void SetupGS(GSSelector sel, const GSConstantBuffer* cb) {}
 	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 

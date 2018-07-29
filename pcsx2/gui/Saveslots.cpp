@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "App.h"
 #include "AppSaveStates.h"
+#include "ConsoleLogger.h"
 
 #include "Common.h"
 
@@ -40,24 +41,24 @@ bool States_isSlotUsed(int num)
 
 // FIXME : Use of the IsSavingOrLoading flag is mostly a hack until we implement a
 // complete thread to manage queuing savestate tasks, and zipping states to disk.  --air
-static volatile u32 IsSavingOrLoading = false;
+static std::atomic<bool> IsSavingOrLoading(false);
 
 class SysExecEvent_ClearSavingLoadingFlag : public SysExecEvent
 {
 public:
 	wxString GetEventName() const { return L"ClearSavingLoadingFlag"; }
 
-	virtual ~SysExecEvent_ClearSavingLoadingFlag() throw() { }
+	virtual ~SysExecEvent_ClearSavingLoadingFlag() = default;
 	SysExecEvent_ClearSavingLoadingFlag()
 	{
 	}
-	
+
 	SysExecEvent_ClearSavingLoadingFlag* Clone() const { return new SysExecEvent_ClearSavingLoadingFlag(); }
-	
+
 protected:
 	void InvokeEvent()
 	{
-		AtomicExchange(IsSavingOrLoading, false);
+		IsSavingOrLoading = false;
 	}
 };
 
@@ -73,7 +74,7 @@ void States_FreezeCurrentSlot()
 		return;
 	}
 
-	if( wxGetApp().HasPendingSaves() || AtomicExchange(IsSavingOrLoading, true) )
+	if( wxGetApp().HasPendingSaves() || IsSavingOrLoading.exchange(true) )
 	{
 		Console.WriteLn( "Load or save action is already pending." );
 		return;
@@ -94,7 +95,7 @@ void _States_DefrostCurrentSlot( bool isFromBackup )
 		return;
 	}
 
-	if( AtomicExchange(IsSavingOrLoading, true) )
+	if( IsSavingOrLoading.exchange(true) )
 	{
 		Console.WriteLn( "Load or save action is already pending." );
 		return;
@@ -126,10 +127,10 @@ void States_registerLoadBackupMenuItem( wxMenuItem* loadBackupMenuItem )
 
 static void OnSlotChanged()
 {
-	Console.Warning( " > Selected savestate slot %d", StatesC);
+	OSDlog( Color_StrongGreen, true, " > Selected savestate slot %d", StatesC );
 
 	if( GSchangeSaveState != NULL )
-		GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).mb_str());
+		GSchangeSaveState(StatesC, SaveStateBase::GetFilename(StatesC).utf8_str());
 
 	Sstates_updateLoadBackupMenuItem();
 }

@@ -29,56 +29,56 @@
 class GSRenderer : public GSState
 {
 	GSCapture m_capture;
-	string m_snapshot;
-	bool m_snapdump;
+	std::string m_snapshot;
 	int m_shader;
 
 	bool Merge(int field);
 
-	// Only used on linux
 	bool m_shift_key;
 	bool m_control_key;
 
 protected:
 	int m_interlace;
 	int m_aspectratio;
-	int m_filter;
-	bool m_vsync;
+	int m_vsync;
 	bool m_aa1;
-	bool m_mipmap;
-	bool m_framelimit;
 	bool m_shaderfx;
 	bool m_fxaa;
 	bool m_shadeboost;
+	bool m_texture_shuffle;
+	GSVector2i m_real_size;
 
-	virtual GSTexture* GetOutput(int i) = 0;
+	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
+	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
 
 public:
-	GSWnd* m_wnd;
+	std::shared_ptr<GSWnd> m_wnd;
 	GSDevice* m_dev;
 
 public:
 	GSRenderer();
 	virtual ~GSRenderer();
 
-	virtual bool CreateWnd(const string& title, int w, int h);
 	virtual bool CreateDevice(GSDevice* dev);
 	virtual void ResetDevice();
 	virtual void VSync(int field);
-	virtual bool MakeSnapshot(const string& path);
+	virtual bool MakeSnapshot(const std::string& path);
 	virtual void KeyEvent(GSKeyEventData* e);
 	virtual bool CanUpscale() {return false;}
 	virtual int GetUpscaleMultiplier() {return 1;}
+	virtual GSVector2i GetCustomResolution() {return GSVector2i(0,0);}
+	GSVector2i GetInternalResolution();
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
-	void SetVSync(bool enabled);
-	void SetFrameLimit(bool limit);
+	void SetVSync(int vsync);
 	virtual void SetExclusive(bool isExcl) {}
 
 	virtual bool BeginCapture();
 	virtual void EndCapture();
 
+	void PurgePool();
+
 public:
-	GSCritSec m_pGSsetTitle_Crit;
+	std::mutex m_pGSsetTitle_Crit;
 
 	char m_GStitleInfoBuffer[128];
 };

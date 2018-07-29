@@ -118,9 +118,6 @@
     <Filter Include="System\Ps2\iCore">
       <UniqueIdentifier>{5e741f2d-9e0b-4e43-b2a2-44a8370e1546}</UniqueIdentifier>
     </Filter>
-    <Filter Include="System\Windows">
-      <UniqueIdentifier>{3c918e82-4f67-4058-9818-4aff906dfa4a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="System\IsoFS">
       <UniqueIdentifier>{c5237754-2509-4291-b869-c5dacc1a8aba}</UniqueIdentifier>
     </Filter>
@@ -149,7 +146,7 @@
       <UniqueIdentifier>{b9da6fbf-4fd9-4cfb-89f7-34ac0f933ce9}</UniqueIdentifier>
     </Filter>
     <Filter Include="AppHost\Debugger">
-      <UniqueIdentifier>{02398f88-aadb-4183-be7e-68f0cacdf620}</UniqueIdentifier>
+      <UniqueIdentifier>{7a0a1104-f9ee-4cd1-aaba-f8267eba1658}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -204,9 +201,6 @@
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl">
       <Filter>AppHost\Dialogs</Filter>
     </None>
-    <None Include="..\..\gui\Debugger\DebuggerLists.h">
-      <Filter>AppHost\Debugger</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Patch.cpp">
@@ -231,9 +225,6 @@
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="..\..\PluginManager.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
-    <ClCompile Include="..\SamplProf.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SaveState.cpp">
@@ -572,9 +563,6 @@
     <ClCompile Include="..\..\x86\iCore.cpp">
       <Filter>System\Ps2\iCore</Filter>
     </ClCompile>
-    <ClCompile Include="..\WinSysExec.cpp">
-      <Filter>System\Windows</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFile.cpp">
       <Filter>System\IsoFS</Filter>
     </ClCompile>
@@ -638,13 +626,13 @@
     <ClCompile Include="..\..\gui\MemoryCardFile.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\MemoryCardFolder.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gui\MessageBoxes.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gui\MSWstuff.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\pxLogTextCtrl.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gui\RecentIsoList.cpp">
@@ -662,10 +650,10 @@
     <ClCompile Include="..\..\gui\Dialogs\BaseConfigurationDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\BiosSelectorDialog.cpp">
+    <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\ConfirmationDialogs.cpp">
+    <ClCompile Include="..\..\gui\Dialogs\ConvertMemoryCardDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\CreateMemoryCardDialog.cpp">
@@ -683,14 +671,8 @@
     <ClCompile Include="..\..\gui\Dialogs\PickUserModeDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Dialogs\StuckThreadDialog.cpp">
-      <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\SysConfigDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\Panels\AudioPanel.cpp">
-      <Filter>AppHost\Panels</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gui\Panels\BaseApplicableConfigPanel.cpp">
       <Filter>AppHost\Panels</Filter>
@@ -802,11 +784,8 @@
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Debugger\CtrlDisassemblyView.cpp">
-      <Filter>AppHost\Debugger</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp">
-      <Filter>AppHost\Debugger</Filter>
+    <ClCompile Include="..\..\DebugTools\SymbolMap.cpp">
+      <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DebugTools\DebugInterface.cpp">
       <Filter>System\Ps2\Debug</Filter>
@@ -814,19 +793,13 @@
     <ClCompile Include="..\..\DebugTools\DisassemblyManager.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\CtrlDisassemblyView.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp">
+      <Filter>AppHost\Debugger</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\DebugTools\BiosDebugData.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\DebugTools\SymbolMap.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DebugTools\Breakpoints.cpp">
@@ -856,8 +829,47 @@
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DebugTools\BiosDebugData.cpp">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp">
       <Filter>System\Ps2\Debug</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\CsoFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\GzippedFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\ChunksCache.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WinKeyCodes.cpp">
+      <Filter>AppHost\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Optimus.cpp">
+      <Filter>AppHost\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
+      <Filter>AppHost\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IopGte.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ps2\pgif.cpp">
+      <Filter>System\Ps2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Mdec.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ps2\Iop\PsxBios.cpp">
+      <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -892,9 +904,6 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Plugins.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SamplProf.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SaveState.h">
@@ -1185,9 +1194,6 @@
     <ClInclude Include="..\..\gui\CpuUsageProvider.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gui\Resources\EmbeddedImage.h">
-      <Filter>AppHost\Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\gui\IsoDropTarget.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
@@ -1224,11 +1230,8 @@
     <ClInclude Include="..\..\AsyncFileReader.h">
       <Filter>System\ISO</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h">
-      <Filter>AppHost\Debugger</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h">
-      <Filter>AppHost\Debugger</Filter>
+    <ClInclude Include="..\..\DebugTools\SymbolMap.h">
+      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\DebugInterface.h">
       <Filter>System\Ps2\Debug</Filter>
@@ -1236,19 +1239,13 @@
     <ClInclude Include="..\..\DebugTools\DisassemblyManager.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\CtrlDisassemblyView.h">
+      <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h">
+      <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\DebugTools\MipsAssembler.h">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\DebugTools\BiosDebugData.h">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h">
-      <Filter>System\Ps2\Debug</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\DebugTools\SymbolMap.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\Breakpoints.h">
@@ -1269,18 +1266,57 @@
     <ClInclude Include="..\..\gui\Debugger\BreakpointWindow.h">
       <Filter>AppHost\Debugger</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gui\Debugger\DebuggerLists.h">
+      <Filter>AppHost\Debugger</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\CDVD\zlib_indexed.h">
       <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\MipsAssembler.h">
+      <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DebugTools\BiosDebugData.h">
+      <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
     <ClInclude Include="..\..\DebugTools\MipsStackWalk.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\CDVD\CsoFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\CompressedFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\GzippedFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\ChunksCache.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\CompressedFileReaderUtils.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\x86\R5900_Profiler.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IopGte.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ps2\pgif.h">
+      <Filter>System\Ps2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Mdec.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\..\3rdparty\wxWidgets\include\wx\msw\wx.rc">
+    <ResourceCompile Include="..\wxResources.rc">
       <Filter>AppHost\Resources</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="..\wxResources.rc">
+    <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
       <Filter>AppHost\Resources</Filter>
     </ResourceCompile>
   </ItemGroup>
@@ -1344,17 +1380,19 @@
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Video.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\Dualshock.jpg">
-      <Filter>AppHost\Resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Appearance.png">
-      <Filter>AppHost\Resources</Filter>
-    </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Breakpoint_Inactive.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Breakpoint_Active.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\gui\Resources\Logo.png">
+      <Filter>AppHost\Resources</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="..\PCSX2.manifest">
+      <Filter>AppHost\Resources</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

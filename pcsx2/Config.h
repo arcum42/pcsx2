@@ -34,7 +34,8 @@ enum PluginsEnum_t
 	// time.  So it's placed afer PluginId_Count so that it doesn't show up in the conf
 	// screens or other plugin tables.
 
-	PluginId_Mcd
+	PluginId_Mcd,
+	PluginId_AllocCount // Extra value for correct array allocation
 };
 
 enum GamefixId
@@ -54,12 +55,27 @@ enum GamefixId
 	Fix_DMABusy,
 	Fix_VIFFIFO,
 	Fix_VIF1Stall,
-	Fix_GIFReverse,
+	Fix_GIFFIFO,
 	Fix_FMVinSoftware,
 	Fix_GoemonTlbMiss,
+	Fix_ScarfaceIbit,
 
 	GamefixId_COUNT
 };
+
+enum class VsyncMode
+{
+	Off,
+	On,
+	Adaptive,
+};
+
+// Template function for casting enumerations to their underlying type
+template <typename Enumeration>
+typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
+{
+	return static_cast<typename std::underlying_type<Enumeration>::type>(E);
+}
 
 ImplementEnumOperators( GamefixId );
 
@@ -279,17 +295,12 @@ struct Pcsx2Config
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
 		// style.  Useful for debugging potential bugs in the MTGS pipeline.
 		bool	SynchronousMTGS;
-		bool	DisableOutput;
+
 		int		VsyncQueueSize;
 
-		bool	FrameLimitEnable;
-		bool	FrameSkipEnable;
-		bool	VsyncEnable;
-
-		// The region mode controls the default Maximum/Minimum FPS settings and also
-		// regulates the vsync rates (which in turn control the IOP's SPU2 tick sync and ensure
-		// proper audio playback speed).
-		int		DefaultRegionMode;	// 0=NTSC and 1=PAL
+		bool		FrameLimitEnable;
+		bool		FrameSkipEnable;
+		VsyncMode	VsyncEnable;
 
 		int		FramesToDraw;	// number of consecutive frames (fields) to render
 		int		FramesToSkip;	// number of consecutive frames (fields) to skip
@@ -301,11 +312,12 @@ struct Pcsx2Config
 		GSOptions();
 		void LoadSave( IniInterface& conf );
 
+		int GetVsync() const;
+
 		bool operator ==( const GSOptions& right ) const
 		{
 			return
 				OpEqu( SynchronousMTGS )		&&
-				OpEqu( DisableOutput )			&&
 				OpEqu( VsyncQueueSize )			&&
 				
 				OpEqu( FrameSkipEnable )		&&
@@ -316,7 +328,6 @@ struct Pcsx2Config
 				OpEqu( FramerateNTSC )			&&
 				OpEqu( FrameratePAL )			&&
 
-				OpEqu( DefaultRegionMode )		&&
 				OpEqu( FramesToDraw )			&&
 				OpEqu( FramesToSkip );
 		}
@@ -347,9 +358,10 @@ struct Pcsx2Config
 				DMABusyHack		:1,		// Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
 				VIFFIFOHack		:1,     // Pretends to fill the non-existant VIF FIFO Buffer.
 				VIF1StallHack   :1,     // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-				GIFReverseHack  :1,		// Allows PATH3 to continue even if the FIFO is reversed.
+				GIFFIFOHack		:1,		// Enabled the GIF FIFO (more correct but slower)
 				FMVinSoftwareHack:1,	// Toggle in and out of software rendering when an FMV runs.
-				GoemonTlbHack:1;		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+				GoemonTlbHack	:1,		// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+				ScarfaceIbit 	:1;		// Scarface I bit hack. Needed to stop constant VU recompilation
 		BITFIELD_END
 
 		GamefixOptions();
@@ -386,7 +398,7 @@ struct Pcsx2Config
 				vuThread        :1;		// Enable Threaded VU1
 		BITFIELD_END
 
-		u8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
+		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
 		u8	VUCycleSteal;		// VU Cycle Stealer factor (0, 1, 2, or 3)
 
 		SpeedhackOptions();
@@ -409,17 +421,23 @@ struct Pcsx2Config
 		BITFIELD32()
 			bool
 				ShowDebuggerOnStart	:1;
+			bool
+				AlignMemoryWindowStart :1;
 		BITFIELD_END
 
 		u8 FontWidth;
 		u8 FontHeight;
+		u32 WindowWidth;
+		u32 WindowHeight;
+		u32 MemoryViewBytesPerRow;
 
 		DebugOptions();
 		void LoadSave( IniInterface& conf );
 		
 		bool operator ==( const DebugOptions& right ) const
 		{
-			return OpEqu( bitset ) && OpEqu( FontWidth ) && OpEqu( FontHeight );
+			return OpEqu( bitset ) && OpEqu( FontWidth ) && OpEqu( FontHeight )
+				&& OpEqu( WindowWidth ) && OpEqu( WindowHeight ) && OpEqu( MemoryViewBytesPerRow );
 		}
 
 		bool operator !=( const DebugOptions& right ) const
@@ -441,6 +459,7 @@ struct Pcsx2Config
 			BackupSavestate		:1,
 		// enables simulated ejection of memory cards when loading savestates
 			McdEnableEjection	:1,
+			McdFolderAutoManage	:1,
 
 			MultitapPort0_Enabled:1,
 			MultitapPort1_Enabled:1,
@@ -524,7 +543,7 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_DMABUSYHACK			(EmuConfig.Gamefixes.DMABusyHack)    // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
 #define CHECK_VIFFIFOHACK			(EmuConfig.Gamefixes.VIFFIFOHack)    // Pretends to fill the non-existant VIF FIFO Buffer.
 #define CHECK_VIF1STALLHACK			(EmuConfig.Gamefixes.VIF1StallHack)  // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-#define CHECK_GIFREVERSEHACK		(EmuConfig.Gamefixes.GIFReverseHack) // Allows PATH3 to continue even if the FIFO is reversed.
+#define CHECK_GIFFIFOHACK			(EmuConfig.Gamefixes.GIFFIFOHack)	 // Enabled the GIF FIFO (more correct but slower)
 #define CHECK_FMVINSOFTWAREHACK	 	(EmuConfig.Gamefixes.FMVinSoftwareHack) // Toggle in and out of software rendering when an FMV runs.
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW			(EmuConfig.Cpu.Recompiler.vuOverflow)
@@ -571,7 +590,7 @@ TraceLogFilters&				SetTraceConfig();
 // This disables the exception normally caused by trying to load PS1
 // games. Note: currently PS1 games will error out even without this
 // commented, so this is for development purposes only.
-#define ENABLE_LOADING_PS1_GAMES 0
+#define ENABLE_LOADING_PS1_GAMES 1
 
 // Change to 1 for console logs of SIF, GPU (PS1 mode) and MDEC (PS1 mode).
 // These do spam a lot though!

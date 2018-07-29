@@ -23,57 +23,41 @@
 #include "GLState.h"
 
 namespace GLState {
-	GLuint fbo = 0;
-	GSVector2i viewport(0, 0);
-	GSVector4i scissor(0, 0, 0, 0);
+	GLuint fbo;
+	GSVector2i viewport;
+	GSVector4i scissor;
 
-	bool blend = false;
-	GLenum eq_RGB = 0;
-	GLenum eq_A   = 0;
-	GLenum f_sRGB = 0;
-	GLenum f_dRGB = 0;
-	GLenum f_sA = 0;
-	GLenum f_dA = 0;
-	bool r_msk = true;
-	bool g_msk = true;
-	bool b_msk = true;
-	bool a_msk = true;
-	float bf = 0.0;
+	bool blend;
+	uint16 eq_RGB;
+	uint16 f_sRGB;
+	uint16 f_dRGB;
+	uint8 bf;
+	uint32 wrgba;
 
-	bool depth = false;
-	GLenum depth_func = 0;
-	bool depth_mask = false;
+	bool depth;
+	GLenum depth_func;
+	bool depth_mask;
 
-	bool stencil = false;
-	GLenum stencil_func = 0;
-	GLenum stencil_pass = 0;
+	bool stencil;
+	GLenum stencil_func;
+	GLenum stencil_pass;
 
-	GLuint ubo = 0;
+	GLuint ubo;
 
-	GLuint ps_ss = 0;
+	GLuint ps_ss;
 
-	GLuint rt = 0;
-	GLuint ds = 0;
-	GLuint tex_unit[2] = {0, 0};
-	GLuint tex = 0;
-	GLuint64 tex_handle[2] = { 0, 0};
-	bool dirty_ressources = false;
+	GLuint rt;
+	GLuint ds;
+	GLuint tex_unit[8];
+	GLuint64 tex_handle[8];
 
-	GLuint ps = 0;
-	GLuint gs = 0;
-	GLuint vs = 0;
-	GLuint program = 0;
-	bool dirty_prog = false;
-	bool dirty_subroutine_vs = false;
-	bool dirty_subroutine_ps = false;
-#if 0
-	struct {
-		GSVertexBufferStateOGL* vb;
-		GSDepthStencilOGL* dss;
-		GSBlendStateOGL* bs;
-		float bf; // blend factor
-	} m_state;
-#endif
+	GLuint ps;
+	GLuint gs;
+	GLuint vs;
+	GLuint program;
+	GLuint pipeline;
+
+	int64 available_vram;
 
 	void Clear() {
 		fbo = 0;
@@ -82,24 +66,18 @@ namespace GLState {
 
 		blend = false;
 		eq_RGB = 0;
-		eq_A   = 0;
 		f_sRGB = 0;
 		f_dRGB = 0;
-		f_sA = 0;
-		f_dA = 0;
-		r_msk = true;
-		g_msk = true;
-		b_msk = true;
-		a_msk = true;
-		bf = 0.0;
+		bf = 0;
+		wrgba = 0xF;
 
 		depth = false;
 		depth_func = 0;
-		depth_mask = false;
+		depth_mask = true;
 
 		stencil = false;
 		stencil_func = 0;
-		stencil_pass = 0;
+		stencil_pass = 0xFFFF; // Note 0 is valid (GL_ZERO)
 
 		ubo = 0;
 
@@ -107,19 +85,19 @@ namespace GLState {
 
 		rt = 0;
 		ds = 0;
-		tex_unit[0] = 0;
-		tex_unit[1] = 0;
-		tex = 0;
-		tex_handle[0] = 0;
-		tex_handle[1] = 0;
+		for (size_t i = 0; i < countof(tex_unit); i++)
+			tex_unit[i] = 0;
+		for (size_t i = 0; i < countof(tex_handle); i++)
+			tex_handle[i] = 0;
 
 		ps = 0;
 		gs = 0;
 		vs = 0;
-		program = 0;
-		dirty_prog = false;
-		dirty_subroutine_vs = false;
-		dirty_subroutine_ps = false;
-		dirty_ressources = false;
+		program  = 0;
+		pipeline = 0;
+
+		// Set a max vram limit for texture allocation
+		// (256MB are reserved for PBO/IBO/VBO/UBO buffers)
+		available_vram = (4096u - 256u) * 1024u * 1024u;
 	}
 }

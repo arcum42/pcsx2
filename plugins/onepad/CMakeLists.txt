@@ -5,81 +5,127 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
+set(compiled_images "${CMAKE_BINARY_DIR}/plugins/onepad/ImgHeader")
+set(image_sources "${CMAKE_SOURCE_DIR}/plugins/onepad/Img")
+set(linux_sources "Linux")
+set(linux_headers "Linux")
 
-# plugin name
-set(Output onepad-1.1.0)
 
-set(OptimizationFlags
-    -O2
+set(onepadGuiResources
+    ${compiled_images}/analog.h
+    ${compiled_images}/circle.h
+    ${compiled_images}/cross.h
+    ${compiled_images}/dp_bottom.h
+    ${compiled_images}/dp_left.h
+    ${compiled_images}/dp_right.h
+    ${compiled_images}/dp_up.h
+    ${compiled_images}/dualshock2.h
+    ${compiled_images}/joystick_cursor.h
+    ${compiled_images}/l1.h
+    ${compiled_images}/r1.h
+    ${compiled_images}/l2.h
+    ${compiled_images}/r2.h
+    ${compiled_images}/l3.h
+    ${compiled_images}/r3.h
+    ${compiled_images}/select.h
+    ${compiled_images}/square.h
+    ${compiled_images}/start.h
+    ${compiled_images}/triangle.h
+    ${compiled_images}/arrow_up.h
+    ${compiled_images}/arrow_bottom.h
+    ${compiled_images}/arrow_left.h
+    ${compiled_images}/arrow_right.h
     )
 
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-    set(onepadFinalFlags "")
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
-	set(onepadFinalFlags ${OptimizationFlags})
-
-elseif(CMAKE_BUILD_TYPE STREQUAL Release)
-	set(onepadFinalFlags ${OptimizationFlags})
-
-endif()
+# plugin name
+set(Output onepad)
+set(onepadFinalFlags "")
 
 # onepad sources
 set(onepadSources
-	controller.cpp
-	joystick.cpp
-	keyboard.cpp
+    controller.cpp
+    GamePad.cpp
+    SDL/joystick.cpp
+    keyboard.cpp
     KeyStatus.cpp
-	onepad.cpp)
+    onepad.cpp
+    resources.cpp
+    state_management.cpp)
 
 # onepad headers
 set(onepadHeaders
-	bitwise.h
-	controller.h
-	joystick.h
-	keyboard.h
+    bitwise.h
+    controller.h
+    GamePad.h
+    SDL/joystick.h
+    keyboard.h
     KeyStatus.h
-	onepad.h)
+    onepad.h
+    resources.h
+    state_management.h)
 
 # onepad Linux sources
 set(onepadLinuxSources
-	Linux/ini.cpp
-	Linux/dialog.cpp
-	Linux/linux.cpp)
+    ${linux_sources}/ini.cpp
+    ${linux_sources}/dialog.cpp
+    ${linux_sources}/linux.cpp
+    ${linux_sources}/opPanel.cpp
+    ${linux_sources}/GamepadConfiguration.cpp
+    ${linux_headers}/JoystickConfiguration.cpp)
 
 # onepad Linux headers
 set(onepadLinuxHeaders
-	Linux/linux.h)
+    ${linux_headers}/opPanel.h
+    ${linux_headers}/GamepadConfiguration.h
+    ${linux_headers}/JoystickConfiguration.h)
 
 # onepad Windows sources
-set(onepadWindowsSources
-	)
+set(onepadWindowsSources)
 
 # onepad Windows headers
-set(onepadWindowsHeaders
-	)
+set(onepadWindowsHeaders)
 
-if (SDL2_API)
-	set(onepadFinalLibs
-		${SDL2_LIBRARIES}
-	)
-else()
-	set(onepadFinalLibs
-		${SDL_LIBRARY}
-	)
-endif()
+set(onepadFinalLibs ${SDL2_LIBRARIES})
+add_definitions(-DSDL_BUILD)
 
 set(onepadFinalLibs
-	${onepadFinalLibs}
-	${GTK2_LIBRARIES}
-	${X11_LIBRARIES}
+    ${onepadFinalLibs}
+    ${wxWidgets_LIBRARIES}
+    ${GTK2_LIBRARIES}
+    ${X11_LIBRARIES}
 )
 
 set(onepadFinalSources
-	${onepadSources}
-	${onepadHeaders}
-	${onepadLinuxSources}
-	${onepadLinuxHeaders}
+    ${onepadSources}
+    ${onepadHeaders}
+    ${onepadLinuxSources}
+    ${onepadLinuxHeaders}
+    ${onepadGuiResources}
 )
 
-add_pcsx2_plugin(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
+include_directories(
+    ${CMAKE_BINARY_DIR}/plugins/onepad/
+)
+
+### Generate the resources files
+file(MAKE_DIRECTORY ${compiled_images})
+
+foreach(result_file IN ITEMS
+        analog circle cross dp_bottom dp_left dp_right dp_up dualshock2
+        joystick_cursor l1 r1 l2 r2 l3 r3 select square start triangle arrow_up
+        arrow_bottom arrow_left arrow_right)
+    add_custom_command(
+        OUTPUT  "${compiled_images}/${result_file}.h"
+        COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${image_sources}/${result_file}.png" "${compiled_images}/${result_file}" )
+endforeach()
+
+set(RESOURCE_FILES res/game_controller_db.txt)
+
+add_custom_glib_res("resources" "onepad-res.xml" "onepad_res" ${RESOURCE_FILES})
+
+
+if(BUILTIN_PAD)
+    add_pcsx2_lib(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
+else()
+    add_pcsx2_plugin(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
+endif()

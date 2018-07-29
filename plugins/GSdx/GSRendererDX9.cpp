@@ -56,7 +56,18 @@ bool GSRendererDX9::CreateDevice(GSDevice* dev)
 	return true;
 }
 
-void GSRendererDX9::SetupIA()
+void GSRendererDX9::EmulateTextureShuffleAndFbmask()
+{
+	if (m_texture_shuffle) {
+		// We can do a partial port for D3D9 that skips the draw call to give it a slight improvement.
+		// It's still broken but more bearable. Broken effect is on the screen but fully instead of vertical lines.
+		throw GSDXRecoverableError();
+	} else {
+		om_bsel.wrgba = ~GSVector4i::load((int)m_context->FRAME.FBMSK).eq8(GSVector4i::xffffffff()).mask();
+	}
+}
+
+void GSRendererDX9::SetupIA(const float& sx, const float& sy)
 {
 	D3DPRIMITIVETYPE topology;
 
@@ -106,62 +117,7 @@ void GSRendererDX9::SetupIA()
 
 		// each sprite converted to quad needs twice the space
 
-		while(m_vertex.tail * 2 > m_vertex.maxcount)
-		{
-			GrowVertexBuffer();
-		}
-
-		// assume vertices are tightly packed and sequentially indexed (it should be the case)
-
-		if(m_vertex.next >= 2)
-		{
-			size_t count = m_vertex.next;
-
-			int i = (int)count * 2 - 4;
-			GSVertex* s = &m_vertex.buff[count - 2];
-			GSVertex* q = &m_vertex.buff[count * 2 - 4];
-			uint32* RESTRICT index = &m_index.buff[count * 3 - 6];
-		
-			for(; i >= 0; i -= 4, s -= 2, q -= 4, index -= 6) 
-			{
-				GSVertex v0 = s[0];
-				GSVertex v1 = s[1];
-
-				v0.RGBAQ = v1.RGBAQ;
-				v0.XYZ.Z = v1.XYZ.Z;
-				v0.FOG = v1.FOG;
-
-				q[0] = v0;
-				q[3] = v1;
-
-				// swap x, s, u
-
-				uint16 x = v0.XYZ.X;
-				v0.XYZ.X = v1.XYZ.X;
-				v1.XYZ.X = x;
-
-				float s = v0.ST.S;
-				v0.ST.S = v1.ST.S;
-				v1.ST.S = s;
-
-				uint16 u = v0.U;
-				v0.U = v1.U;
-				v1.U = u;
-
-				q[1] = v0;
-				q[2] = v1;
-
-				index[0] = i + 0;
-				index[1] = i + 1;
-				index[2] = i + 2;
-				index[3] = i + 1;
-				index[4] = i + 2;
-				index[5] = i + 3;
-			}
-
-			m_vertex.head = m_vertex.tail = m_vertex.next = count * 2;
-			m_index.tail = count * 3;
-		}
+		Lines2Sprites();
 
 		break;
 
@@ -231,6 +187,9 @@ void GSRendererDX9::SetupIA()
 
 void GSRendererDX9::UpdateFBA(GSTexture* rt)
 {
+	if (!rt)
+		return;
+
 	GSDevice9* dev = (GSDevice9*)m_dev;
 
 	dev->BeginScene();
@@ -243,17 +202,17 @@ void GSRendererDX9::UpdateFBA(GSTexture* rt)
 	// ia
 
 	GSVector4 s = GSVector4(rt->GetScale().x / rt->GetWidth(), rt->GetScale().y / rt->GetHeight());
-	GSVector4 o = GSVector4(-1.0f, 1.0f);
+	GSVector4 off = GSVector4(-1.0f, 1.0f);
 
-	GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + o.xxyy()) * s.xyxy()).sat(o.zzyy());
-	GSVector4 dst = src * 2.0f + o.xxxx();
+	GSVector4 src = ((m_vt.m_min.p.xyxy(m_vt.m_max.p) + off.xxyy()) * s.xyxy()).sat(off.zzyy());
+	GSVector4 dst = src * 2.0f + off.xxxx();
 
 	GSVertexPT1 vertices[] =
 	{
-		{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(0, 0)},
-		{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(0, 0)},
-		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(0, 0)},
-		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(0, 0)},
+		{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(0)},
+		{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(0)},
+		{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(0)},
+		{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(0)},
 	};
 
 	dev->IASetVertexBuffer(vertices, sizeof(vertices[0]), countof(vertices));
