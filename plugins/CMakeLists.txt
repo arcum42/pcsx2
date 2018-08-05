@@ -83,7 +83,7 @@ endif()
 #endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg" AND zzogl)
-	add_subdirectory(zzogl-pg/opengl)
+	add_subdirectory(zzogl-pg)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zeropad" AND zeropad)
