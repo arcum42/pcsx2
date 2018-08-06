@@ -34,29 +34,11 @@
 #include "ZZoglMath.h"
 #include "GS.h"
 
-// By default enable nvidia cg api
-#if !defined(GLSL_API) && !defined(NVIDIA_CG_API) && !defined(GLSL4_API)
-#define NVIDIA_CG_API
+// By default enable GLSL
+#if !defined(GLSL_API) && !defined(GLSL4_API)
+#define GLSL4_API
 #endif
 // --------------------------- API abstraction level --------------------------------
-
-#ifdef NVIDIA_CG_API				// Code for NVIDIA cg-toolkit API
-
-#include <Cg/cg.h>
-#include <Cg/cgGL.h>
-#define ZZshProgram 		CGprogram
-#define ZZshShader 		CGprogram
-#define ZZshShaderLink		CGprogram
-#define ZZshParameter 		CGparameter
-#define ZZshContext		CGcontext
-#define ZZshProfile		CGprofile
-#define ZZshError		CGerror
-#define pZero			0			// Zero parameter
-#define sZero			0			// Zero program
-
-#define SAFE_RELEASE_PROG(x) 	{ if( (x) != NULL ) { cgDestroyProgram(x); x = NULL; } }
-
-#endif					// end NVIDIA cg-toolkit API
 
 #ifdef GLSL4_API
 #include "GSUniformBufferOGL.h"
@@ -252,78 +234,6 @@ struct FRAGMENTSHADER
 
 #ifdef _DEBUG
 	string filename;
-#endif
-
-#ifdef NVIDIA_CG_API
-	void set_uniform_param(ZZshParameter &var, const char *name)
-	{
-		ZZshParameter p;
-		p = cgGetNamedParameter(prog, name);
-
-		if (p != NULL && cgIsParameterUsed(p, prog) == CG_TRUE) var = p;
-	}
-
-	bool set_texture(GLuint texobj, const char *name)
-	{
-		ZZshParameter p;
-
-		p = cgGetNamedParameter(prog, name);
-
-		if (p != NULL && cgIsParameterUsed(p, prog) == CG_TRUE)
-		{
-			cgGLSetTextureParameter(p, texobj);
-			cgGLEnableTextureParameter(p);
-			return true;
-		}
-
-		return false;
-	}
-
-	bool connect(ZZshParameter &tex, const char *name)
-	{
-		ZZshParameter p;
-
-		p = cgGetNamedParameter(prog, name);
-
-		if (p != NULL && cgIsParameterUsed(p, prog) == CG_TRUE)
-		{
-			cgConnectParameter(tex, p);
-			return true;
-		}
-
-		return false;
-	}
-
-	bool set_texture(ZZshParameter &tex, const char *name)
-	{
-		ZZshParameter p;
-
-		p = cgGetNamedParameter(prog, name);
-
-		if (p != NULL && cgIsParameterUsed(p, prog) == CG_TRUE)
-		{
-			//cgGLEnableTextureParameter(p);
-			tex = p;
-			return true;
-		}
-
-		return false;
-	}
-
-	bool set_shader_const(float4 v, const char *name)
-	{
-		ZZshParameter p;
-
-		p = cgGetNamedParameter(prog, name);
-
-		if (p != NULL && cgIsParameterUsed(p, prog) == CG_TRUE)
-		{
-			cgGLSetParameter4fv(p, v);
-			return true;
-		}
-
-		return false;
-	}
 #endif
 };
 #else
@@ -673,11 +583,6 @@ struct VERTEXSHADER
 	}
 // ------------------------- Functions -------------------------------
 
-#ifdef NVIDIA_CG_API
-inline bool ZZshExistProgram(FRAGMENTSHADER* pf) {return (pf->prog != NULL); };			// We don't check ps != NULL, so be warned,
-inline bool ZZshExistProgram(VERTEXSHADER* pf) {return (pf->prog != NULL); };
-inline bool ZZshExistProgram(ZZshShaderLink prog) {return (prog != NULL); };
-#endif
 #if defined(GLSL_API) && !defined(GLSL4_API)
 inline bool ZZshExistProgram(FRAGMENTSHADER* pf) {return (pf->Shader != 0); };
 inline bool ZZshExistProgram(VERTEXSHADER* pf) {return (pf->Shader != 0); };

@@ -41,7 +41,7 @@
 #include "GS.h"
 #include "targets.h"
 #include "GLWin.h"
-#include "ZZoglShaders.h"
+#include "ZZogl/ZZoglShaders.h"
 #include "ZZClut.h"
 #include "HostMemory.h"
 

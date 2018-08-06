@@ -26,7 +26,7 @@
 #include "Util.h"
 #include "GifTransfer.h"
 #include "HostMemory.h"
-#include "ZZoglShoots.h"
+#include "ZZogl/ZZoglShoots.h"
 
 using namespace std;
 

@@ -24,9 +24,9 @@
 #include "Mem.h"
 #include "x86.h"
 #include "targets.h"
-#include "ZZoglShaders.h"
+#include "ZZogl/ZZoglShaders.h"
 #include "ZZClut.h"
-#include "ZZoglVB.h"
+#include "ZZogl/ZZoglVB.h"
 #include "Util.h"
 
 #define RHA

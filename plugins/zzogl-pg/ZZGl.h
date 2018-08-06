@@ -80,7 +80,7 @@ static __forceinline void GL_STENCILFUNC_SET()
 }
 
 #ifdef GLSL4_API
-#include "ZZoglShaders.h"
+#include "ZZogl/ZZoglShaders.h"
 #endif
 // sets the data stream
 static __forceinline void SET_STREAM()
@@ -148,7 +148,7 @@ extern PFNGLGETFRAMEBUFFERATTACHMENTPARAMETERIVEXTPROC glGetFramebufferAttachmen
 extern PFNGLDRAWBUFFERSPROC glDrawBuffers;
 
 #ifdef GLSL4_API
-#include "ZZoglShaders.h"
+#include "ZZogl/ZZoglShaders.h"
 #endif
 static __forceinline void DrawTriangleArray()
 {

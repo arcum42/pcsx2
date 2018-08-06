@@ -21,8 +21,8 @@
 #include "GS.h"
 #include "Profile.h"
 #include "GLWin.h"
-#include "ZZoglFlushHack.h"
-#include "ZZoglShaders.h"
+#include "ZZogl/ZZoglFlushHack.h"
+#include "ZZogl/ZZoglShaders.h"
 
 
 using namespace std;

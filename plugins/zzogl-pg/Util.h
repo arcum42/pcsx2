@@ -81,7 +81,7 @@ typedef signed int int32;
 typedef unsigned long long uint64;
 typedef signed long long int64;
 
-#include "ZZoglMath.h"
+#include "ZZogl/ZZoglMath.h"
 #include "Profile.h"
 #include "GSDump.h"
 

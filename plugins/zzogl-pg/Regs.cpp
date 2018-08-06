@@ -23,8 +23,8 @@
 #include "PS2Etypes.h"
 
 #include "targets.h"
-#include "ZZoglVB.h"
-#include "ZZoglDrawing.h"
+#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/ZZoglDrawing.h"
 
 
 #ifdef _MSC_VER

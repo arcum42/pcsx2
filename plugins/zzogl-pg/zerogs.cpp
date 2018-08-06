@@ -20,7 +20,7 @@
 //-------------------------- Includes
 #include "Util.h"
 #include "zerogs.h"
-#include "ZZoglVB.h"
+#include "ZZogl/ZZoglVB.h"
 
 /////////////////////
 // graphics resources

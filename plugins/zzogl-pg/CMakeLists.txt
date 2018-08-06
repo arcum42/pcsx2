@@ -51,7 +51,7 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     )
 endif()
 
-# Select the shader API 
+# Select the shader API - HACK - Choose GLSL4 regardless, as I'm removing CG.
 if(GLSL_API)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
@@ -61,7 +61,7 @@ if(GLSL_API)
 else(GLSL_API)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        -DNVIDIA_CG_API
+         -DGLSL4_API -DOGL4_LOG
     )
 endif(GLSL_API)
 
@@ -101,19 +101,18 @@ set(zzoglSources
     ZZClut.cpp
     ZZHacks.cpp
     ZZKeyboard.cpp
-    ZZoglDrawing.cpp
+    ZZogl/ZZoglDrawing.cpp
     ZZLog.cpp
-    ZZoglCreate.cpp
-    ZZoglCRTC.cpp
-    ZZoglFlush.cpp
-    ZZoglFlushHack.cpp
-    ZZoglMem.cpp
-    ZZoglSave.cpp
-    ZZoglShaders.cpp
-    ZZoglShadersGLSL.cpp
-    ZZoglShadersGLSL4.cpp
-    ZZoglShoots.cpp
-    ZZoglVB.cpp
+    ZZogl/ZZoglCreate.cpp
+    ZZogl/ZZoglCRTC.cpp
+    ZZogl/ZZoglFlush.cpp
+    ZZogl/ZZoglFlushHack.cpp
+    ZZogl/ZZoglMem.cpp
+    ZZogl/ZZoglSave.cpp
+    ZZogl/ZZoglShadersGLSL.cpp
+    ZZogl/ZZoglShadersGLSL4.cpp
+    ZZogl/ZZoglShoots.cpp
+    ZZogl/ZZoglVB.cpp
     )
 
 # zzogl headers
@@ -138,17 +137,17 @@ set(zzoglHeaders
     zerogs.h
     zpipe.h
     ZZClut.h
-    ZZoglFlush.h
+    ZZogl/ZZoglFlush.h
     ZZGl.h
     ZZHacks.h
-    ZZoglDrawing.h
+    ZZogl/ZZoglDrawing.h
     ZZLog.h
-    ZZoglCRTC.h
-    ZZoglMath.h
-    ZZoglMem.h
-    ZZoglShaders.h
-    ZZoglShoots.h
-    ZZoglVB.h
+    ZZogl/ZZoglCRTC.h
+    ZZogl/ZZoglMath.h
+    ZZogl/ZZoglMem.h
+    ZZogl/ZZoglShaders.h
+    ZZogl/ZZoglShoots.h
+    ZZogl/ZZoglVB.h
     )
 
 # zzogl shader sources
