@@ -39,6 +39,7 @@
 map<string, GLbyte> mapGLExtensions;
 
 extern bool ZZshLoadExtraEffects();
+void SetAA(int mode);
 
 GLuint vboRect = 0;
 GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands
@@ -48,7 +49,8 @@ inline bool CreateImportantCheck();
 inline void CreateOtherCheck();
 inline bool CreateOpenShadersFile();
 
-void ZZGSStateReset();
+int s_nLastResolveReset = 0;
+int s_nResolveCounts[30] = {0}; // resolve counts for last 30 frames
 
 //------------------ Dummies
 #ifdef _WIN32
@@ -122,7 +124,6 @@ u32 ptexConv32to16 = 0;
 
 extern void Delete_Avi_Capture();
 extern void ZZDestroy();
-extern void SetAA(int mode);
 
 //------------------ Code
 
@@ -428,6 +429,35 @@ inline bool TryBlockFormat(GLint fmt, const GLvoid* vBlockData) {
 inline bool TryBlinearFormat(GLint fmt32, const GLvoid* vBilinearData) {
 	glTexImage2D(GL_TEXTURE_2D, 0, fmt32, BLOCK_TEXWIDTH, BLOCK_TEXHEIGHT, 0, GL_RGBA, GL_FLOAT, vBilinearData);
 	return (glGetError() == GL_NO_ERROR);
+}
+
+void ZZGSStateReset()
+{
+	FUNCLOG
+	icurctx = -1;
+
+	for (int i = 0; i < 2; ++i)
+	{
+		vb[i].Destroy();
+		memset(&vb[i], 0, sizeof(VB));
+
+		vb[i].tex0.tw = 1;
+		vb[i].tex0.th = 1;
+		vb[i].scissor.x1 = 639;
+		vb[i].scissor.y1 = 479;
+		vb[i].tex0.tbw = 64;
+		vb[i].Init(VB_BUFFERSIZE);
+	}
+
+	s_RangeMngr.Clear();
+
+	g_MemTargs.Destroy();
+	s_RTs.Destroy();
+	s_DepthRTs.Destroy();
+	s_BitwiseTextures.Destroy();
+
+	vb[0].ictx = 0;
+	vb[1].ictx = 1;
 }
 
 bool ZZCreate(int _width, int _height)
@@ -844,3 +874,39 @@ void ZZDestroy()
 	mapGLExtensions.clear();
 }
 
+
+void SetAA(int mode)
+{
+	FUNCLOG
+	float f = 1.0f;
+
+	// need to flush all targets
+	s_RTs.ResolveAll();
+	s_RTs.Destroy();
+	s_DepthRTs.ResolveAll();
+	s_DepthRTs.Destroy();
+
+	AA.x = AA.y = 0;			// This is code for x0, x2, x4, x8 and x16 anti-aliasing.
+	
+	if (mode > 0)
+	{
+		// ( 1, 0 ) ; (  1, 1 ) ; ( 2, 1 ) ; ( 2, 2 ) 
+		// it's used as a binary shift, so x >> AA.x, y >> AA.y
+		AA.x = (mode + 1) / 2;
+		AA.y = mode / 2;
+		f = 2.0f;
+	}
+
+	memset(s_nResolveCounts, 0, sizeof(s_nResolveCounts));
+	s_nLastResolveReset = 0;
+
+	vb[0].prndr = NULL;
+	vb[0].pdepth = NULL;
+	vb[1].prndr = NULL;
+	vb[1].pdepth = NULL;
+	
+	vb[0].bNeedFrameCheck = vb[0].bNeedZCheck = 1;
+	vb[1].bNeedFrameCheck = vb[1].bNeedZCheck = 1;
+
+	glPointSize(f);
+}

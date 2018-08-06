@@ -28,6 +28,9 @@
 // flush current vertices, call before setting new registers (the main render method)
 extern void Flush(int context);
 
+// does one time only initializing/destruction
+static ZeroGSInit s_ZeroGSInit;
+
 u8* g_pbyGSMemory = NULL;   // 4Mb GS system mem
 
 void GSMemory::init()

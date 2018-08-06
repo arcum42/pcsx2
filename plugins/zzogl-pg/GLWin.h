@@ -58,7 +58,6 @@
 typedef void (APIENTRYP _PFNSWAPINTERVAL)(int);
 #endif
 
-
 extern void SetDeviceSize(int nNewWidth, int nNewHeight);
 extern void OnFKey(int key, int shift);
 

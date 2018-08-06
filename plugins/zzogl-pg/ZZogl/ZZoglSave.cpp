@@ -45,8 +45,9 @@ const char *libraryNameX	 = "ZeroGS Playground OpenGL ";
 extern char *libraryName;
 extern u32 s_uTex1Data[2][2], s_uClampData[2];
 
-void SetFogColor(u32 fog);
-void SetFogColor(GIFRegFOGCOL* fog);
+// Regs.cpp
+extern void SetFogColor(u32 fog);
+extern void SetFogColor(GIFRegFOGCOL* fog);
 
 int ZZSave(s8* pbydata)
 {

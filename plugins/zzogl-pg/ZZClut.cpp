@@ -20,6 +20,10 @@
 #include "GS.h"
 #include "Mem.h"
 #include "Util.h"
+#include "ZZClut.h"
+#include "ZZogl/ZZoglVB.h"
+
+bool s_bTexFlush = false;
 
 // Local Clut buffer:
 // It supports both 32 bits and 16 bits colors formats. The size of the buffer is 1KBytes.
@@ -1077,3 +1081,130 @@ template <class T>
 // Instantiate the Build_Clut_Texture template...
 template void Build_Clut_Texture<u32>(u32 psm, u32 height, u32* pclut, u8* psrc, u32* pdst);
 template void Build_Clut_Texture<u16>(u32 psm, u32 height, u16* pclut, u8* psrc, u16* pdst);
+
+
+////////////
+// Caches //
+////////////
+
+
+//	case 0: return false;
+//	case 1: break;
+//	case 2: m_CBP[0] = TEX0.CBP; break;
+//	case 3: m_CBP[1] = TEX0.CBP; break;
+//	case 4: if(m_CBP[0] == TEX0.CBP) return false; m_CBP[0] = TEX0.CBP; break;
+//	case 5: if(m_CBP[1] == TEX0.CBP) return false; m_CBP[1] = TEX0.CBP; break;
+//	case 6: ASSERT(0); return false; // ffx2 menu
+//	case 7: ASSERT(0); return false;
+//	default: __assume(0);
+
+// cld state:
+// 000 - clut data is not loaded; data in the temp buffer is stored
+// 001 - clut data is always loaded.
+// 010 - clut data is always loaded; cbp0 = cbp.
+// 011 - clut data is always loadedl cbp1 = cbp.
+// 100 - cbp0 is compared with cbp. if different, clut data is loaded.
+// 101 - cbp1 is compared with cbp. if different, clut data is loaded.
+
+// GSdx sets cbp0 & cbp1 when checking for clut changes. ZeroGS sets them in texClutWrite.
+bool CheckChangeInClut(u32 highdword, u32 psm)
+{
+	FUNCLOG
+	int cld = ZZOglGet_cld_TexBits(highdword);
+	int cbp = ZZOglGet_cbp_TexBits(highdword);
+
+	// processing the CLUT after tex0/2 are written
+	//ZZLog::Error_Log("high == 0x%x; cld == %d", highdword, cld);
+
+	switch (cld)
+	{
+		case 0:
+			return false;
+
+		case 1:
+			break;
+
+		case 2:
+			break;
+
+		case 3:
+			break;
+
+		case 4:
+			if (gs.cbp[0] == cbp) return false;
+			break;
+
+		case 5:
+			if (gs.cbp[1] == cbp) return false;
+			break;
+
+		default:
+			break;
+	}
+
+    // Compare the cache with current memory
+
+    // CSM2 is not supported
+    if (ZZOglGet_csm_TexBits(highdword))
+		return true;
+
+	int cpsm = ZZOglGet_cpsm_TexBits(highdword);
+	int csa = ZZOglGet_csa_TexBits(highdword);
+	int entries = PSMT_IS8CLUT(psm) ? 256 : 16;
+
+	u8* GSMem = g_pbyGSMemory + cbp * 256;
+
+    if (PSMT_IS32BIT(cpsm))
+        return Cmp_ClutBuffer_GSMem<u32>((u32*)GSMem, csa, entries*4);
+    else {
+		// Mana Khemia triggers this.
+        //ZZLog::Error_Log("16 bit clut not supported.");
+		return Cmp_ClutBuffer_GSMem<u16>((u16*)GSMem, csa, entries*2);
+    }
+}
+
+void texClutWrite(int ctx)
+{
+	FUNCLOG
+	s_bTexFlush = false;
+
+	tex0Info& tex0 = vb[ctx].tex0;
+
+	assert(PSMT_ISCLUT(tex0.psm));
+
+	// processing the CLUT after tex0/2 are written
+	switch (tex0.cld)
+	{
+		case 0:
+			return;
+
+		case 1:
+			break; // tex0.cld is usually 1.
+
+		case 2:
+			gs.cbp[0] = tex0.cbp;
+			break;
+
+		case 3:
+			gs.cbp[1] = tex0.cbp;
+			break;
+
+		case 4:
+			if (gs.cbp[0] == tex0.cbp) return;
+			gs.cbp[0] = tex0.cbp;
+			break;
+
+		case 5:
+			if (gs.cbp[1] == tex0.cbp) return;
+			gs.cbp[1] = tex0.cbp;
+			break;
+
+		default:  //ZZLog::Debug_Log("cld isn't 0-5!");
+			break;
+	}
+
+	Flush(!ctx);
+
+    // Write the memory to clut buffer
+    GSMem_to_ClutBuffer(tex0);
+}

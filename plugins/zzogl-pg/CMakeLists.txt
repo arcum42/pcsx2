@@ -93,7 +93,7 @@ set(zzoglSources
     rasterfont.cpp
     Regs.cpp
     targets.cpp
-    zerogs.cpp
+    #zerogs.cpp
     zpipe.cpp
     ZZDepthTargets.cpp
     ZZMemoryTargets.cpp
@@ -101,8 +101,8 @@ set(zzoglSources
     ZZClut.cpp
     ZZHacks.cpp
     ZZKeyboard.cpp
-    ZZogl/ZZoglDrawing.cpp
     ZZLog.cpp
+    ZZogl/ZZoglDrawing.cpp
     ZZogl/ZZoglCreate.cpp
     ZZogl/ZZoglCRTC.cpp
     ZZogl/ZZoglFlush.cpp
@@ -134,15 +134,15 @@ set(zzoglHeaders
     targets.h
     Util.h
     x86.h
-    zerogs.h
+    #zerogs.h
     zpipe.h
     ZZClut.h
-    ZZogl/ZZoglFlush.h
     ZZGl.h
     ZZHacks.h
-    ZZogl/ZZoglDrawing.h
     ZZLog.h
     ZZogl/ZZoglCRTC.h
+    ZZogl/ZZoglDrawing.h
+    ZZogl/ZZoglFlush.h
     ZZogl/ZZoglMath.h
     ZZogl/ZZoglMem.h
     ZZogl/ZZoglShaders.h
@@ -192,12 +192,12 @@ if(EGL_API AND EGL_FOUND AND EGL_GL_CONTEXT_SUPPORT)
     )
 endif()
 
-if(NOT GLSL_API)
-    set(zzoglFinalLibs
-        ${zzoglFinalLibs}
-        ${CG_LIBRARIES}
-    )
-endif(NOT GLSL_API)
+#if(NOT GLSL_API)
+#    set(zzoglFinalLibs
+#    ${zzoglFinalLibs}
+#       ${CG_LIBRARIES}
+#    )
+#endif(NOT GLSL_API)
 
 set(zzoglFinalLibs
     ${zzoglFinalLibs}
@@ -216,9 +216,9 @@ set_target_properties(${Output} PROPERTIES COMPILE_DEFINITIONS USE_GSOPEN2)
 
 if(NOT GLSL_API AND NOT REBUILD_SHADER)
     if(PACKAGE_MODE)
-        install(FILES ${CMAKE_SOURCE_DIR}/plugins/zzogl-pg/opengl/ps2hw.dat DESTINATION ${PLUGIN_DIR})
+        install(FILES ${CMAKE_SOURCE_DIR}/plugins/zzogl-pg/ps2hw.dat DESTINATION ${PLUGIN_DIR})
     else()
-        install(FILES ${CMAKE_SOURCE_DIR}/plugins/zzogl-pg/opengl/ps2hw.dat DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
+        install(FILES ${CMAKE_SOURCE_DIR}/plugins/zzogl-pg/ps2hw.dat DESTINATION ${CMAKE_SOURCE_DIR}/bin/plugins)
     endif()
 endif()
 

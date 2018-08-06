@@ -37,7 +37,7 @@ const int BLOCK_TEXHEIGHT = 512;
 #define TABLE_WIDTH 8
 
 #ifndef ZZNORMAL_MEMORY
-#include "ZZoglMem.h"
+#include "ZZogl/ZZoglMem.h"
 #endif
 
 typedef u32(*_getPixelAddress)(int x, int y, u32 bp, u32 bw);

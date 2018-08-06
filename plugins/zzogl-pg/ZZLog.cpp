@@ -19,6 +19,7 @@
  
 #include <stdio.h>
 #include "ZZLog.h"
+#include "ZZGl.h"
 #include <list>
 #include <cstring>
  
@@ -28,6 +29,7 @@ using namespace std;
 
 static list<MESSAGE> listMsgs;
 const char* logging_prefix = "ZZOgl-PG";
+
 void ProcessMessages()
 {
 	FUNCLOG
@@ -55,6 +57,68 @@ void ZZAddMessage(const char* pstr, u32 ms)
 	FUNCLOG
 	listMsgs.push_back(MESSAGE(pstr, timeGetTime() + ms));
 	ZZLog::Log("%s\n", pstr);
+}
+
+
+void HandleGLError()
+{
+	FUNCLOG
+	// check the error status of this framebuffer */
+	GLenum error = FB::State();
+
+	// if error != GL_FRAMEBUFFER_COMPLETE_EXT, there's an error of some sort
+
+	if (error != 0)
+	{
+		int w = 0;
+		int h = 0;
+		GLint fmt;
+		glGetRenderbufferParameterivEXT(GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_INTERNAL_FORMAT_EXT, &fmt);
+		glGetRenderbufferParameterivEXT(GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_WIDTH_EXT, &w);
+		glGetRenderbufferParameterivEXT(GL_COLOR_ATTACHMENT0_EXT, GL_RENDERBUFFER_HEIGHT_EXT, &h);
+
+		switch (error)
+		{
+			case GL_FRAMEBUFFER_COMPLETE_EXT:
+				break;
+
+			case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT_EXT:
+				ZZLog::Error_Log("Error! missing a required image/buffer attachment!");
+				break;
+
+			case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT_EXT:
+				ZZLog::Error_Log("Error! has no images/buffers attached!");
+				break;
+				
+//			case GL_FRAMEBUFFER_INCOMPLETE_DUPLICATE_ATTACHMENT_EXT:
+//				ZZLog::Error_Log("Error! has an image/buffer attached in multiple locations!");
+//				break;
+
+			case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS_EXT:
+				ZZLog::Error_Log("Error! has mismatched image/buffer dimensions!");
+				break;
+
+			case GL_FRAMEBUFFER_INCOMPLETE_FORMATS_EXT:
+				ZZLog::Error_Log("Error! colorbuffer attachments have different types!");
+				break;
+
+			case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER_EXT:
+				ZZLog::Error_Log("Error! trying to draw to non-attached color buffer!");
+				break;
+
+			case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER_EXT:
+				ZZLog::Error_Log("Error! trying to read from a non-attached color buffer!");
+				break;
+
+			case GL_FRAMEBUFFER_UNSUPPORTED_EXT:
+				ZZLog::Error_Log("Error! format is not supported by current graphics card/driver!");
+				break;
+
+			default:
+				ZZLog::Error_Log("*UNKNOWN ERROR* reported from glCheckFramebufferStatusEXT(0x%x)!", error);
+				break;
+		}
+	}
 }
 
 namespace ZZLog

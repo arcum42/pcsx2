@@ -25,6 +25,7 @@
 #include "targets.h"
 #include "ZZogl/ZZoglVB.h"
 #include "ZZogl/ZZoglDrawing.h"
+#include "ZZClut.h"
 
 
 #ifdef _MSC_VER
@@ -1156,5 +1157,40 @@ void SetFrameSkip(bool skip)
 		g_GIFRegHandlers[GIF_A_D_REG_PRMODECONT] = &GIFRegHandlerPRMODECONT;
 		g_GIFRegHandlers[GIF_A_D_REG_PRMODE] = &GIFRegHandlerPRMODE;
 	}
+}
+
+__forceinline void SetFogColor(float4 v)
+{
+	FUNCLOG
+	
+	SetShaderCaller("SetFogColor");
+	ZZshSetParameter4fv(g_fparamFogColor, v, "g_fParamFogColor");
+}
+
+__forceinline void SetFogColor(u32 fog)
+{
+	FUNCLOG
+
+	gs.fogcol = fog;
+
+	FlushBoth();
+	
+	float4 v;
+
+	// set it immediately
+	v.SetColor(gs.fogcol);
+	SetFogColor(v);
+}
+
+__forceinline void SetFogColor(GIFRegFOGCOL* fog)
+{
+	FUNCLOG
+	
+	float4 v;
+	
+	v.x = fog->FCR / 255.0f;
+	v.y = fog->FCG / 255.0f;
+	v.z = fog->FCB / 255.0f;
+	SetFogColor(v);
 }
 

@@ -53,11 +53,28 @@ vector<u32> s_vecTempTextures;		   // temporary textures, released at the end of
 extern bool g_bMakeSnapshot;
 extern string strSnapshot;
 
-extern void ExtWrite();
-extern void ZZDestroy();
-extern void ChangeDeviceSize(int nNewWidth, int nNewHeight);
-
 extern GLuint vboRect;
+int s_nNewWidth = -1, s_nNewHeight = -1;
+int g_nDepthUpdateCount = 0;
+
+extern void ZZDestroy();
+
+void ExtWrite()
+{
+	FUNCLOG
+	ZZLog::Warn_Log("A hollow voice says 'EXTWRITE'! Nothing happens.");
+
+	// use local DISPFB, EXTDATA, EXTBUF, and PMODE
+//  int bpp, start, end;
+//  tex0Info texframe;
+
+//  bpp = 4;
+//  if( texframe.psm == PSMT16S ) bpp = 3;
+//  else if (PSMT_ISHALF(texframe.psm)) bpp = 2;
+//
+//  // get the start and end addresses of the buffer
+//  GetRectMemAddressZero(start, end, texframe.psm, texframe.tw, texframe.th, texframe.tbp0, texframe.tbw);
+}
 
 // I'm making this variable global for the moment in the course of fiddling with the interlace code 
 // to try and make it more straightforward.
@@ -96,6 +113,47 @@ void AdjustTransToAspect(float4& v)
 	}
 
 	v  *= mult;
+}
+
+void SetDeviceSize(int nNewWidth, int nNewHeight)
+{
+	FUNCLOG
+
+
+	s_nNewWidth = nNewWidth;
+	s_nNewHeight = nNewHeight;
+
+	if (!(conf.fullscreen()))
+	{
+		conf.width = nNewWidth;
+		conf.height = nNewHeight;
+	}
+}
+
+void ChangeDeviceSize(int nNewWidth, int nNewHeight)
+{
+	FUNCLOG
+
+	Size oldSize = GLWin.backbuffer;
+
+	if (!ZZCreate(nNewWidth&~7, nNewHeight&~7))
+	{
+		ZZLog::Error_Log("Failed to recreate, changing to old device.");
+
+		if (!ZZCreate(oldSize.w, oldSize.h))
+		{
+			SysMessage("Failed to create device, exiting...");
+			exit(0);
+		}
+	}
+
+	for (int i = 0; i < 2; ++i)
+	{
+		vb[i].bNeedFrameCheck = vb[i].bNeedZCheck = 1;
+		vb[i].CheckFrame(0);
+	}
+
+	assert(vb[0].pBufferData != NULL && vb[1].pBufferData != NULL);
 }
 
 inline bool FrameSkippingHelper()

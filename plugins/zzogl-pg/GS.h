@@ -1078,8 +1078,8 @@ inline bool ZZOglClutStorageUnchanged(const u32* oldtex, const u32* newtex)
 	return ((oldtex[1] & 0x1ff10000) == (newtex[1] & 0x1ff10000));
 }
 
-// call to load CLUT data (depending on CLD)
-void texClutWrite(int ctx);
+// call to load CLUT data (depending on CLD) - Regs.cpp
+extern void texClutWrite(int ctx);
 
 // Perform clutting for flushed texture. Better check if it needs a prior call.
 inline void CluttingForFlushedTex(tex0Info* tex0, u32 Data, int ictx)

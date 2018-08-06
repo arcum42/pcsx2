@@ -47,6 +47,8 @@ extern int g_nDepthUsed; // ffx2 pal movies
 extern u32 s_ptexInterlace;		 // holds interlace fields
 
 extern int s_nNewWidth, s_nNewHeight;
+extern void ChangeDeviceSize(int nNewWidth, int nNewHeight);
+extern bool ZZCreate(int _width, int _height);
 
 extern CRangeManager s_RangeMngr; // manages overwritten memory
 extern void FlushTransferRanges(const tex0Info* ptex);

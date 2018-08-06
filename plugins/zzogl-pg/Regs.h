@@ -1031,9 +1031,8 @@ extern void SetFrameSkip(bool skip);
 extern void ResetRegs();
 
 extern void SetTexFlush();
-extern void SetFogColor(u32 fog);
-extern void SetFogColor(GIFRegFOGCOL* fog);
-extern bool CheckChangeInClut(u32 highdword, u32 psm); // returns true if clut will change after this tex0 op
+void SetFogColor(u32 fog);
+void SetFogColor(GIFRegFOGCOL* fog);
 
 // flush current vertices, call before setting new registers (the main render method)
 void Flush(int context);

@@ -27,6 +27,8 @@ const u32 g_primsub[8] = { 1, 2, 1, 3, 1, 1, 2, 0 };
 
 const GLenum primtype[8] = { GL_POINTS, GL_LINES, GL_LINES, GL_TRIANGLES, GL_TRIANGLES, GL_TRIANGLES, GL_TRIANGLES, 0xffffffff };
 
+primInfo *prim;
+
 extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height
 
 // Still thinking about the best place to put this.

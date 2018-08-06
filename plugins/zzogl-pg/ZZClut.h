@@ -20,6 +20,10 @@
 #ifndef CLUT_H_INCLUDED
 #define CLUT_H_INCLUDED
 
+extern bool s_bTexFlush;
+
+bool CheckChangeInClut(u32 highdword, u32 psm); // returns true if clut will change after this tex0 op
+void texClutWrite(int ctx);
 extern void GSMem_to_ClutBuffer(tex0Info &tex0);
 template <class T> extern void ClutBuffer_to_Array(T* dst, u32 csa, u32 clutsize);
 template <class T> extern void Build_Clut_Texture(u32 psm, u32 height, T* pclut, u8* psrc, T* pdst);
