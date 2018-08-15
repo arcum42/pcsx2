@@ -30,7 +30,8 @@ static const int LATENCY_MAX = 3000;
 static const int LATENCY_MAX = 750;
 #endif
 
-static const int LATENCY_MIN = 15;
+static const int LATENCY_MIN = 3;
+static const int LATENCY_MIN_TIMESTRETCH = 15;
 
 int AutoDMAPlayRate[2] = {0, 0};
 
@@ -219,6 +220,15 @@ void debug_dialog()
 }
 
 #if defined(__unix__)
+
+static void cb_adjust_latency(GtkComboBox *widget, gpointer data)
+{
+    GtkRange *range = static_cast<GtkRange *>(data);
+    // Minimum latency for timestretch is 15ms. Everything else is 3ms.
+    const int min_latency = gtk_combo_box_get_active(widget) == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
+    gtk_range_set_range(range, min_latency, LATENCY_MAX);
+}
+
 void DisplayDialog()
 {
     int return_value;
@@ -298,10 +308,11 @@ void DisplayDialog()
 #endif
 
     latency_label = gtk_label_new("Latency:");
+    const int min_latency = SynchMode == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
 #if GTK_MAJOR_VERSION < 3
-    latency_slide = gtk_hscale_new_with_range(LATENCY_MIN, LATENCY_MAX, 5);
+    latency_slide = gtk_hscale_new_with_range(min_latency, LATENCY_MAX, 5);
 #else
-    latency_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, LATENCY_MIN, LATENCY_MAX, 5);
+    latency_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, min_latency, LATENCY_MAX, 5);
 #endif
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
@@ -314,15 +325,27 @@ void DisplayDialog()
 
     advanced_button = gtk_button_new_with_label("Advanced...");
 
+#if GTK_MAJOR_VERSION < 3
     main_box = gtk_hbox_new(false, 5);
+#else
+    main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#endif
     main_frame = gtk_frame_new("SPU2-X Config");
     gtk_container_add(GTK_CONTAINER(main_frame), main_box);
 
+#if GTK_MAJOR_VERSION < 3
     mixing_box = gtk_vbox_new(false, 5);
+#else
+    mixing_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
     mixing_frame = gtk_frame_new("Mixing Settings:");
     gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
 
+#if GTK_MAJOR_VERSION < 3
     output_box = gtk_vbox_new(false, 5);
+#else
+    output_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
     output_frame = gtk_frame_new("Output Settings:");
     gtk_container_add(GTK_CONTAINER(output_frame), output_box);
 
@@ -358,6 +381,7 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
     gtk_widget_show_all(dialog);
 
+    g_signal_connect(sync_box, "changed", G_CALLBACK(cb_adjust_latency), latency_slide);
     g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
     g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
 

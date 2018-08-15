@@ -28,17 +28,22 @@
 
 // Port of deprecated GTK2 API to recent GTK3. Those defines
 // could prove handy for testing
-#define GTK3_MONITOR_API (0 && GTK_CHECK_VERSION(3, 22, 0))
-#define GTK3_GRID_API (0 && GTK_CHECK_VERSION(3, 10, 0))
+#define GTK3_MONITOR_API GTK_CHECK_VERSION(3, 22, 0)
+#define GTK3_GRID_API GTK_CHECK_VERSION(3, 12, 0)
 
 static GtkWidget* s_hack_frame;
 
 bool BigEnough()
 {
 #if GTK3_MONITOR_API
-	GdkMonitor *monitor = gdk_display_get_primary_monitor(gdk_display_get_default());
-	// int scale = gdk_monitor_get_scale_factor(monitor);
-	GdkRectangle my_geometry;
+	GdkDisplay *display = gdk_display_get_default();
+	GdkSeat *seat = gdk_display_get_default_seat(display);
+	GdkDevice *pointer = gdk_seat_get_pointer(seat);
+	int x;
+	int y;
+	gdk_device_get_position(pointer, nullptr, &x, &y);
+	GdkMonitor *monitor = gdk_display_get_monitor_at_point(display, x, y);
+	GdkRectangle my_geometry{};
 	gdk_monitor_get_geometry(monitor, &my_geometry);
 	return my_geometry.height > 1000;
 #else
@@ -219,8 +224,8 @@ static int s_table_line = 0;
 void AttachInTable(GtkWidget* table, GtkWidget *w, int pos, int pad = 0, int size = 1)
 {
 #if GTK3_GRID_API
-	g_object_set(w, "margin-left", pad, NULL);
-	g_object_set(w, "expand", true, nullptr);
+	gtk_widget_set_margin_start(w, pad);
+	gtk_widget_set_hexpand(w, true);
 	gtk_grid_attach(GTK_GRID(table), w, pos, s_table_line, size, 1);
 #else
 	GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
@@ -252,7 +257,7 @@ void InsertWidgetInTable(GtkWidget* table, GtkWidget *left, GtkWidget *right = N
 GtkWidget* CreateTableInBox(GtkWidget* parent_box, const char* frame_title, int row, int col) {
 #if GTK3_GRID_API
 	GtkWidget* table = gtk_grid_new();
-	g_object_set(table, "expand", true, nullptr);
+	gtk_widget_set_hexpand(table, true);
 #else
 	GtkWidget* table = gtk_table_new(row, col, false);
 #endif
@@ -623,9 +628,9 @@ bool RunLinuxDialog()
 
 	// Handle some nice tab
 	GtkWidget* notebook = gtk_notebook_new();
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), central_box , gtk_label_new("Renderer Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), advanced_box, gtk_label_new("Advanced Settings"));
-	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), debug_box   , gtk_label_new("Debug/Recording"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(central_box), gtk_label_new("Renderer Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(advanced_box), gtk_label_new("Advanced Settings"));
+	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(debug_box), gtk_label_new("Debug/Recording"));
 	gtk_notebook_append_page(GTK_NOTEBOOK(notebook), ScrollMe(osd_box), gtk_label_new("Post-Processing/OSD"));
 
 	// Put everything in the big box.
