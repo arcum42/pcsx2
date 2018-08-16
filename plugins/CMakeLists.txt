@@ -38,6 +38,10 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSnull" AND GSnull)
 	add_subdirectory(GSnull)
 endif()
 
+if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSone" AND GSone)
+	add_subdirectory(GSone)
+endif()
+
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/LilyPad" AND LilyPad)
 	add_subdirectory(LilyPad)
 endif()

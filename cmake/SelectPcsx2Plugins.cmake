@@ -53,7 +53,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src")
     set(common_libs FALSE)
 else()
     set(common_libs FALSE)
-    print_dep("Skip build of common libraries: miss some dependencies" "${msg_dep_common_libs}")
+    print_dep("Skip build of common libraries: missing some dependencies" "${msg_dep_common_libs}")
 endif()
 
 #---------------------------------------
@@ -71,12 +71,12 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/pcsx2")
     set(pcsx2_core FALSE)
 else()
     set(pcsx2_core FALSE)
-    print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
+    print_dep("Skip build of pcsx2 core: missing some dependencies" "${msg_dep_pcsx2}")
 endif()
 # Linux, BSD, use gtk2, but not OSX
 if(UNIX AND pcsx2_core AND NOT GTKn_FOUND AND NOT APPLE)
     set(pcsx2_core FALSE)
-    print_dep("Skip build of pcsx2 core: miss some dependencies" "${msg_dep_pcsx2}")
+    print_dep("Skip build of pcsx2 core: missing some dependencies" "${msg_dep_pcsx2}")
 endif()
 
 
@@ -105,7 +105,7 @@ elseif(Linux AND GTKn_FOUND AND LIBUDEV_FOUND)
     set(cdvdGigaherz TRUE)
 else()
     set(cdvdGigaherz FALSE)
-    print_dep("Skip build of cdvdGigaherz: miss some dependencies" "${msg_dep_cdvdgiga}")
+    print_dep("Skip build of cdvdGigaherz: missing some dependencies" "${msg_dep_cdvdgiga}")
 endif()
 #---------------------------------------
 
@@ -131,6 +131,14 @@ endif()
 if(GTKn_FOUND AND EXTRA_PLUGINS)
     set(GSnull TRUE)
 endif()
+
+#---------------------------------------
+#			GSone
+#---------------------------------------
+if(GTKn_FOUND AND EXTRA_PLUGINS)
+    set(GSone TRUE)
+endif()
+
 #---------------------------------------
 
 #---------------------------------------
@@ -147,7 +155,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx")
     set(GSdx FALSE)
 else()
     set(GSdx FALSE)
-    print_dep("Skip build of GSdx: miss some dependencies" "${msg_dep_gsdx}")
+    print_dep("Skip build of GSdx: missing some dependencies" "${msg_dep_gsdx}")
 endif()
 #---------------------------------------
 
@@ -166,7 +174,7 @@ if(EXTRA_PLUGINS)
         set(zerogs FALSE)
     else()
         set(zerogs FALSE)
-        print_dep("Skip build of zerogs: miss some dependencies" "${msg_dep_zerogs}")
+        print_dep("Skip build of zerogs: missing some dependencies" "${msg_dep_zerogs}")
     endif()
 endif()
 #---------------------------------------
@@ -177,18 +185,17 @@ endif()
 # requires:	-GLEW
 #			-OpenGL
 #			-X11
-#			-CG (only with cg build)
 #			-JPEG
 #           -common_libs
 #---------------------------------------
 if(EXTRA_PLUGINS)
-    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND (CG_FOUND OR GLSL_API))
+    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND GLSL_API)
         set(zzogl TRUE)
     elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
         set(zzogl FALSE)
     else()
         set(zzogl FALSE)
-        print_dep("Skip build of zzogl: miss some dependencies" "${msg_dep_zzogl}")
+        print_dep("Skip build of zzogl: missing some dependencies" "${msg_dep_zzogl}")
     endif()
 endif()
 #---------------------------------------
@@ -225,7 +232,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad")
 	set(onepad FALSE)
 else()
 	set(onepad FALSE)
-    print_dep("Skip build of onepad: miss some dependencies" "${msg_dep_onepad}")
+    print_dep("Skip build of onepad: missing some dependencies" "${msg_dep_onepad}")
 endif()
 
 # old version of the plugin that still support SDL1
@@ -235,7 +242,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy")
 	set(onepad_legacy FALSE)
 else()
 	set(onepad_legacy FALSE)
-    print_dep("Skip build of onepad_legacy: miss some dependencies" "${msg_dep_onepad}")
+    print_dep("Skip build of onepad_legacy: missing some dependencies" "${msg_dep_onepad}")
 endif()
 #---------------------------------------
 
@@ -263,7 +270,7 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
 	set(spu2-x FALSE)
 else()
 	set(spu2-x FALSE)
-    print_dep("Skip build of spu2-x: miss some dependencies" "${msg_dep_spu2x}")
+    print_dep("Skip build of spu2-x: missing some dependencies" "${msg_dep_spu2x}")
 endif()
 #---------------------------------------
 
@@ -279,12 +286,12 @@ if(EXTRA_PLUGINS)
         set(zerospu2 TRUE)
         # Comment the next line, if you want to compile zerospu2
         set(zerospu2 FALSE)
-        message(STATUS "Don't build zerospu2. It is super-seeded by spu2x")
+        message(STATUS "Don't build zerospu2. It is superceded by spu2x")
     elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2")
         set(zerospu2 FALSE)
     else()
         set(zerospu2 FALSE)
-        print_dep("Skip build of zerospu2: miss some dependencies" "${msg_dep_zerospu2}")
+        print_dep("Skip build of zerospu2: missing some dependencies" "${msg_dep_zerospu2}")
     endif()
 endif()
 #---------------------------------------
@@ -298,7 +305,7 @@ endif()
 #---------------------------------------
 
 #-------------------------------------------------------------------------------
-# Super-seeded by cdvdGigaherz
+# Superceded by cdvdGigaherz
 set(CDVDpeops FALSE)
 
 # [TODO] Write CMakeLists.txt for these plugins. (or not ;) )
