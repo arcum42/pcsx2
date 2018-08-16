@@ -421,11 +421,6 @@ inline int RH(int tbh)
     return (tbh << AA.y);
 }
 
-/*	inline void CreateTargetsList(int start, int end, list<CRenderTarget*>& listTargs) {
-		s_DepthRTs.GetTargs(start, end, listTargs);
-		s_RTs.GetTargs(start, end, listTargs);
-	}*/
-
 // This pattern of functions is called 3 times, so I add creating Targets list into one.
 inline list<CRenderTarget*> CreateTargetsList(int start, int end)
 {
