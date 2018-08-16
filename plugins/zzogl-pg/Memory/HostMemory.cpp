@@ -325,7 +325,7 @@ void TransferHostLocal(const void* pbyMem, u32 nQWordSize)
     }
  
 #if defined(_DEBUG)
-    if (g_bSaveTrans)
+    if (g_bSaveTrans) // Not set anywhere.
     {
         tex0Info t;
         t.tbp0 = gs.dstbuf.bp;
@@ -600,7 +600,7 @@ void TransferLocalLocal()
  
 #ifdef ZEROGS_DEVBUILD
  
-    if (g_bSaveTrans)
+    if (g_bSaveTrans) // Not set anywhere.
     {
         tex0Info t;
         t.tbp0 = gs.dstbuf.bp;

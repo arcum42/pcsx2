@@ -17,8 +17,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "ZZoglDrawing.h"
-#include "ZZoglVB.h"
+#include "ZZogl/ZZoglDrawing.h"
+#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/ZZoglFlush.h"
 
 Kick* ZZKick;
 
@@ -29,7 +30,7 @@ const GLenum primtype[8] = { GL_POINTS, GL_LINES, GL_LINES, GL_TRIANGLES, GL_TRI
 
 primInfo *prim;
 
-extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height
+extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height. From ZZoglFlush.cpp.
 
 // Still thinking about the best place to put this.
 // called on a primitive switch
@@ -244,11 +245,13 @@ void Kick::DrawPrim(u32 prim_type)
         case PRIM_TRIANGLE_FAN:
             assert(gs.primC >= 3);
             Output_Vertex(p[2],2);
+             __attribute__ ((fallthrough));
         case PRIM_LINE:
         case PRIM_LINE_STRIP:
         case PRIM_SPRITE:
             assert(gs.primC >= 2);
             Output_Vertex(p[1],1);
+             __attribute__ ((fallthrough));
         case PRIM_POINT:
             assert(gs.primC >= 1);
             Output_Vertex(p[0],0);

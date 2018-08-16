@@ -18,10 +18,11 @@
  */
 
 #include "GS.h"
-#include "Mem.h"
+#include "Memory/Mem.h"
 #include "Util.h"
 #include "ZZClut.h"
 #include "ZZogl/ZZoglVB.h"
+#include "ZZogl/ZZoglFlush.h"
 
 bool s_bTexFlush = false;
 

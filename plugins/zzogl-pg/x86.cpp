@@ -18,7 +18,7 @@
  */
 
 #include "GS.h"
-#include "Mem.h"
+#include "Memory/Mem.h"
 #include "x86.h"
 #include "Util.h"
 

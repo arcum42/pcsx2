@@ -42,7 +42,7 @@
 
 #endif
 
-#include "Mem.h"
+#include "Memory/Mem.h"
 
 extern u32 s_stencilfunc, s_stencilref, s_stencilmask;
 extern GLenum s_srcrgb, s_dstrgb, s_srcalpha, s_dstalpha; // set by zgsBlendFuncSeparateEXT

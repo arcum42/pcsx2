@@ -19,7 +19,8 @@
 
 #include <stdlib.h>
 
-#include "GS.h"
+#include "Util.h"
+//#include "GS.h"
 #include "Win32.h"
 #include "Utilities/Path.h"
 

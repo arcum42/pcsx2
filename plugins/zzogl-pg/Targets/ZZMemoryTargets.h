@@ -21,4 +21,12 @@
 #ifndef __ZZ_MEMORY_TARGETS_H__
 #define __ZZ_MEMORY_TARGETS_H__
 
+#include "Targets/ZZTargets.h"
+
+extern int g_TransferredToGPU;
+
+extern int VALIDATE_THRESH;
+extern u32 TEXDESTROY_THRESH;
+#define FORCE_TEXDESTROY_THRESH (3) // destroy texture after FORCE_TEXDESTROY_THRESH frames
+
 #endif

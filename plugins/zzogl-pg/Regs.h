@@ -1026,19 +1026,4 @@ static __forceinline bool Circuit_Enabled(int circuit)
 	return (circuit) ? PMODE->EN2 : PMODE->EN1;
 }
 
-extern void WriteTempRegs();
-extern void SetFrameSkip(bool skip);
-extern void ResetRegs();
-
-extern void SetTexFlush();
-void SetFogColor(u32 fog);
-void SetFogColor(GIFRegFOGCOL* fog);
-
-// flush current vertices, call before setting new registers (the main render method)
-void Flush(int context);
-void FlushBoth();
-
-// called on a primitive switch
-void Prim();
-
 #endif

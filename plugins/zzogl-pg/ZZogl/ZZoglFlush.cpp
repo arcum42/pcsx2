@@ -23,12 +23,15 @@
 #include <math.h>
 
 #include "GS.h"
-#include "Mem.h"
-#include "targets.h"
-#include "ZZoglFlushHack.h"
-#include "ZZoglShaders.h"
 #include "ZZClut.h"
-#include "ZZoglFlush.h"
+
+#include "Memory/Mem.h"
+#include "Targets/targets.h"
+
+#include "ZZogl/ZZoglFlushHack.h"
+#include "ZZogl/ZZoglShaders.h"
+#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/ZZoglShoots.h"
 
 //------------------ Defines
 
@@ -38,11 +41,11 @@ bool g_bSaveTex = false;	// saves the current texture
 bool g_bSaveResolved = false;
 #endif // !defined(ZEROGS_DEVBUILD)
 
-bool g_bSaveTrans = false;
+bool g_bSaveTrans = false; // Set and tested, but always false. Seems to be for debuging.
 bool s_bWriteDepth = false;
 bool s_bDestAlphaTest = false;
 
-bool g_bUpdateStencil = true;
+bool g_bUpdateStencil = true; // FIXME - Only ever gets set to false.
 bool bCanRenderStencil = true;
 
 // local alpha blending settings
@@ -65,10 +68,10 @@ static u32 s_ptexCurSet[2] = {0};
 static u32 s_ptexNextSet[2] = {0};				// ZZ
 
 int s_ClutResolve = 0;						// ZZ
-int g_nDepthUsed = 0; 						// ffx2 pal movies
 int s_nWriteDepthCount = 0;					// ZZ
 int s_nWriteDestAlphaTest = 0;					// ZZ
 int s_nWireframeCount = 0;
+extern int g_nDepthUsed; // ZZDepthTargets.cpp; ffx2 pal movies.
 
 ////////////////////
 // State parameters
@@ -124,29 +127,21 @@ inline bool IsAlphaTestExpansion(tex0Info tex0)
 	return (tex0.tcc && gs.texa.aem && PSMT_ALPHAEXP(PIXEL_STORAGE_FORMAT(tex0)));
 }
 
-// Switch wireframe rendering off for first flush, so it's draw few solid primitives
-inline void SwitchWireframeOff()
+inline void ToggleWireframe(bool wState)
 {
-	if (conf.wireframe())
-	{
-		if (s_nWireframeCount > 0)
+	if (conf.wireframe() && s_nWireframeCount > 0)
 		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			if (wState)
+			{
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				--s_nWireframeCount;
+			}
+			else
+			{
+				// Switch wireframe rendering off for first flush, so it's draw few solid primitives
+				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			}
 		}
-	}
-}
-
-// Switch wireframe rendering on, look at previous function
-inline void SwitchWireframeOn()
-{
-	if (conf.wireframe())
-	{
-		if (s_nWireframeCount > 0)
-		{
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			--s_nWireframeCount;
-		}
-	}
 }
 
 extern u32 ptexBilinearBlocks;
@@ -186,7 +181,9 @@ void ReloadEffects()
 #endif
 }
 
+#if defined(WRITE_PRIM_LOGS) && defined(_DEBUG)
 long BufferNumber = 0;
+#endif
 
 // This is a debug function. It prints all buffer info and save current texture into the file, then prints the file name.
 inline void VisualBufferMessage(int context)
@@ -231,13 +228,11 @@ inline void SaveRendererTarget(VB& curvb)
 inline void FlushUpdateEffect()
 {
 #if defined(DEVBUILD)
-
 	if (g_bUpdateEffect)
 	{
 		ReloadEffects();
 		g_bUpdateEffect = 0;
 	}
-
 #endif
 }
 
@@ -253,7 +248,7 @@ inline bool IsFlushNoNeed(VB& curvb, const pixTest& curtest)
 	return false;
 }
 
-// Transfer targets, that are located in current texture.
+// Transfer targets that are located in current texture.
 inline void FlushTransferRangesHelper(VB& curvb)
 {
 	if (s_RangeMngr.ranges.size() > 0)
@@ -533,10 +528,6 @@ inline void FlushSetStream(VB& curvb)
 
 	g_nCurVBOIndex = (g_nCurVBOIndex + 1) % ArraySize(g_vboBuffers);
 
-
-//	void* pdata = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
-//	memcpy(pdata, curvb.pBufferData, curvb.nCount * sizeof(VertexGPU));
-//	glUnmapBuffer(GL_ARRAY_BUFFER);
 	SET_STREAM();
 	
 	GL_REPORT_ERRORD();
@@ -666,7 +657,6 @@ inline int FlushGetShaderType(VB& curvb, CRenderTarget* ptextarg, GLuint& ptexcl
 	return 1;
 }
 
-
 //Set page offsets depends on shader type.
 inline void FlushSetPageOffset(FRAGMENTSHADER* pfragment, int shadertype, CRenderTarget* ptextarg)
 {
@@ -729,8 +719,8 @@ inline void FlushTextureDims(FRAGMENTSHADER* pfragment, int shadertype, VB& curv
 {
 	SetShaderCaller("FlushTextureDims");
 	float4 vTexDims;
-	vTexDims.x = (float)RW(curvb.tex0.tw) ;
-	vTexDims.y = (float)RH(curvb.tex0.th) ;
+	vTexDims.x = (float)RW(curvb.tex0.tw);
+	vTexDims.y = (float)RH(curvb.tex0.th);
 
 	// look at the offset of tbp0 from fbp
 
@@ -778,7 +768,6 @@ inline void FlushApplyResizeFilter(VB& curvb, u32& dwFilterOpts, CRenderTarget* 
 	}
 }
 
-
 // Usage existing targets depends on several tricks, 32-16 conversion and CLUTing, so we need to handle it.
 inline FRAGMENTSHADER* FlushUseExistRenderTarget(VB& curvb, CRenderTarget* ptextarg, u32& dwFilterOpts, int exactcolor, int context)
 {
@@ -799,7 +788,8 @@ inline FRAGMENTSHADER* FlushUseExistRenderTarget(VB& curvb, CRenderTarget* ptext
 
 	FlushTextureDims(pfragment, shadertype, curvb, ptextarg);
 
-	if (pfragment->sCLUT != NULL && ptexclut != 0)
+	//if (pfragment->sCLUT != NULL && ptexclut != 0)
+	if (/*pfragment->sCLUT != 0 &&*/ ptexclut != 0) // Trying just eliminating the first check, as I'm not sure it's correct.
 		ZZshGLSetTextureParameter(pfragment->prog, pfragment->sCLUT, ptexclut, "CLUT");
 
 	FlushApplyResizeFilter(curvb, dwFilterOpts, ptextarg, context);
@@ -818,7 +808,8 @@ inline FRAGMENTSHADER* FlushMadeNewTarget(VB& curvb, int exactcolor, int context
 	if (g_bSaveTex)
 	{
         // FIXME: I suspect one of g_bSaveTex test variable is wrong
-		if (g_bSaveTex == 1)
+		// g_bSaveTex is never true!
+		if (g_bSaveTex == true)
 		{
 			SaveTex(&curvb.tex0, 1);
 			/*CMemoryTarget* pmemtarg = */
@@ -935,7 +926,7 @@ inline void AlphaSetDepthTest(VB& curvb, const pixTest curtest, FRAGMENTSHADER* 
 
 	if (curtest.zte)
 	{
-		if (curtest.ztst > 1) g_nDepthUsed = 2;
+		if (curtest.ztst > 1) g_nDepthUsed = 2; // Wait, what?
 #if 0
 		if ((curtest.ztst == 2) ^(g_nDepthBias != 0))
 		{
@@ -1069,7 +1060,7 @@ inline void AlphaTest(VB& curvb)
 
 //	return;
 	// Zeydlitz changed this with a reason! It's an "Alpha more than 1 hack."
-	if (curvb.test.ate == 1 && curvb.test.atst == ATST_ALWAYS && curvb.test.date == 1)
+	if (curvb.test.ate && curvb.test.atst == ATST_ALWAYS && curvb.test.date == 1)
 	{
 		if (curvb.test.datm == 1)
 		{
@@ -1335,7 +1326,7 @@ void Flush(int context)
 
 	CRenderTarget* ptextarg = FlushGetTarget(curvb);
 
-	SwitchWireframeOff();
+	ToggleWireframe(false);
 	FlushDoContextJob(curvb, context);
 
 	u32 dwUsingSpecialTesting = 0, dwFilterOpts = 0;
@@ -1374,7 +1365,7 @@ void Flush(int context)
 	curvb.nCount = 0;
 	curvb.curprim.abe = oldabe;
 
-	SwitchWireframeOn();
+	ToggleWireframe(true);
 
 	GL_REPORT_ERRORD();
 }
@@ -1751,30 +1742,6 @@ void SetContextTarget(int context)
 	GL_REPORT_ERRORD();
 }
 
-
-void SetTexInt(int context, FRAGMENTSHADER* pfragment, int settexint)
-{
-	FUNCLOG
-
-	if (settexint)
-	{
-		tex0Info& tex0 = vb[context].tex0;
-
-        if (vb[context].bVarsTexSync) {
-            SetTexVariablesInt(context, GetTexFilter(vb[context].tex1), tex0, true, pfragment, s_bForceTexFlush);
-        } else {
-            SetTexVariablesInt(context, GetTexFilter(vb[context].tex1), tex0, false, pfragment, s_bForceTexFlush);
-
-            INC_TEXVARS();
-        }
-        vb[context].bVarsTexSync = true;
-	}
-	else
-	{
-		vb[context].bVarsTexSync = false;
-	}
-}
-
 // clamp relies on texture width
 void SetTexClamping(int context, FRAGMENTSHADER* pfragment)
 {
@@ -1959,6 +1926,30 @@ void SetTexVariables(int context, FRAGMENTSHADER* pfragment)
 	}
 }
 
+
+void SetTexInt(int context, FRAGMENTSHADER* pfragment, int settexint)
+{
+	FUNCLOG
+
+	if (settexint)
+	{
+		tex0Info& tex0 = vb[context].tex0;
+
+        if (vb[context].bVarsTexSync) {
+            SetTexVariablesInt(context, GetTexFilter(vb[context].tex1), tex0, true, pfragment, s_bForceTexFlush);
+        } else {
+            SetTexVariablesInt(context, GetTexFilter(vb[context].tex1), tex0, false, pfragment, s_bForceTexFlush);
+
+            INC_TEXVARS();
+        }
+        vb[context].bVarsTexSync = true;
+	}
+	else
+	{
+		vb[context].bVarsTexSync = false;
+	}
+}
+
 void SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0, bool CheckVB, FRAGMENTSHADER* pfragment, int force)
 {
 	FUNCLOG
@@ -2036,7 +2027,7 @@ void SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0, bool Ch
 	v.z = g_fBlockMult / (float)pmemtarg->widthmult;
 	v.w = fpage - fpageint ;
 
-	if (g_fBlockMult > 1)
+	if (g_fBlockMult > 1) // Will never happen, since it's only ever set to 1.
 	{
 		// make sure to divide by mult (since the G16R16 texture loses info)
 		v.z *= b.bpp * (1 / 32.0f);
@@ -2077,68 +2068,6 @@ void SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0, bool Ch
 
 	vb[context].bVarsTexSync = false;
 }
-
-#if 0
-#define SET_ALPHA_COLOR_FACTOR(sign) \
-{ \
-	switch(a.c) \
-	{ \
-		case 0: \
-			vAlphaBlendColor.y = (sign) ? 2.0f*255.0f/256.0f : -2.0f*255.0f/256.0f; \
-            s_srcalpha = GL_ONE; \
-			s_alphaeq = (sign) ? GL_FUNC_ADD : GL_FUNC_REVERSE_SUBTRACT; \
-			break; \
-			\
-		case 1: \
-			/* if in 24 bit mode, dest alpha should be one */ \
-			switch(PSMT_BITMODE(vb[icurctx].prndr->psm)) \
-			{ \
-				case 0: \
-					bDestAlphaColor = (a.d!=2)&&((a.a==a.d)||(a.b==a.d)); \
-					break; \
-					\
-				case 1: \
-					/* dest alpha should be one */ \
-					bDestAlphaColor = 2; \
-					break; \
-					/* default: 16bit surface, so returned alpha is ok */ \
-			} \
-		break; \
-        \
-		case 2: \
-			bNeedBlendFactorInAlpha = true; /* should disable alpha channel writing */ \
-			vAlphaBlendColor.y = 0; \
-			vAlphaBlendColor.w = (sign) ? (float)a.fix * (2.0f/255.0f) : (float)a.fix * (-2.0f/255.0f); \
-			usec = 0; /* change so that alpha comes from source*/ \
-		break; \
-	} \
-}
- 
-#if 0
-if( a.fix <= 0x80 ) { \
- dwTemp = (a.fix*2)>255?255:(a.fix*2); \
- dwTemp = dwTemp|(dwTemp<<8)|(dwTemp<<16)|0x80000000; \
- ZZLog::Debug_Log("bfactor: %8.8x", dwTemp); \
- glBlendColorEXT(dwTemp); \
- } \
- else { \
-
-#endif
-
-//void ResetAlphaVariables() {
-//	FUNCLOG
-//}
-
-inline void NeedFactor(int w)
-{
-	if (bDestAlphaColor == 2)
-	{
-		bNeedBlendFactorInAlpha = (w + 1) ? true : false;
-		vAlphaBlendColor.y = 0;
-		vAlphaBlendColor.w = (float)w;
-	}
-}
-#endif
 
 template<bool SIGN, bool NEED_FACTOR>
 __forceinline int Set_Alpha_Color_Factor(const alphaInfo& a)
@@ -2195,11 +2124,7 @@ void SetAlphaVariables(const alphaInfo& a)
 	bool alphaenable = true;
 
 	// TODO: negative color when not clamping turns to positive???
-	// g_vars._bAlphaState = 0; // set all to zero
 	bNeedBlendFactorInAlpha = false;
-	// b2XAlphaTest = 1;
-	//u32 dwTemp = 0xffffffff;
-	// bDestAlphaColor = 0;
 
 	// default
 	s_srcalpha = GL_ONE;
@@ -2207,9 +2132,7 @@ void SetAlphaVariables(const alphaInfo& a)
 	s_alphaeq = GL_FUNC_ADD;
 	s_rgbeq = GL_FUNC_ADD;
 
-//	s_alphaInfo = a;
 	vAlphaBlendColor = float4(1, 2 * 255.0f / 256.0f, 0, 0);
-	// u32 usec = a.c;
 	u32 usec;
     const bool POS_A = true;
     const bool NEG_A = false;
@@ -2519,178 +2442,6 @@ void SetAlphaVariables(const alphaInfo& a)
 		}
 	}
 
-	/*
-		int t_rgbeq = GL_FUNC_ADD;
-		int t_srcrgb = GL_ONE;
-		int t_dstrgb = GL_ZERO;
-		int tAlphaClamping = 0;
-
-		if( a.a == a.b )
-		{ // just d remains
-			if( a.d == 0 ) 	{}
-			else
-			{
-				t_dstrgb = a.d == 1 ? GL_ONE : GL_ZERO;
-				t_srcrgb = GL_ZERO;
-				t_rgbeq = GL_FUNC_ADD; 			//a) (001) (111) (221) b) (002) (112) (222)
-			}
-			goto EndSetAlpha;
-		}
-		else if( a.d == 2 )
-		{ // zero
-			if( a.a == 2 )
-			{
-				// zero all color
-				t_srcrgb = GL_ZERO;
-				t_dstrgb = GL_ZERO;
-				goto EndSetAlpha;			// (202) (212)
-			}
-			else if( a.b == 2 )
-			{
-				//b2XAlphaTest = 1;		// a) (022)			// b) (122)
-				SET_ALPHA_COLOR_FACTOR(1);
-
-				if( bDestAlphaColor == 2 )
-				{
-					t_rgbeq = GL_FUNC_ADD;
-					t_srcrgb = a.a == 0 ? GL_ONE : GL_ZERO;
-					t_dstrgb = a.a == 0 ? GL_ZERO : GL_ONE;
-				}
-				else
-				{
-					tAlphaClamping = 2;
-					t_rgbeq = GL_FUNC_ADD;
-					t_srcrgb = a.a == 0 ? blendalpha[usec] : GL_ZERO;
-					t_dstrgb = a.a == 0 ? GL_ZERO : blendalpha[usec];
-				}
-
-				goto EndSetAlpha;
-			}
-
-			// nothing is zero, so must do some real blending	//b2XAlphaTest = 1;		//a) (012) 	//b) (102)
-			tAlphaClamping = 3;
-
-			SET_ALPHA_COLOR_FACTOR(1);
-
-			t_rgbeq = a.a == 0 ? GL_FUNC_SUBTRACT : GL_FUNC_REVERSE_SUBTRACT;
-			t_srcrgb = bDestAlphaColor == 2 ? GL_ONE : blendalpha[usec];
-			t_dstrgb = bDestAlphaColor == 2 ? GL_ONE : blendalpha[usec];
-		}
-		else if( a.a == 2 )
-		{ // zero
-
-			//b2XAlphaTest = 1;
-			tAlphaClamping = 1; // min testing
-
-			SET_ALPHA_COLOR_FACTOR(1);
-
-			if( a.b == a.d )
-			{
-				// can get away with 1-A
-				// a.a == a.d == 2!! (200) (211)
-				t_rgbeq = GL_FUNC_ADD;
-				t_srcrgb = (a.b == 0 && bDestAlphaColor != 2) ? blendinvalpha[usec] : GL_ZERO;
-				t_dstrgb = (a.b == 0 || bDestAlphaColor == 2) ? GL_ZERO : blendinvalpha[usec];
-			}
-			else
-			{
-				// a) (201) b)(210)
-				t_rgbeq = a.b==0 ? GL_FUNC_REVERSE_SUBTRACT : GL_FUNC_SUBTRACT;
-				t_srcrgb = (a.b == 0 && bDestAlphaColor != 2) ? blendalpha[usec] : GL_ONE;
-				t_dstrgb = (a.b == 0 || bDestAlphaColor == 2 ) ? GL_ONE : blendalpha[usec];
-			}
-		}
-		else if( a.b == 2 )
-		{
-			tAlphaClamping = 2; // max testing
-
-			SET_ALPHA_COLOR_FACTOR(a.a!=a.d);
-
-			if( a.a == a.d )
-			{
-				// can get away with 1+A, but need to set alpha to negative
-				// a)(020)
-				// b)(121)
-				t_rgbeq = GL_FUNC_ADD;
-
-				if( bDestAlphaColor == 2 )
-				{
-					t_srcrgb = (a.a == 0) ? GL_ONE_MINUS_SRC_ALPHA : GL_ZERO;
-					t_dstrgb = (a.a == 0) ? GL_ZERO : GL_ONE_MINUS_SRC_ALPHA;
-				}
-				else
-				{
-					t_srcrgb = a.a == 0 ? blendinvalpha[usec] : GL_ZERO;
-					t_dstrgb = a.a == 0 ? GL_ZERO : blendinvalpha[usec];
-				}
-			}
-			else
-			{
-				//a)(021) 			//b)(120) 			//b2XAlphaTest = 1;
-				t_rgbeq = GL_FUNC_ADD;
-				t_srcrgb = (a.a == 0 && bDestAlphaColor != 2) ? blendalpha[usec] : GL_ONE;
-				t_dstrgb = (a.a == 0 || bDestAlphaColor == 2) ? GL_ONE : blendalpha[usec];
-			}
-		}
-		else
-		{
-			// all 3 components are valid!
-			tAlphaClamping = 3; // all testing
-			SET_ALPHA_COLOR_FACTOR(a.a!=a.d);
-
-			if( a.a == a.d )
-			{
-				// can get away with 1+A, but need to set alpha to negative		// a) 010,	// b) 101
-				t_rgbeq = GL_FUNC_ADD;
-
-				if( bDestAlphaColor == 2 )
-				{
-					// all ones
-					t_srcrgb = a.a == 0 ? GL_ONE_MINUS_SRC_ALPHA : GL_SRC_ALPHA;
-					t_dstrgb = a.a == 0 ? GL_SRC_ALPHA : GL_ONE_MINUS_SRC_ALPHA;
-				}
-				else
-				{
-					t_srcrgb = a.a == 0 ? blendinvalpha[usec] : blendalpha[usec];
-					t_dstrgb = a.a == 0 ? blendalpha[usec] : blendinvalpha[usec];
-				}
-			}
-			else
-			{
-				t_rgbeq = GL_FUNC_ADD;		// a) 011 		// b) 100 			//
-				if( bDestAlphaColor == 2 )
-				{
-					// all ones
-					t_srcrgb = a.a != 0 ? GL_ONE_MINUS_SRC_ALPHA : GL_SRC_ALPHA;
-					t_dstrgb = a.a != 0 ? GL_SRC_ALPHA : GL_ONE_MINUS_SRC_ALPHA;
-				}
-				else
-				{
-					//b2XAlphaTest = 1;
-					t_srcrgb = a.a != 0 ? blendinvalpha[usec] : blendalpha[usec];
-					t_dstrgb = a.a != 0 ? blendalpha[usec] : blendinvalpha[usec];
-				}
-			}
-		}
-		EndSetAlpha:
-
-
-		if ( alphaenable && (t_rgbeq != s_rgbeq || s_srcrgb != t_srcrgb || t_dstrgb != s_dstrgb || tAlphaClamping != bAlphaClamping)) {
-			if (CheckArray[code][(bDestAlphaColor==2)] != -1) {
-			ZZLog::Debug_Log( "A code %d, 0x%x, 0x%x, 0x%x, 0x%x %d", code, alpha, one_minus_alpha, one, zero, bDestAlphaColor );
-			ZZLog::Debug_Log( "       Difference %d %d %d %d | 0x%x  0x%x | 0x%x  0x%x | 0x%x  0x%x | %d %d",
-				code, a.a, a.b, a.d,
-				t_rgbeq, s_rgbeq, t_srcrgb, s_srcrgb, t_dstrgb, s_dstrgb, tAlphaClamping, bAlphaClamping);
-			CheckArray[code][(bDestAlphaColor==2)] = -1;
-			}
-		}
-		else
-		if (CheckArray[code][(bDestAlphaColor==2)] == 0){
-			ZZLog::Debug_Log( "Add good code %d %d, psm %d  destA %d", code, a.c, vb[icurctx].prndr->psm, bDestAlphaColor);
-			CheckArray[code][(bDestAlphaColor==2)] = 1;
-		}*/
-
-
 	if (alphaenable)
 	{
 		zgsBlendFuncSeparateEXT(s_srcrgb, s_dstrgb, s_srcalpha, s_dstalpha);
@@ -2745,7 +2496,7 @@ void SetTexFlush()
 //	if( PSMT_ISCLUT(vb[1].tex0.psm) )
 //		texClutWrite(1);
 
-	if (!s_bForceTexFlush)
+	if (!s_bForceTexFlush) // s_bForceTexFlush is always true!
 	{
 		if (s_ptexCurSet[0] != s_ptexNextSet[0]) s_ptexCurSet[0] = s_ptexNextSet[0];
 		if (s_ptexCurSet[1] != s_ptexNextSet[1]) s_ptexCurSet[1] = s_ptexNextSet[1];

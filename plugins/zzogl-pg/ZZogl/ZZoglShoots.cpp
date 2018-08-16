@@ -28,8 +28,8 @@
 #endif
 #include <stdlib.h>
 
-#include "targets.h"
-#include "Mem.h"
+#include "Targets/targets.h"
+#include "Memory/Mem.h"
 #include "ZZoglShoots.h"
 
 // AVI Capture

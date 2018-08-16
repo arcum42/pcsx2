@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "GS.h"
-#include "Util.h"
+//#include "GS.h"
+//#include "Util.h"
 
 #include "x86.h"
 #include "ZZClut.h"
@@ -31,3 +31,5 @@
 
 #include "ZZogl/ZZoglShaders.h"
 #include "ZZogl/ZZoglVB.h"
+
+extern void FlushIfNecesary(void* ptr); //ZZoglFlush.cpp

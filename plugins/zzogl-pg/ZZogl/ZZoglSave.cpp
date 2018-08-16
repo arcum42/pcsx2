@@ -21,9 +21,9 @@
 
 //------------------ Includes
 #include "Util.h"
-#include "ZZoglVB.h"
+#include "ZZogl/ZZoglCreate.h"
+#include "ZZogl/ZZoglVB.h"
 
-extern void ZZGSStateReset();
 //----------------------- Defines
 
 #define VBSAVELIMIT ((u32)((u8*)&vb[0].nNextFrameHeight-(u8*)&vb[0]))
@@ -42,8 +42,8 @@ const char *libraryNameX	 = "ZeroGS Playground OpenGL ";
 
 //------------------ Code
 
-extern char *libraryName;
-extern u32 s_uTex1Data[2][2], s_uClampData[2];
+extern char *libraryName; // GSmain.cpp. Only used in GSmain and libraryNameX used here instead?
+extern u32 s_uTex1Data[2][2], s_uClampData[2]; // From Regs.cpp. Regs.cpp only uses the second, but both are used here.
 
 // Regs.cpp
 extern void SetFogColor(u32 fog);
@@ -89,8 +89,6 @@ int ZZSave(s8* pbydata)
 
 	return 0;
 }
-
-extern u32 g_nCurVBOIndex;
 
 bool ZZLoad(s8* pbydata)
 {

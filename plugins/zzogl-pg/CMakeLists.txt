@@ -24,6 +24,7 @@ set(CommonFlags
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wunused-variable
+    #-H
     )
 
 #Clang doesn't support a few common flags that GCC does.
@@ -85,23 +86,26 @@ set(zzoglSources
     GLWinX11.cpp
     GSDump.cpp
     GSmain.cpp
-    HostMemory.cpp
-    Mem.cpp
-    Mem_Swizzle.cpp
-    Mem_Tables.cpp
     Profile.cpp
     rasterfont.cpp
     Regs.cpp
-    targets.cpp
     #zerogs.cpp
     zpipe.cpp
-    ZZDepthTargets.cpp
-    ZZMemoryTargets.cpp
-    ZZRenderTargets.cpp
     ZZClut.cpp
     ZZHacks.cpp
     ZZKeyboard.cpp
     ZZLog.cpp
+    
+    Memory/HostMemory.cpp
+    Memory/Mem.cpp
+    Memory/Mem_Swizzle.cpp
+    Memory/Mem_Tables.cpp
+    
+    Targets/targets.cpp
+    Targets/ZZDepthTargets.cpp
+    Targets/ZZMemoryTargets.cpp
+    Targets/ZZRenderTargets.cpp
+    
     ZZogl/ZZoglDrawing.cpp
     ZZogl/ZZoglCreate.cpp
     ZZogl/ZZoglCRTC.cpp
@@ -117,21 +121,16 @@ set(zzoglSources
 
 # zzogl headers
 set(zzoglHeaders
-    common.h
+    #common.h
     CRC.h
     GifTransfer.h
     # glprocs.h
     GS.h
     GSDump.h
-    HostMemory.h
     ps2hw_gl4.h
-    Mem.h
-    Mem_Swizzle.h
-    Mem_Transmit.h
     Profile.h
     rasterfont.h
     Regs.h
-    targets.h
     Util.h
     x86.h
     #zerogs.h
@@ -140,6 +139,18 @@ set(zzoglHeaders
     ZZGl.h
     ZZHacks.h
     ZZLog.h
+    
+    Memory/HostMemory.h
+    Memory/Mem.h
+    Memory/Mem_Swizzle.h
+    Memory/Mem_Transmit.h
+    
+    Targets/targets.h
+    Targets/ZZTargets.h
+    Targets/ZZDepthTargets.h
+    Targets/ZZRenderTargets.h
+    Targets/ZZMemoryTargets.h
+    
     ZZogl/ZZoglCRTC.h
     ZZogl/ZZoglDrawing.h
     ZZogl/ZZoglFlush.h

@@ -18,14 +18,15 @@
  */
 
 #include "GS.h"
-#include "Mem.h"
+#include "Memory/Mem.h"
 #include "Regs.h"
 #include "PS2Etypes.h"
 
-#include "targets.h"
+#include "Targets/targets.h"
 #include "ZZogl/ZZoglVB.h"
 #include "ZZogl/ZZoglDrawing.h"
 #include "ZZClut.h"
+#include "ZZogl/ZZoglFlush.h"
 
 
 #ifdef _MSC_VER
@@ -34,7 +35,7 @@
 
 GIFRegHandler g_GIFPackedRegHandlers[16];
 GIFRegHandler g_GIFRegHandlers[256];
-GIFRegHandler g_GIFTempRegHandlers[16] = {0};
+//GIFRegHandler g_GIFTempRegHandlers[16] = {0};
 
 // values for keeping track of changes
 u32 s_uTex1Data[2][2] = {{0, }};
@@ -77,6 +78,9 @@ u32 s_uClampData[2] = {0, };
 #else
 #define REG_LOG(exp, ...) ((void)0)
 #endif
+
+// called on a primitive switch
+extern void Prim(); // From ZZoglDrawing.cpp.
 
 void __gifCall GIFPackedRegHandlerNull(const u32* data)
 {
@@ -558,6 +562,41 @@ void __gifCall GIFRegHandlerTEXA(const u32* data)
 	gs.texa.aem = r->AEM;
 	gs.texa.ta[0] = r->TA0;
 	gs.texa.ta[1] = r->TA1;
+}
+
+__forceinline void SetFogColor(float4 v)
+{
+	FUNCLOG
+	
+	SetShaderCaller("SetFogColor");
+	ZZshSetParameter4fv(g_fparamFogColor, v, "g_fParamFogColor");
+}
+
+__forceinline void SetFogColor(u32 fog)
+{
+	FUNCLOG
+
+	gs.fogcol = fog;
+
+	FlushBoth();
+	
+	float4 v;
+
+	// set it immediately
+	v.SetColor(gs.fogcol);
+	SetFogColor(v);
+}
+
+__forceinline void SetFogColor(GIFRegFOGCOL* fog)
+{
+	FUNCLOG
+	
+	float4 v;
+	
+	v.x = fog->FCR / 255.0f;
+	v.y = fog->FCG / 255.0f;
+	v.z = fog->FCB / 255.0f;
+	SetFogColor(v);
 }
 
 void __gifCall GIFRegHandlerFOGCOL(const u32* data)
@@ -1100,10 +1139,10 @@ void ResetRegs()
 	SetMultithreaded();
 }
 
-void WriteTempRegs()
-{
-	memcpy(g_GIFTempRegHandlers, g_GIFPackedRegHandlers, sizeof(g_GIFTempRegHandlers));
-}
+//void WriteTempRegs()
+//{
+//	memcpy(g_GIFTempRegHandlers, g_GIFPackedRegHandlers, sizeof(g_GIFTempRegHandlers));
+//}
 
 void SetFrameSkip(bool skip)
 {
@@ -1158,39 +1197,3 @@ void SetFrameSkip(bool skip)
 		g_GIFRegHandlers[GIF_A_D_REG_PRMODE] = &GIFRegHandlerPRMODE;
 	}
 }
-
-__forceinline void SetFogColor(float4 v)
-{
-	FUNCLOG
-	
-	SetShaderCaller("SetFogColor");
-	ZZshSetParameter4fv(g_fparamFogColor, v, "g_fParamFogColor");
-}
-
-__forceinline void SetFogColor(u32 fog)
-{
-	FUNCLOG
-
-	gs.fogcol = fog;
-
-	FlushBoth();
-	
-	float4 v;
-
-	// set it immediately
-	v.SetColor(gs.fogcol);
-	SetFogColor(v);
-}
-
-__forceinline void SetFogColor(GIFRegFOGCOL* fog)
-{
-	FUNCLOG
-	
-	float4 v;
-	
-	v.x = fog->FCR / 255.0f;
-	v.y = fog->FCG / 255.0f;
-	v.z = fog->FCB / 255.0f;
-	SetFogColor(v);
-}
-

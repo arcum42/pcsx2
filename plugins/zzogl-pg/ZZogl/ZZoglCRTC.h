@@ -21,7 +21,7 @@
 #define ZZOGLCRTC_H_INCLUDED
 
 #include <stdlib.h>
-#include "targets.h"
+#include "Targets/targets.h"
 
 extern int s_frameskipping;
 extern float fFPS;

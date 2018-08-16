@@ -21,12 +21,15 @@
 // VB stands for Visual Buffer, as I think
 
 //------------------- Includes
- #include "Util.h"
-#include "targets.h"
-#include "ZZoglVB.h"
-#include "ZZClut.h"
 #include "GS.h"
-#include "Mem.h"
+#include "Util.h"
+#include "ZZClut.h"
+
+#include "Memory/Mem.h"
+#include "Targets/targets.h"
+
+#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/ZZoglFlush.h"
 
 extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height
 

@@ -20,6 +20,7 @@
 #ifndef ZEROGS_X86
 #define ZEROGS_X86
 
+#include "Util.h"
 #include "GS.h"
 
 #ifndef ZZNORMAL_MEMORY

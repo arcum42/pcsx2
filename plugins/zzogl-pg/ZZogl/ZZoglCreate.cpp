@@ -21,14 +21,17 @@
 
 //------------------ Includes
 #include "GS.h"
-#include "Mem.h"
 #include "GLWin.h"
-#include "ZZoglShaders.h"
-
-#include "targets.h"
 #include "rasterfont.h" // simple font
-#include "ZZoglDrawing.h"
-#include "ZZoglVB.h"
+
+#include "ZZoglCreate.h"
+
+#include "Memory/Mem.h"
+#include "Targets/targets.h"
+
+#include "ZZogl/ZZoglShaders.h"
+#include "ZZogl/ZZoglDrawing.h"
+#include "ZZogl/ZZoglVB.h"
 
 // This include for windows resource file with Shaders
 #ifdef _WIN32
@@ -38,19 +41,20 @@
 // ----------------- Types
 map<string, GLbyte> mapGLExtensions;
 
-extern bool ZZshLoadExtraEffects();
+extern bool ZZshLoadExtraEffects(); // From one of the ZZogl Shaders files.
 void SetAA(int mode);
 
-GLuint vboRect = 0;
-GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands
-u32 g_nCurVBOIndex = 0;
+GLuint vboRect = 0; // Used in ZZoglCRTC.cpp, here, ZZRenderTargets.cpp, ZZDepthTargets.cpp.
+GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands. Used here and ZZoglFlush.cpp.
+u32 g_nCurVBOIndex = 0; // Used here, ZZoglSave.cpp, and ZZoglFlush.cpp.
 
-inline bool CreateImportantCheck();
-inline void CreateOtherCheck();
-inline bool CreateOpenShadersFile();
+//inline bool CreateImportantCheck();
+//inline void CreateOtherCheck();
+//inline bool CreateOpenShadersFile();
 
+// Used in ZZoglCRTC.cpp.
 int s_nLastResolveReset = 0;
-int s_nResolveCounts[30] = {0}; // resolve counts for last 30 frames
+int s_nResolveCounts[30] = {0}; // resolve counts for last 30 frames.
 
 //------------------ Dummies
 #ifdef _WIN32
@@ -84,7 +88,7 @@ void (APIENTRY *zgsBlendFuncSeparateEXT)(GLenum, GLenum, GLenum, GLenum) = NULL;
 ////////////////////////////
 // State parameters
 
-extern u8* s_lpShaderResources;
+extern u8* s_lpShaderResources; // From ZZoglShaders files.
 
 // String's for shader file in developer mode
 //#ifdef ZEROGS_DEVBUILD
@@ -100,7 +104,7 @@ GLenum s_drawbuffers[] = { GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT };
 
 u32 ptexLogo = 0;
 int nLogoWidth, nLogoHeight;
-u32 s_ptexInterlace = 0;		 // holds interlace fields
+u32 s_ptexInterlace = 0;		 // holds interlace fields. Used here and in ZZoglCRTC.h.
 static bool vb_buffer_allocated = false;
 
 //------------------ Global Variables
@@ -113,7 +117,7 @@ namespace FB
 	u32 buf = 0;
 };
 
-RasterFont* font_p = NULL;
+RasterFont* font_p = NULL; // Used here and in ZZoglCRTC.cpp.
 float g_fBlockMult = 1;
 //int s_nFullscreen = 0;
 

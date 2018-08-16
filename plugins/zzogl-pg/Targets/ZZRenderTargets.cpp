@@ -17,28 +17,20 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <math.h>
+#include "Targets/ZZRenderTargets.h"
 
-#include "GS.h"
-#include "Mem.h"
-#include "x86.h"
-#include "targets.h"
-#include "ZZogl/ZZoglShaders.h"
-#include "ZZClut.h"
-#include "ZZogl/ZZoglVB.h"
-#include "Util.h"
+//Move includes back for now.BindToSample
+#include "Targets/ZZTargets.h"
+#include "ZZogl/ZZoglShoots.h"
 
-
-extern int g_TransferredToGPU;
 extern int s_nResolved;
 
-void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode);
-void SetWriteDepth();
-bool IsWriteDepth();
+void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode); // targets.cpp
+//void SetWriteDepth();
+bool IsWriteDepth(); // ZZoglFlush.cpp
 bool IsWriteDestAlphaTest();
 
-
+//end includes.
 
 // Draw 4 triangles from binded array using only stencil buffer
 inline void FillOnlyStencilBuffer()

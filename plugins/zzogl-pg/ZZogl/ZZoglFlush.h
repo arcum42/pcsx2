@@ -27,9 +27,9 @@
 #define INC_ALPHAVARS()
 #define INC_RESOLVE()
 
-#define g_bUpdateEffect 0
-#define g_bSaveTex 0
-#define g_bSaveResolved 0
+#define g_bUpdateEffect false
+#define g_bSaveTex false
+#define g_bSaveResolved false
 
 #else // defined(ZEROGS_DEVBUILD)
 
@@ -64,41 +64,18 @@ enum ColorMask
 #define GL_COLORMASK(mask) glColorMask(!!((mask)&COLORMASK_RED), !!((mask)&COLORMASK_GREEN), !!((mask)&COLORMASK_BLUE), !!((mask)&COLORMASK_ALPHA))
 
 // extern int g_nDepthBias;
-extern float g_fBlockMult; // used for old cards, that do not support Alpha-32float textures. We store block data in u16 and use it.
-extern u32 g_nCurVBOIndex;
-extern u8* g_pbyGSClut;
-extern int ppf;
+extern float g_fBlockMult; // used for old cards, that do not support Alpha-32float textures. We store block data in u16 and use it. Note: only ever gets set to 1, so probably not working.
+extern u32 g_nCurVBOIndex; // From ZZoglCreate.cpp.
+extern u8* g_pbyGSClut; // From HostMemory.cpp. Used in x86.cpp, ZZClut.cpp, and ZZoglSave.cpp. (but not ZZoglFlush.cpp.)
+extern int ppf; // From GSmain.cpp.
 
-extern bool s_bTexFlush;
+extern bool s_bTexFlush; // From ZZClut.cpp. Is in ZZClut.h.
 
-extern vector<u32> s_vecTempTextures;		   // temporary textures, released at the end of every frame
-extern GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands
-extern CRangeManager s_RangeMngr; // manages overwritten memory				// zz
+extern vector<u32> s_vecTempTextures;		   // temporary textures, released at the end of every frame. From ZZoglCRTC.cpp.
+extern GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands. From ZZoglCreate.cpp.
+extern CRangeManager s_RangeMngr; // manages overwritten memory				// zz // From targets.h. :(
 
-#if 0
-typedef union
-{
-	struct
-	{
-		u8 _bNeedAlphaColor;		// set if vAlphaBlendColor needs to be set
-		u8 _b2XAlphaTest;		   // Only valid when bNeedAlphaColor is set. if 1st bit set set, double all alpha testing values
-		// otherwise alpha testing needs to be done separately.
-		u8 _bDestAlphaColor;		// set to 1 if blending with dest color (process only one tri at a time). If 2, dest alpha is always 1.
-		u8 _bAlphaClamping;	 // if first bit is set, do min; if second bit, do max
-	};
-
-	u32 _bAlphaState;
-} g_flag_vars;
-
-extern g_flag_vars g_vars;
-#endif
-
-//#define bNeedAlphaColor g_vars._bNeedAlphaColor
-//#define b2XAlphaTest g_vars._b2XAlphaTest
-//#define bDestAlphaColor g_vars._bDestAlphaColor
-//#define bAlphaClamping g_vars._bAlphaClamping
-
-void FlushTransferRanges(const tex0Info* ptex);						//zz
+void FlushTransferRanges(const tex0Info* ptex);						//zz // From targets.cpp. Used in ZZorglCRTC.cpp, ZZoglFlush.coo.
 
 // use to update the state
 void SetTexVariables(int context, FRAGMENTSHADER* pfragment);			// zz
@@ -119,5 +96,11 @@ void SetContextTarget(int context);
 void SetWriteDepth();
 bool IsWriteDepth();
 void SetDestAlphaTest();
+
+// flush current vertices, call before setting new registers (the main render method)
+// All from ZZoglFlush.cpp.
+extern void Flush(int context); // Used in HostMemory.cpp, Regs.cpp, ZZClut.cpp, ZZoglDrawing.cpp, ZZoglFlush.xcpp, ZZoglVB.cpp.
+extern void FlushBoth(); // Used in ZZoglCRTC.cpp, targets.cpp, Regs.cpp.
+extern void SetTexFlush(); // Only used in Regs.cpp.
 
 #endif // ZZOGLFLUSH_H_INCLUDED

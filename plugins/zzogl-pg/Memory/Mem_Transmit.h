@@ -20,7 +20,8 @@
 #ifndef MEM_TRANSMIT_H_INCLUDED
 #define MEM_TRANSMIT_H_INCLUDED
 
-#include "GS.h"
+#include "Util.h"
+//#include "GS.h"
 #include "Memory/Mem.h"
 
 extern int tempX, tempY;

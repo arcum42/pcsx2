@@ -23,7 +23,7 @@
 #include <vector>
 #include "GS.h"
 #include "Util.h"
-#include "Mem.h"
+#include "Memory/Mem.h"
 
 #ifndef ZZNORMAL_MEMORY
 

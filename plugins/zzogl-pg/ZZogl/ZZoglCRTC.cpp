@@ -21,15 +21,19 @@
 // It draw picture direct on screen, so here we have interlacing and frame skipping.
 
 //------------------ Includes
-#include "Util.h"
-#include "ZZoglCRTC.h"
-#include "GLWin.h"
-#include "ZZoglShaders.h"
-#include "ZZoglShoots.h"
-#include "ZZoglDrawing.h"
-#include "rasterfont.h" // simple font
+
 #include <math.h>
-#include "ZZoglVB.h"
+#include "rasterfont.h" // simple font
+
+#include "Util.h"
+#include "GLWin.h"
+
+#include "ZZogl/ZZoglCRTC.h"
+#include "ZZogl/ZZoglShaders.h"
+#include "ZZogl/ZZoglShoots.h"
+#include "ZZogl/ZZoglDrawing.h"
+#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/ZZoglFlush.h"
 
 //------------------ Defines
 #if !defined(ZEROGS_DEVBUILD)

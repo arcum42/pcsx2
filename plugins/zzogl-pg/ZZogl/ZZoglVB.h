@@ -23,7 +23,10 @@
 #ifndef ZZOGLVB_H_INCLUDED
 #define ZZOGLVB_H_INCLUDED
 
-#include "targets.h"
+#include "Targets/targets.h"
+#include "Targets/ZZDepthTargets.h"
+#include "Targets/ZZMemoryTargets.h"
+#include "Targets/ZZRenderTargets.h"
 
 extern const GLenum primtype[8];
 

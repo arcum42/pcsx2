@@ -82,6 +82,10 @@ extern void ZZGSStateReset();
 extern int ZZSave(s8* pbydata);
 extern bool ZZLoad(s8* pbydata);
 
+//extern void WriteTempRegs();
+extern void SetFrameSkip(bool skip); // Only used in GSmain.cpp
+extern void ResetRegs(); // Only used in GSmain.cpp
+
 // switches the render target to the real target, flushes the current render targets and renders the real image
 extern void RenderCRTC();
 
@@ -266,7 +270,7 @@ EXPORT_C_(s32) GSinit()
     ZZLog::Open();
 	ZZLog::WriteLn("Calling GSinit.");
 
-	WriteTempRegs();
+	//WriteTempRegs();
 	GSreset();
 	
 	ZZLog::WriteLn("GSinit finished.");

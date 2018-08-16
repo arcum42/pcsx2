@@ -21,7 +21,7 @@
 #define GIFTRANSFER_H_INCLUDED
 
 #include "Util.h"
-#include "GS.h"
+//#include "GS.h"
 #include "Regs.h"
 
 enum GIF_FLG

@@ -29,8 +29,6 @@
 #include "ZZoglVB.h"
 #include "Util.h"
 
-
-extern int g_TransferredToGPU;
 extern int s_nResolved;
 
 void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode);

@@ -26,8 +26,9 @@
 #ifndef ZZOGL_FLUSH_HACK_H_INCLUDED
 #define ZZOGL_FLUSH_HACK_H_INCLUDED
 
-#include "GS.h"
-#include "targets.h"
+#include "Util.h"
+//#include "GS.h"
+#include "Targets/targets.h"
 #include "ZZoglVB.h"
 
 extern int g_SkipFlushFrame;

@@ -17,20 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <math.h>
-
-#include "GS.h"
-#include "Mem.h"
-#include "targets.h"
-#include "ZZClut.h"
-#include "Util.h"
-
-extern int g_TransferredToGPU;
-
-extern int VALIDATE_THRESH;
-extern u32 TEXDESTROY_THRESH;
-#define FORCE_TEXDESTROY_THRESH (3) // destroy texture after FORCE_TEXDESTROY_THRESH frames
+#include "Targets/ZZMemoryTargets.h"
 
 void CMemoryTargetMngr::Destroy()
 {

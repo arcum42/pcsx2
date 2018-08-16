@@ -20,7 +20,8 @@
 #ifndef MEM_SWIZZLE_H_INCLUDED
 #define MEM_SWIZZLE_H_INCLUDED
 
-#include "GS.h"
+#include "Util.h"
+//#include "GS.h"
 #include "Memory/Mem.h"
 #include "x86.h"
 

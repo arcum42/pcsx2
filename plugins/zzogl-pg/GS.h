@@ -20,17 +20,13 @@
 #ifndef __GS_H__
 #define __GS_H__
 
-
 #define ZZNORMAL_MEMORY
+#define VB_NUMBUFFERS			   128 // number of vbo buffer allocated
 
 #include "Util.h"
+#include "Regs.h"
 #include "GifTransfer.h"
-#include "HostMemory.h"
-#include "ZZogl/ZZoglShoots.h"
-
-using namespace std;
-
-extern float fFPS;
+#include "Memory/HostMemory.h"
 
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
@@ -38,9 +34,9 @@ extern float fFPS;
 #define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
 #endif
 
-extern int g_LastCRC;
-
-#define VB_NUMBUFFERS			   128 // number of vbo buffer allocated
+extern float fFPS; // Used in GSmain.cpp, ZZRenderTargets.cpp, and ZZoglCRTC.cpp.
+extern int g_LastCRC; // Used in GSMain.cpp, Linux.cpp, Win32.cpp, and ZZoglCreate.cpp
+extern GSconf conf;
 
 struct Vector_16F
 {
@@ -50,7 +46,6 @@ struct Vector_16F
 // PS2 vertex
 
 // Almost same as VertexGPU, controlled by prim.fst flags
-
 struct Vertex
 {
 	u16 x, y, f, resv0;		// note: xy is 12d3
@@ -130,8 +125,6 @@ struct VertexGPU
     }
     
 };
-
-extern GSconf conf;
 
 // PSM values
 // PSM types == Texture Storage Format
@@ -623,7 +616,7 @@ typedef struct
 	int primC;		// number of verts current storing
 	int primIndex;	// current prim index
 	int nTriFanVert; // remember the index of the base of triangle fan
-    int new_tri_fan; // 1 if we process a new triangle fan primitive. 0 otherwise
+    bool new_tri_fan; // 1 if we process a new triangle fan primitive. 0 otherwise
 
 	int prac;
 	int dthe;
@@ -631,8 +624,8 @@ typedef struct
 	int fogcol;
 	int smask;
 	int pabe;
-	u64 buff[2];
-	int buffsize;
+	u64 buff[2]; // Not used.
+	int buffsize; // Not used.
 	int cbp[2];		// internal cbp registers
 
 	u32 CSRw;
@@ -654,11 +647,11 @@ typedef struct
 
 	pathInfo path[4];
 	GIFRegDIMX dimx;
-	GSMemory mem;
-	GSClut clut_buffer;
+	GSMemory mem; // Unused.
+	GSClut clut_buffer; // Unused.
 	
 	// Subject to change.
-	int vsync, interlace;
+	int vsync, interlace; // VSync only in GSmain, set to enabled.
 	
 	int primNext(int inc = 1)
 	{
@@ -673,7 +666,7 @@ typedef struct
 		return ((primIndex + (ArraySize(gsvertex) - dec)) % ArraySize(gsvertex));
     }
 	
-	void setRGBA(u32 r, u32 g, u32 b, u32 a)
+	void setRGBA(u32 r, u32 g, u32 b, u32 a) // Not used.
 	{
 		rgba = (r & 0xff) |
 			  ((g & 0xff) <<  8) |
@@ -793,7 +786,7 @@ inline int PIXEL_STORAGE_FORMAT(const tex0Info& tex) {
 		return tex.psm;
  }
  
-// If pixel storage format not PSMCT24 ot PSMCT32, then it is 16-bit. 
+// If pixel storage format not PSMCT24 or PSMCT32, then it is 16-bit. 
 // Z-textures have 0x30 upper bits, so we eliminate them by &&(~0x30)
 inline bool PSMT_ISHALF_STORAGE(const tex0Info& tex0) { return ((PIXEL_STORAGE_FORMAT(tex0) & (~0x30)) > 1); }
 

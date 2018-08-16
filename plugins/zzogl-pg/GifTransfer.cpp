@@ -18,7 +18,7 @@
  */
 
 #include "GS.h"
-#include "Mem.h"
+#include "Memory/Mem.h"
 #include "GifTransfer.h"
 
 #ifdef _DEBUG

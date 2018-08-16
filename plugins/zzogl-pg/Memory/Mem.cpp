@@ -26,8 +26,6 @@
 #include "Memory/Mem_Transmit.h"
 #include "Memory/Mem_Swizzle.h"
 
-#ifdef ZZNORMAL_MEMORY
-
 BLOCK m_Blocks[0x40]; // do so blocks are indexable
 
 PCSX2_ALIGNED16(u32 tempblock[64]);
@@ -370,4 +368,3 @@ void BLOCK::FillBlocks(vector<char>& vBlockData, vector<char>& vBilinearData)
 	m_Blocks[PSMT4].SetFun(PSMT4);
 }
 
-#endif

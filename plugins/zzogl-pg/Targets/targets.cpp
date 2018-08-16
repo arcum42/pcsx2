@@ -17,48 +17,39 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <math.h>
 
-#include "GS.h"
-#include "Mem.h"
-#include "x86.h"
-#include "targets.h"
-#include "ZZogl/ZZoglShaders.h"
-#include "ZZClut.h"
-#include "ZZogl/ZZoglVB.h"
-#include "Util.h"
+#include "Targets/ZZTargets.h"
+#include "ZZogl/ZZoglFlush.h"
 
 #define RHA
 //#define RW
 
-extern int g_TransferredToGPU;
-
+// From GSMain.cpp.
+extern u32 g_nResolve;
 #if !defined(ZEROGS_DEVBUILD)
 #	define INC_RESOLVE()
 #else
 #	define INC_RESOLVE() ++g_nResolve
 #endif
 
-extern int s_nResolved;
-extern u32 g_nResolve;
-extern bool g_bSaveTrans;
+extern int s_nResolved; // From ZZoglCRTC.cpp; Used in ZZRenderTargets, targets.cpp, ZZoglCRTC.cpp.
+extern bool g_bSaveTrans; // Not used in targets.cpp?
 
 CRenderTargetMngr s_RTs, s_DepthRTs;
 CBitwiseTextureMngr s_BitwiseTextures;
 CMemoryTargetMngr g_MemTargs;
 
 //extern u32 s_ptexCurSet[2];
-bool g_bSaveZUpdate = 0;
+bool g_bSaveZUpdate = false;
 
 int VALIDATE_THRESH = 8;
 u32 TEXDESTROY_THRESH = 16;
 #define FORCE_TEXDESTROY_THRESH (3) // destroy texture after FORCE_TEXDESTROY_THRESH frames
 
-void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode);
-void SetWriteDepth();
-bool IsWriteDepth();
-bool IsWriteDestAlphaTest();
+//void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode);
+//void SetWriteDepth();
+//bool IsWriteDepth();
+//bool IsWriteDestAlphaTest();
 
 //--------------------------------------------------
 
@@ -474,42 +465,6 @@ void FlushTransferRanges(const tex0Info* ptex)
 
 	s_RangeMngr.Clear();
 }
-
-
-#if 0
-// I removed some code here that wasn't getting called. The old versions #if'ed out below this.
-#define RESOLVE_32_BIT(PSM, T, Tsrc, convfn) \
-	{ \
-		u32 mask, imask; \
-		\
-		if (PSMT_ISHALF(psm)) /* 16 bit */ \
-		{\
-			/* mask is shifted*/ \
-			imask = RGBA32to16(fbm);\
-			mask = (~imask)&0xffff;\
-		}\
-		else \
-		{\
-			mask = ~fbm;\
-			imask = fbm;\
-		}\
-		\
-		Tsrc* src = (Tsrc*)(psrc); \
-		T* pPageOffset = (T*)g_pbyGSMemory + fbp*(256/sizeof(T)), *dst; \
-		int maxfbh = (MEMORY_END-fbp*256) / (sizeof(T) * fbw); \
-		if( maxfbh > fbh ) maxfbh = fbh; \
-		\
-		for(int i = 0; i < maxfbh; ++i) { \
-			for(int j = 0; j < fbw; ++j) { \
-				T dsrc = convfn(src[RW(j)]); \
-				dst = pPageOffset + getPixelAddress##PSM##_0(j, i, fbw); \
-				*dst = (dsrc & mask) | (*dst & imask); \
-			} \
-			src += RH(Pitch(fbw))/sizeof(Tsrc); \
-		} \
-	} \
-
-#endif
 
 #ifdef __linux__
 //#define LOG_RESOLVE_PROFILE
@@ -987,305 +942,3 @@ void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, boo
 
 	INC_RESOLVE();
 }
-
-// Leaving this code in for reference for the moment.
-#if 0
-void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode)
-{
-	FUNCLOG
-	//GL_REPORT_ERRORD();
-	s_nResolved += 2;
-
-	// align the rect to the nearest page
-	// note that fbp is always aligned on page boundaries
-	int start, end;
-	GetRectMemAddressZero(start, end, psm, fbw, fbh, fbp, fbw);
-
-	int i, j;
-	//short smask1 = gs.smask&1;
-	//short smask2 = gs.smask&2;
-	u32 mask, imask;
-
-	if (PSMT_ISHALF(psm))   // 16 bit
-	{
-		// mask is shifted
-		imask = RGBA32to16(fbm);
-		mask = (~imask) & 0xffff;
-	}
-	else
-	{
-		mask = ~fbm;
-		imask = fbm;
-
-		if ((psm&0xf) > 0  && 0)
-		{
-			// preserve the alpha?
-			mask &= 0x00ffffff;
-			imask |= 0xff000000;
-		}
-	}
-
-	// Targets over 2000 should be shuffle. FFX and KH2 (0x2100)
-	int X = (psm == 0) ? 0 : 0;
-
-//if (X == 1)
-//ZZLog::Error_Log("resolve: %x %x %x %x (%x-%x).", psm, fbp, fbw, fbh, start, end);
-
-
-#define RESOLVE_32BIT(psm, T, Tsrc, blockbits, blockwidth, blockheight, convfn, frame, aax, aay) \
-	{ \
-		Tsrc* src = (Tsrc*)(psrc); \
-		T* pPageOffset = (T*)g_pbyGSMemory + fbp*(256/sizeof(T)), *dst; \
-		int srcpitch = Pitch(fbw) * blockheight/sizeof(Tsrc); \
-		int maxfbh = (MEMORY_END-fbp*256) / (sizeof(T) * fbw); \
-		if( maxfbh > fbh ) maxfbh = fbh; \
-		for(i = 0; i < (maxfbh&~(blockheight-1))*X; i += blockheight) { \
-			/*if( smask2 && (i&1) == smask1 ) continue; */ \
-			for(j = 0; j < fbw; j += blockwidth) { \
-				/* have to write in the tiled format*/ \
-				frame##SwizzleBlock##blockbits(pPageOffset + getPixelAddress##psm##_0(j, i, fbw), \
-					src+RW(j), Pitch(fbw)/sizeof(Tsrc), mask); \
-			} \
-			src += RH(srcpitch); \
-		} \
-		for(; i < maxfbh; ++i) { \
-			for(j = 0; j < fbw; ++j) { \
-				T dsrc = convfn(src[RW(j)]); \
-				dst = pPageOffset + getPixelAddress##psm##_0(j, i, fbw); \
-				*dst = (dsrc & mask) | (*dst & imask); \
-			} \
-			src += RH(Pitch(fbw))/sizeof(Tsrc); \
-		} \
-	} \
-
-	if( GetRenderFormat() == RFT_byte8 ) {
-		// start the conversion process A8R8G8B8 -> psm
-		switch (psm)
-		{
-
-			case PSMCT32:
-
-			case PSMCT24:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(32, u32, u32, 32A4, 8, 8, (u32), Frame, AA.x, AA.y);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(32, u32, u32, 32A2, 8, 8, (u32), Frame, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(32, u32, u32, 32, 8, 8, (u32), Frame, 0, 0);
-				}
-
-				break;
-
-			case PSMCT16:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16, u16, u32, 16A4, 16, 8, RGBA32to16, Frame, AA.x, AA.y);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16, u16, u32, 16A2, 16, 8, RGBA32to16, Frame, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16, u16, u32, 16, 16, 8, RGBA32to16, Frame, 0, 0);
-				}
-
-				break;
-
-			case PSMCT16S:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16S, u16, u32, 16A4, 16, 8, RGBA32to16, Frame, AA.x, AA.y);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16S, u16, u32, 16A2, 16, 8, RGBA32to16, Frame, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16S, u16, u32, 16, 16, 8, RGBA32to16, Frame, 0, 0);
-				}
-
-				break;
-
-			case PSMT32Z:
-
-			case PSMT24Z:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(32Z, u32, u32, 32A4, 8, 8, (u32), Frame, AA.x, AA.y);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(32Z, u32, u32, 32A2, 8, 8, (u32), Frame, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(32Z, u32, u32, 32, 8, 8, (u32), Frame, 0, 0);
-				}
-
-				break;
-
-			case PSMT16Z:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16Z, u16, u32, 16A4, 16, 8, (u16), Frame, AA.x, AA.y);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16Z, u16, u32, 16A2, 16, 8, (u16), Frame, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16Z, u16, u32, 16, 16, 8, (u16), Frame, 0, 0);
-				}
-
-				break;
-
-			case PSMT16SZ:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16SZ, u16, u32, 16A4, 16, 8, (u16), Frame, AA.x, AA.y);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16SZ, u16, u32, 16A2, 16, 8, (u16), Frame, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16SZ, u16, u32, 16, 16, 8, (u16), Frame, 0, 0);
-				}
-
-				break;
-		}
-	}
-	else   // float16
-	{
-		switch (psm)
-		{
-
-			case PSMCT32:
-
-			case PSMCT24:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(32, u32, Vector_16F, 32A4, 8, 8, Float16ToARGB, Frame16, 1, 1);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(32, u32, Vector_16F, 32A2, 8, 8, Float16ToARGB, Frame16, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(32, u32, Vector_16F, 32, 8, 8, Float16ToARGB, Frame16, 0, 0);
-				}
-
-				break;
-
-			case PSMCT16:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16, u16, Vector_16F, 16A4, 16, 8, Float16ToARGB16, Frame16, 1, 1);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16, u16, Vector_16F, 16A2, 16, 8, Float16ToARGB16, Frame16, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16, u16, Vector_16F, 16, 16, 8, Float16ToARGB16, Frame16, 0, 0);
-				}
-
-				break;
-
-			case PSMCT16S:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16S, u16, Vector_16F, 16A4, 16, 8, Float16ToARGB16, Frame16, 1, 1);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16S, u16, Vector_16F, 16A2, 16, 8, Float16ToARGB16, Frame16, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16S, u16, Vector_16F, 16, 16, 8, Float16ToARGB16, Frame16, 0, 0);
-				}
-
-				break;
-
-			case PSMT32Z:
-
-			case PSMT24Z:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(32Z, u32, Vector_16F, 32ZA4, 8, 8, Float16ToARGB_Z, Frame16, 1, 1);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(32Z, u32, Vector_16F, 32ZA2, 8, 8, Float16ToARGB_Z, Frame16, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(32Z, u32, Vector_16F, 32Z, 8, 8, Float16ToARGB_Z, Frame16, 0, 0);
-				}
-
-				break;
-
-			case PSMT16Z:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16Z, u16, Vector_16F, 16ZA4, 16, 8, Float16ToARGB16_Z, Frame16, 1, 1);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16Z, u16, Vector_16F, 16ZA2, 16, 8, Float16ToARGB16_Z, Frame16, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16Z, u16, Vector_16F, 16Z, 16, 8, Float16ToARGB16_Z, Frame16, 0, 0);
-				}
-
-				break;
-
-			case PSMT16SZ:
-
-				if (AA.y)
-				{
-					RESOLVE_32BIT(16SZ, u16, Vector_16F, 16ZA4, 16, 8, Float16ToARGB16_Z, Frame16, 1, 1);
-				}
-				else if (AA.x)
-				{
-					RESOLVE_32BIT(16SZ, u16, Vector_16F, 16ZA2, 16, 8, Float16ToARGB16_Z, Frame16, 1, 0);
-				}
-				else
-				{
-					RESOLVE_32BIT(16SZ, u16, Vector_16F, 16Z, 16, 8, Float16ToARGB16_Z, Frame16, 0, 0);
-				}
-
-				break;
-		}
-	}
-
-	g_MemTargs.ClearRange(start, end);
-
-	INC_RESOLVE();
-}
-
-#endif

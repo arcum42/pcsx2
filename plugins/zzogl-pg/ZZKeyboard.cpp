@@ -26,7 +26,7 @@
 #include "GLWin.h"
 
 extern int CurrentSavestate, g_GSMultiThreaded, g_nPixelShaderVer;
-extern char *libraryName;
+//extern char *libraryName;
 extern const unsigned char zgsversion;
 extern unsigned char zgsrevision, zgsbuild, zgsminor;
 

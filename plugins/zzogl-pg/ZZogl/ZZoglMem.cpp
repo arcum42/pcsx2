@@ -18,11 +18,12 @@
 
 #include "GS.h"
 #include "Util.h"
-#include "ZZoglMem.h"
-#include "targets.h"
+
 #include "x86.h"
 
-#include "Mem_Swizzle.h"
+#include "Targets/targets.h"
+#include "Memory/Mem_Swizzle.h"
+#include "ZZogl/ZZoglMem.h"
 
 #ifndef ZZNORMAL_MEMORY
 

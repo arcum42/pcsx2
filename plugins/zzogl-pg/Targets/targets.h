@@ -24,24 +24,28 @@
 #include "PS2Edefs.h"
 #include <list>
 #include <map>
-#include "GS.h"
+//#include "GS.h"
 #include "ZZGl.h"
+
+//#include "Targets/ZZDepthTargets.h"
+//#include "Targets/ZZMemoryTargets.h"
+//#include "Targets/ZZRenderTargets.h"
 //#include "ZZoglVB.h"
 
 #ifndef GL_TEXTURE_RECTANGLE
 #define GL_TEXTURE_RECTANGLE GL_TEXTURE_RECTANGLE_NV
 #endif
 
-#define VB_BUFFERSIZE			   0x4000
-
-extern void FlushIfNecesary(void* ptr);
-extern bool g_bSaveZUpdate;
+extern bool g_bSaveZUpdate; // Never actually set to true? For debugging, I'm assuming.
 
 // all textures have this width
-extern int GPU_TEXWIDTH;
-extern float g_fiGPU_TEXWIDTH;
-#define MASKDIVISOR		0							// Used for decrement bitwise mask texture size if 1024 is too big
-#define GPU_TEXMASKWIDTH	(1024 >> MASKDIVISOR)	// bitwise mask width for region repeat mode
+extern int GPU_TEXWIDTH; // ZZoglCreate.cpp - seriously, a bunch of unrelated files are relying on these externs being here because they happen to use targets.h?
+extern float g_fiGPU_TEXWIDTH; // ZZoglCreate.cpp
+#define MASKDIVISOR		0							// Used for decrement bitwise mask texture size if 1024 is too big; only used in targets.cpp.
+#define GPU_TEXMASKWIDTH	(1024 >> MASKDIVISOR)	// bitwise mask width for region repeat mode; used in targets.cpp & ZZoglFlush.cpp.
+
+
+inline u32 GetFrameKey(int fbp, int fbw);
 
 // managers render-to-texture targets
 class CRenderTarget
@@ -115,7 +119,6 @@ class CRenderTarget
 };
 
 // manages zbuffers
-
 class CDepthTarget : public CRenderTarget
 {
 
@@ -126,6 +129,7 @@ class CDepthTarget : public CRenderTarget
 		virtual bool Create(const frameInfo& frame);
 		virtual void Destroy();
 
+		virtual bool ResolveCheck();
 		virtual void Resolve();
 		virtual void Resolve(int startrange, int endrange); // resolves only in the allowed range
 		virtual void Update(int context, CRenderTarget* prndr);
@@ -140,7 +144,6 @@ class CDepthTarget : public CRenderTarget
 };
 
 // manages contiguous chunks of memory (width is always 1024)
-
 class CMemoryTarget
 {
 	public:
@@ -230,7 +233,30 @@ class CMemoryTarget
         int clutsize;    // size of the clut array. 0 otherwise 
 };
 
-inline u32 GetFrameKey(int fbp, int fbw);
+class CMemoryTargetMngr
+{
+	public:
+		CMemoryTargetMngr() : curstamp(0) {}
+
+		CMemoryTarget* GetMemoryTarget(const tex0Info& tex0, int forcevalidate); // pcbp is pointer to start of clut
+		CMemoryTarget* SearchExistTarget(int start, int end, int clutsize, const tex0Info& tex0, int forcevalidate);
+		CMemoryTarget* ClearedTargetsSearch(u32 fmt, int widthmult, int channels, int height);
+		int CompareTarget(list<CMemoryTarget>::iterator& it, const tex0Info& tex0, int clutsize);
+
+		void Destroy(); // destroy all targs
+
+		void ClearRange(int starty, int endy); // set all targets to cleared
+		void DestroyCleared(); // flush all cleared targes
+		void DestroyOldest();
+
+		list<CMemoryTarget> listTargets, listClearedTargets;
+		u32 curstamp;
+
+	private:
+		list<CMemoryTarget>::iterator DestroyTargetIter(list<CMemoryTarget>::iterator& it);
+		void GetClutVariables(int& clutsize, const tex0Info& tex0);
+		void GetMemAddress(int& start, int& end,  const tex0Info& tex0);
+};
 
 // manages render targets
 class CRenderTargetMngr
@@ -319,31 +345,6 @@ class CRenderTargetMngr
 	private:
 		
 		void DestroyAllTargetsHelper(void* ptr);
-};
-
-class CMemoryTargetMngr
-{
-	public:
-		CMemoryTargetMngr() : curstamp(0) {}
-
-		CMemoryTarget* GetMemoryTarget(const tex0Info& tex0, int forcevalidate); // pcbp is pointer to start of clut
-		CMemoryTarget* SearchExistTarget(int start, int end, int clutsize, const tex0Info& tex0, int forcevalidate);
-		CMemoryTarget* ClearedTargetsSearch(u32 fmt, int widthmult, int channels, int height);
-		int CompareTarget(list<CMemoryTarget>::iterator& it, const tex0Info& tex0, int clutsize);
-
-		void Destroy(); // destroy all targs
-
-		void ClearRange(int starty, int endy); // set all targets to cleared
-		void DestroyCleared(); // flush all cleared targes
-		void DestroyOldest();
-
-		list<CMemoryTarget> listTargets, listClearedTargets;
-		u32 curstamp;
-
-	private:
-		list<CMemoryTarget>::iterator DestroyTargetIter(list<CMemoryTarget>::iterator& it);
-		void GetClutVariables(int& clutsize, const tex0Info& tex0);
-		void GetMemAddress(int& start, int& end,  const tex0Info& tex0);
 };
 
 class CBitwiseTextureMngr

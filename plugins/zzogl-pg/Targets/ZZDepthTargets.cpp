@@ -17,26 +17,28 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <stdlib.h>
-#include <math.h>
+#include "Targets/ZZDepthTargets.h"
 
-#include "GS.h"
-#include "Mem.h"
-#include "x86.h"
-#include "targets.h"
+// Move the includes here for now.
+#include "Targets/targets.h"
+#include "Targets/ZZTargets.h"
+
 #include "ZZogl/ZZoglShaders.h"
-#include "ZZClut.h"
 #include "ZZogl/ZZoglVB.h"
-#include "Util.h"
 
-extern bool g_bUpdateStencil;
+extern bool g_bUpdateStencil; // ZZoglFlush.cpp.
 
-void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode);
-void SetWriteDepth();
-bool IsWriteDepth();
-bool IsWriteDestAlphaTest();
+//void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode); // targets.cpp
+void SetWriteDepth(); // ZZoglFlush.cpp
+bool IsWriteDepth(); // ZZoglFlush.cpp
+//bool IsWriteDestAlphaTest(); // ZZoglFlush.cpp
+
+// end includes
 
 const float g_filog32 = 0.999f / (32.0f * logf(2.0f));
+
+
+int g_nDepthUsed = 0; 	// > 0 if depth is used; ffx2 pal movies
 
 CDepthTarget::CDepthTarget() : CRenderTarget(), pdepth(0), pstencil(0), icount(0) {}
 
@@ -121,14 +123,16 @@ void CDepthTarget::Destroy()
 	CRenderTarget::Destroy();
 }
 
-
-extern int g_nDepthUsed; // > 0 if depth is used
+bool CDepthTarget::ResolveCheck()
+{
+	return (g_nDepthUsed > 0 && conf.mrtdepth && !(status & TS_Virtual) && IsWriteDepth());
+}
 
 void CDepthTarget::Resolve()
 {
 	FUNCLOG
 
-	if (g_nDepthUsed > 0 && conf.mrtdepth && !(status & TS_Virtual) && IsWriteDepth() && !(conf.settings().no_depth_resolve))
+	if (ResolveCheck() && !(conf.settings().no_depth_resolve))
 		CRenderTarget::Resolve();
 	else
 	{
@@ -148,7 +152,7 @@ void CDepthTarget::Resolve(int startrange, int endrange)
 {
 	FUNCLOG
 
-	if (g_nDepthUsed > 0 && conf.mrtdepth && !(status&TS_Virtual) && IsWriteDepth())
+	if (ResolveCheck())
 	{
 		CRenderTarget::Resolve(startrange, endrange);
 	}
@@ -303,7 +307,7 @@ void CDepthTarget::SetDepthStencilSurface()
 				if (pstencil != pdepth) glDeleteRenderbuffersEXT(1, &pstencil);
 
 				pstencil = 0;
-				g_bUpdateStencil = 0;
+				g_bUpdateStencil = false; // And g_bUpdateStencil will never be true again.
 			}
 		}
 	}
