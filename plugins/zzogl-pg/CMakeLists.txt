@@ -111,7 +111,7 @@ set(zzoglSources
     ZZogl/ZZoglFlush.cpp
     ZZogl/ZZoglFlushHack.cpp
     ZZogl/ZZoglSave.cpp
-    ZZogl/ZZoglShadersGLSL.cpp
+    #ZZogl/ZZoglShadersGLSL.cpp
     ZZogl/ZZoglShadersGLSL4.cpp
     ZZogl/ZZoglShoots.cpp
     ZZogl/ZZoglVB.cpp

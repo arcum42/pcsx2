@@ -34,8 +34,8 @@
 #include "ZZoglMath.h"
 #include "GS.h"
 
-// By default enable nvidia cg api
-#if !defined(GLSL_API) && !defined(GLSL4_API)
+// By default enable glsl 4 api
+#if !defined(GLSL4_API)
 #define GLSL4_API
 #endif
 // --------------------------- API abstraction level --------------------------------
@@ -49,37 +49,7 @@
 // Set it to 0 to diable context usage, 1 -- to enable. FFX-1 have a strange issue with ClampExt.
 #define NOCONTEXT		0
 
-#if defined(GLSL_API)
-
-#define MAX_ACTIVE_UNIFORMS 600
-#define MAX_ACTIVE_SHADERS 400
-
-enum ZZshPARAMTYPE {
-	ZZ_UNDEFINED,
-	ZZ_TEXTURE_2D,
-	ZZ_TEXTURE_RECT,
-	ZZ_TEXTURE_3D,
-	ZZ_FLOAT4,
-};
-
-typedef struct {
-	const char* 	ShName;		// Name of uniform
-	ZZshPARAMTYPE	type;		// Choose between parameter type
-
-	float 		fvalue[4];
-	GLuint		sampler;	// Number of texture unit in array 
-	GLint		texid;		// Number of texture - texid. 
-
-	bool		Constant;	// Uniform could be constants, does not change at program flow
-	bool 		Settled;	// Check if Uniform value was set.
-} ZZshParamInfo;
-const ZZshParamInfo  qZero = {ShName:"", type:ZZ_UNDEFINED, fvalue:{0}, sampler: -1, texid: 0, Constant: false, Settled: false};
-
-#define SAFE_RELEASE_PROG(x) 	{ /*don't know what to do*/ }
-
-#endif
-
-#if defined(GLSL_API) || defined(GLSL4_API)
+#if defined(GLSL4_API)
 
 typedef struct {
 	void*	 	link;
@@ -583,11 +553,6 @@ struct VERTEXSHADER
 	}
 // ------------------------- Functions -------------------------------
 
-#if defined(GLSL_API) && !defined(GLSL4_API)
-inline bool ZZshExistProgram(FRAGMENTSHADER* pf) {return (pf->Shader != 0); };
-inline bool ZZshExistProgram(VERTEXSHADER* pf) {return (pf->Shader != 0); };
-inline bool ZZshExistProgram(ZZshShaderLink prog) {return (prog.link != NULL); }		// This is used for pvs mainly. No NULL means that we do LOAD_VS
-#endif
 #if defined(GLSL4_API)
 inline bool ZZshExistProgram(FRAGMENTSHADER* pf) {return (pf->program != 0); };
 inline bool ZZshExistProgram(VERTEXSHADER* pf) {return (pf->program != 0); };
