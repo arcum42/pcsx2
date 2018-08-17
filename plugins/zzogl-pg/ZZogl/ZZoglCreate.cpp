@@ -617,11 +617,6 @@ bool ZZCreate(int _width, int _height)
 	// create the blocks texture
 	g_fBlockMult = 1;
 
-#ifndef ZZNORMAL_MEMORY
-	FillAlowedPsnTable();
-	FillBlockTables();
-#endif
-
 	vector<char> vBlockData, vBilinearData;
 	BLOCK::FillBlocks(vBlockData, vBilinearData);
 

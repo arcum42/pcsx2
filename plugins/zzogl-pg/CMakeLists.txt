@@ -89,8 +89,7 @@ set(zzoglSources
     Profile.cpp
     rasterfont.cpp
     Regs.cpp
-    #zerogs.cpp
-    zpipe.cpp
+    #zpipe.cpp
     ZZClut.cpp
     ZZHacks.cpp
     ZZKeyboard.cpp
@@ -111,7 +110,6 @@ set(zzoglSources
     ZZogl/ZZoglCRTC.cpp
     ZZogl/ZZoglFlush.cpp
     ZZogl/ZZoglFlushHack.cpp
-    ZZogl/ZZoglMem.cpp
     ZZogl/ZZoglSave.cpp
     ZZogl/ZZoglShadersGLSL.cpp
     ZZogl/ZZoglShadersGLSL4.cpp
@@ -121,7 +119,6 @@ set(zzoglSources
 
 # zzogl headers
 set(zzoglHeaders
-    #common.h
     CRC.h
     GifTransfer.h
     # glprocs.h
@@ -132,9 +129,7 @@ set(zzoglHeaders
     rasterfont.h
     Regs.h
     Util.h
-    x86.h
-    #zerogs.h
-    zpipe.h
+    #zpipe.h
     ZZClut.h
     ZZGl.h
     ZZHacks.h
@@ -155,7 +150,6 @@ set(zzoglHeaders
     ZZogl/ZZoglDrawing.h
     ZZogl/ZZoglFlush.h
     ZZogl/ZZoglMath.h
-    ZZogl/ZZoglMem.h
     ZZogl/ZZoglShaders.h
     ZZogl/ZZoglShoots.h
     ZZogl/ZZoglVB.h

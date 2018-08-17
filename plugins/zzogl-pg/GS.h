@@ -722,55 +722,6 @@ static __forceinline u32 RGBA16to32(u16 c)
 		   (((c) & 0x8000) ? 0xff000000 : 0);
 }
 
-#ifndef ZZNORMAL_MEMORY
-// converts float16 [0,1] to BYTE [0,255] (assumes value is in range, otherwise will take lower 8bits)
-// f is a u16
-static __forceinline u16 Float16ToBYTE(u16 f)
-{
-	//assert( !(f & 0x8000) );
-	if (f & 0x8000) return 0;
-
-	u16 d = ((((f & 0x3ff) | 0x400) * 255) >> (10 - ((f >> 10) & 0x1f) + 15));
-
-	return d > 255 ? 255 : d;
-}
-
-static __forceinline u16 Float16ToALPHA(u16 f)
-{
-	//assert( !(f & 0x8000) );
-	if (f & 0x8000) return 0;
-
-	// round up instead of down (crash and burn), too much and charlie breaks
-	u16 d = (((((f & 0x3ff) | 0x400)) * 255) >> (10 - ((f >> 10) & 0x1f) + 15));
-
-	d = (d) >> 1;
-
-	return d > 255 ? 255 : d;
-}
-
-#ifndef COLOR_ARGB
-#define COLOR_ARGB(a,r,g,b) \
-	((u32)((((a)&0xff)<<24)|(((r)&0xff)<<16)|(((g)&0xff)<<8)|((b)&0xff)))
-#endif
-
-// assumes that positive in [1,2] (then extracts fraction by just looking at the specified bits)
-#define Float16ToBYTE_2(f) ((u8)(*(u16*)&f>>2))
-#define Float16To5BIT(f) (Float16ToBYTE(f)>>3)
-
-#define Float16Alpha(f) (((*(u16*)&f&0x7c00)>=0x3900)?0x8000:0) // alpha is >= 1
-
-// converts an array of 4 u16s to a u32 color
-// f is a pointer to a u16
-#define Float16ToARGB(f) COLOR_ARGB(Float16ToALPHA(f.w), Float16ToBYTE(f.x), Float16ToBYTE(f.y), Float16ToBYTE(f.z));
-
-#define Float16ToARGB16(f) (Float16Alpha(f.w)|(Float16To5BIT(f.x)<<10)|(Float16To5BIT(f.y)<<5)|Float16To5BIT(f.z))
-
-// used for Z values
-#define Float16ToARGB_Z(f) COLOR_ARGB((u32)Float16ToBYTE_2(f.w), Float16ToBYTE_2(f.x), Float16ToBYTE_2(f.y), Float16ToBYTE_2(f.z))
-#define Float16ToARGB16_Z(f) ((Float16ToBYTE_2(f.y)<<8)|Float16ToBYTE_2(f.z))
-#endif
-
-
 inline float Clamp(float fx, float fmin, float fmax)
 {
 	if (fx < fmin) return fmin;

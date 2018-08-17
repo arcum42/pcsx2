@@ -18,10 +18,9 @@
  */
 
 #include "GS.h"
+#include "Util.h"
 #include "Memory/Mem.h"
 #include "Targets/targets.h"
-#include "x86.h"
-#include "Util.h"
 
 #include "Memory/Mem_Transmit.h"
 #include "Memory/Mem_Swizzle.h"

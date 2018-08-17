@@ -253,7 +253,7 @@ u32 g_pageTable4[128][128];
 
 //maximum PSM is 58, so our arrays have 58 + 1 = 59 elements
 
-// This table is used for fasr access to memory storage data. Field meaning is following:
+// This table is used for faster access to memory storage data. Field meaning is following:
 // 0 -- the number (1 << [psm][0]) is number of pixels per storage format. It's  0 if stored 1 pixel, 1 for 2 pixels (16-bit), 2 for 4 pixels (PSMT8) and 3 for 8 (PSMT4)
 // 5 -- is 3 - [psm][0]. Just for speed
 // 3, 4 -- size-1 of pageTable for psm. It used to clump x, y otside boundaries.

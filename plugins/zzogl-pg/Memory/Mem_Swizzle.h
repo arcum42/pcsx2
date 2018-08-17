@@ -21,9 +21,8 @@
 #define MEM_SWIZZLE_H_INCLUDED
 
 #include "Util.h"
-//#include "GS.h"
+#include "GS.h"
 #include "Memory/Mem.h"
-#include "x86.h"
 
 extern __forceinline void SwizzleBlock32(u8 *dst, u8 *src, int pitch);
 extern __forceinline void SwizzleBlock16(u8 *dst, u8 *src, int pitch);

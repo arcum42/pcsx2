@@ -22,6 +22,8 @@
 
 #include <assert.h>
 #include <vector>
+#include "GS.h"
+#include "Util.h"
 
 // works only when base is a power of 2
 static __forceinline int ROUND_UPPOW2(int val, int base) { return (((val) + (base - 1))&~(base - 1)); }
@@ -35,8 +37,6 @@ const int BLOCK_TEXHEIGHT = 512;
 // PSM is u6 value, so we MUST guarantee, that we don't crush on incorrect psm.
 #define MAX_PSM 64
 #define TABLE_WIDTH 8
-
-#include "ZZogl/ZZoglMem.h"
 
 typedef u32(*_getPixelAddress)(int x, int y, u32 bp, u32 bw);
 typedef u32(*_getPixelAddress_0)(int x, int y, u32 bw);
@@ -73,7 +73,6 @@ struct TransferData
 	u32 psm;
 };
 
-#ifdef ZZNORMAL_MEMORY
 extern PCSX2_ALIGNED16(u32 tempblock[64]);
 
 struct TransferFuncts
@@ -507,8 +506,6 @@ static __forceinline u32 readPixel16Z_0(const void* pmem, int x, int y, u32 bw) 
 static __forceinline u32 readPixel16SZ_0(const void* pmem, int x, int y, u32 bw) { return readPixel16SZ(pmem, x, y, 0, bw); }
 
 ///////////////
-
-#endif
 
 extern int TransferHostLocal32(const void* pbyMem, u32 nQWordSize);
 extern int TransferHostLocal32Z(const void* pbyMem, u32 nQWordSize);

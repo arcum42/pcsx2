@@ -17,11 +17,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "GS.h"
-
 #include <stdlib.h>
+#include "GS.h"
+#include "Util.h"
 #include "Memory/Mem.h"
-#include "x86.h"
 #include "Targets/targets.h"
 #include "ZZogl/ZZoglVB.h"
 

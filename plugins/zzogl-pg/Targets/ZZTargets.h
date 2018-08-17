@@ -20,10 +20,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-//#include "GS.h"
-//#include "Util.h"
+#include "GS.h"
+#include "Util.h"
 
-#include "x86.h"
+//#include "x86.h"
 #include "ZZClut.h"
 
 #include "Memory/Mem.h"
