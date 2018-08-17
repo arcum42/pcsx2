@@ -38,7 +38,7 @@ static gameHacks tempHacks;
 GtkWidget *zz_gtk_hbox_new(int padding)
 {
 #if GTK_MAJOR_VERSION < 3
-    return gtk_hbox_new(false, padding)
+    return gtk_hbox_new(false, padding);
 #else
 	return gtk_box_new(GTK_ORIENTATION_HORIZONTAL, padding);
 #endif
@@ -47,7 +47,7 @@ GtkWidget *zz_gtk_hbox_new(int padding)
 GtkWidget *zz_gtk_vbox_new(int padding)
 {
 #if GTK_MAJOR_VERSION < 3
-    return gtk_vbox_new(false, padding)
+    return gtk_vbox_new(false, padding);
 #else
 	return gtk_box_new(GTK_ORIENTATION_VERTICAL, padding);
 #endif
@@ -251,14 +251,22 @@ void DisplayAdvancedDialog()
 	tree = gtk_tree_view_new();
 	CreateGameHackTable(tree, tempHacks);
 
-	advanced_box = gtk_grid_new();
 	advanced_frame = gtk_frame_new("Advanced Settings:");
+#if GTK_MAJOR_VERSION < 3
+	advanced_box = gtk_vbox_new(false, 5);
+	advanced_scroll = gtk_scrolled_window_new(NULL, NULL);
+	gtk_scrolled_window_add_with_viewport(GTK_SCROLLED_WINDOW(advanced_scroll), tree);
+	gtk_box_pack_start(GTK_BOX(advanced_box), advanced_scroll, true, true, 2);
 
+#else
+	advanced_box = gtk_grid_new();
+	
 	gtk_widget_set_hexpand (tree, TRUE);
 	gtk_widget_set_halign (tree, GTK_ALIGN_CENTER);
 	gtk_widget_set_vexpand (tree, TRUE);
 	gtk_widget_set_valign (tree, GTK_ALIGN_CENTER);
 	gtk_grid_attach (GTK_GRID (advanced_box), tree, 0, 0, 1, 1);
+#endif
 	gtk_container_add(GTK_CONTAINER(advanced_frame), advanced_box);
 	
 	gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), advanced_frame);
