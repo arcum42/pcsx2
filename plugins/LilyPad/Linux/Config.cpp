@@ -21,6 +21,7 @@
 #include "Config.h"
 #include "DeviceEnumerator.h"
 #include "Linux/ConfigHelper.h"
+#include "Linux/Dialog.h"
 
 GeneralConfig config;
 u8 ps2e = 0;
@@ -542,7 +543,11 @@ void Configure()
 {
     // Can end up here without PADinit() being called first.
     LoadSettings();
+
     // Can also end up here after running emulator a bit, and possibly
     // disabling some devices due to focus changes, or releasing mouse.
     RefreshEnabledDevices(0);
+
+    // Display a dialog box, or attempt to.
+    ShowLinuxConfigDialog();
 }

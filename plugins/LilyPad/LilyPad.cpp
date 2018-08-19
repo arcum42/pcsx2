@@ -32,6 +32,8 @@
 #ifdef _MSC_VER
 #include "WndProcEater.h"
 #include "HidDevice.h"
+#else
+#include "Linux/Dialog.h"
 #endif
 #include "KeyboardQueue.h"
 #include "svnrev.h"
@@ -1553,6 +1555,8 @@ void CALLBACK PADabout()
 {
 #ifdef _MSC_VER
     DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUT), 0, AboutDialogProc);
+#else
+    LinuxAboutDialog();
 #endif
 }
 

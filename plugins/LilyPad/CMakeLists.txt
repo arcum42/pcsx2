@@ -32,6 +32,7 @@ set(lilypadHeaders
     KeyboardQueue.h
     Linux/bitmaskros.h
     Linux/ConfigHelper.h
+    Linux/Dialog.h
     Linux/JoyEvdev.h
     Linux/KeyboardMouse.h
     RawInput.h
@@ -67,6 +68,7 @@ else()
     LIST(APPEND lilypadSources
         Linux/Config.cpp
         Linux/ConfigHelper.cpp
+	Linux/Dialog.cpp
         Linux/JoyEvdev.cpp
         Linux/KeyboardMouse.cpp
         Linux/KeyboardQueue.cpp
