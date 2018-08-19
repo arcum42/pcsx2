@@ -52,5 +52,40 @@ void LinuxAboutDialog()
 
 void ShowLinuxConfigDialog()
 {
-    SysMessage("I am a configuration dialog box.");
+    //SysMessage("I am a configuration dialog box.");
+    GtkWidget *dialog;
+    GtkWidget *label;
+    GtkWidget *main_box, *main_frame;
+    int result = 0;
+
+    dialog = gtk_dialog_new_with_buttons ("Lilypad",
+                                        NULL,
+                                        (GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
+                                        "_OK",
+                                        GTK_RESPONSE_ACCEPT,
+                                        "_Cancel",
+                                        GTK_RESPONSE_REJECT,
+                                        NULL);
+
+    // Note: Currently just coding for Gtk 3. I'll worry about Gtk 2 later.
+    label = gtk_label_new("I am a configuration dialog box.");
+    main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	main_frame = gtk_frame_new("Lilypad Config");
+
+    gtk_box_pack_start (GTK_BOX (main_box), label, TRUE, FALSE, 0);
+    gtk_container_add(GTK_CONTAINER(main_frame), main_box);
+    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
+
+    gtk_widget_show_all(dialog);
+    result = gtk_dialog_run (GTK_DIALOG (dialog));
+    switch (result)
+    {
+        case GTK_RESPONSE_ACCEPT:
+        // do_application_specific_something ();
+        break;
+        default:
+        // do_nothing_since_dialog_was_cancelled ();
+        break;
+    }
+    gtk_widget_destroy (dialog);
 }
