@@ -53,49 +53,64 @@ void LinuxAboutDialog()
 GtkWidget *Create_General_Tab()
 {
     GtkWidget *tab_box;
-    GtkWidget *tab_frame;
     GtkWidget *label;
+    GtkWidget *input_apis_frame, *pads_frame, *diagnostics_frame, *hacks_frame;
+    GtkWidget *input_apis_box, *pads_box, *diagnostics_hacks_box;
 
-    tab_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	tab_frame = gtk_frame_new("General");
+    tab_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
     label = gtk_label_new("I am a configuration dialog box.");
 
-    gtk_container_add(GTK_CONTAINER(tab_frame), tab_box);
-    gtk_box_pack_start (GTK_BOX (tab_box), label, TRUE, FALSE, 0);
 
-    return tab_frame;
+	input_apis_frame = gtk_frame_new("Input APIs");
+	pads_frame = gtk_frame_new("Pads");
+	diagnostics_frame = gtk_frame_new("Device Diagnostics");
+	hacks_frame = gtk_frame_new("Hacks and Advanced Features");
+
+    input_apis_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    pads_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    diagnostics_hacks_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+
+    gtk_box_pack_start (GTK_BOX (input_apis_box), input_apis_frame, TRUE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX (pads_box), pads_frame, TRUE, TRUE, 0);
+    gtk_box_pack_start (GTK_BOX (diagnostics_hacks_box), diagnostics_frame, FALSE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (diagnostics_hacks_box), hacks_frame, FALSE, FALSE, 0);
+
+    gtk_container_add(GTK_CONTAINER(tab_box), input_apis_box);
+    gtk_container_add(GTK_CONTAINER(tab_box), pads_box);
+    gtk_container_add(GTK_CONTAINER(tab_box), diagnostics_hacks_box);
+
+    gtk_container_add(GTK_CONTAINER(input_apis_frame), gtk_label_new("Input APIs here!"));
+    gtk_container_add(GTK_CONTAINER(pads_frame), gtk_label_new("Pads here!"));
+    gtk_container_add(GTK_CONTAINER(diagnostics_frame), gtk_label_new("Diagnostics here!"));
+    gtk_container_add(GTK_CONTAINER(hacks_frame), gtk_label_new("Hacks here!"));
+
+    return tab_box;
 }
 
 GtkWidget *Create_Controller_1_Tab()
 {
     GtkWidget *tab_box;
-    GtkWidget *tab_frame;
     GtkWidget *label;
 
     tab_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	tab_frame = gtk_frame_new("General");
     label = gtk_label_new("I am the second page of a configuration dialog box.");
 
-    gtk_container_add(GTK_CONTAINER(tab_frame), tab_box);
     gtk_box_pack_start (GTK_BOX (tab_box), label, TRUE, FALSE, 0);
 
-    return tab_frame;
+    return tab_box;
 }
 
 GtkWidget *Create_Controller_2_Tab()
 {
     GtkWidget *tab_box;
-    GtkWidget *tab_frame;
     GtkWidget *label;
 
     tab_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-	tab_frame = gtk_frame_new("General");
     label = gtk_label_new("I am the third page of a configuration dialog box.");
 
-    gtk_container_add(GTK_CONTAINER(tab_frame), tab_box);
     gtk_box_pack_start (GTK_BOX (tab_box), label, TRUE, FALSE, 0);
 
-    return tab_frame;
+    return tab_box;
 }
 
 void ShowLinuxConfigDialog()
@@ -128,7 +143,7 @@ void ShowLinuxConfigDialog()
     result = gtk_notebook_append_page_menu (GTK_NOTEBOOK(notebook), cont1_tab_frame, gtk_label_new("Controller 1"), NULL);
     result = gtk_notebook_append_page_menu (GTK_NOTEBOOK(notebook), cont2_tab_frame, gtk_label_new("Controller 2"), NULL);
 
-    gtk_box_pack_start (GTK_BOX (main_box), notebook, TRUE, FALSE, 0);
+    gtk_box_pack_start (GTK_BOX (main_box), notebook, TRUE, TRUE, 0);
     gtk_container_add(GTK_CONTAINER(main_frame), main_box);
     gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_frame);
 
