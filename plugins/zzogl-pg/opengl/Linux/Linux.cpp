@@ -237,7 +237,9 @@ void DisplayAdvancedDialog()
 	GtkWidget *dialog;
 	
 	GtkWidget *advanced_frame, *advanced_box;
+#if GTK_MAJOR_VERSION < 3
 	GtkWidget *advanced_scroll;
+#endif
 	GtkWidget *tree;
 
 		dialog = gtk_dialog_new_with_buttons ("Advanced", NULL,
