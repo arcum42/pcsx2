@@ -31,7 +31,7 @@
 #include "ZZogl/ZZoglFlushHack.h"
 #include "ZZogl/ZZoglShaders.h"
 #include "ZZogl/ZZoglFlush.h"
-#include "ZZogl/ZZoglShoots.h"
+#include "Screenshots.h"
 
 //------------------ Defines
 
@@ -614,7 +614,7 @@ inline void FlushDecodeClut(VB& curvb, GLuint& ptexclut)
 
 		s_vecTempTextures.push_back(ptexclut);
 
-		if (g_bSaveTex) SaveTexture("clut.tga", GL_TEXTURE_2D, ptexclut, 256, 1);
+		if (g_bSaveTex) SaveTexture("clut.tga", GL_TEXTURE_2D, ptexclut, 256, 1, 0);
 
 		setTex2DWrap(GL_REPEAT);
 		setTex2DFilters(GL_LINEAR);
@@ -796,7 +796,7 @@ inline FRAGMENTSHADER* FlushUseExistRenderTarget(VB& curvb, CRenderTarget* ptext
 
 	if (g_bSaveTex)
 		SaveTexture("tex.tga", GL_TEXTURE_RECTANGLE_NV,
-					ptextarg == curvb.prndr ? ptextarg->ptexFeedback : ptextarg->ptex, RW(ptextarg->fbw), RH(ptextarg->fbh));
+					ptextarg == curvb.prndr ? ptextarg->ptexFeedback : ptextarg->ptex, RW(ptextarg->fbw), RH(ptextarg->fbh), 0);
 
 	return pfragment;
 }
@@ -1293,7 +1293,7 @@ inline void AlphaSaveTarget(VB& curvb)
 
 //		//FB::Unbind(); // switch to the backbuffer
 //		//glFlush();
-//		//SaveTexture("tex.jpg", GL_TEXTURE_RECTANGLE_NV, curvb.prndr->ptex, RW(curvb.prndr->fbw), RH(curvb.prndr->fbh));
+//		//SaveTexture("tex.jpg", GL_TEXTURE_RECTANGLE_NV, curvb.prndr->ptex, RW(curvb.prndr->fbw), RH(curvb.prndr->fbh), 0);
 //		SaveRenderTarget(str, RW(curvb.prndr->fbw), RH(curvb.prndr->fbh), 0);
 #endif
 }

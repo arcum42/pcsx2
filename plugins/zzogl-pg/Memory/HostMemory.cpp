@@ -31,6 +31,7 @@ extern void Flush(int context);
 static ZeroGSInit s_ZeroGSInit;
 
 u8* g_pbyGSMemory = NULL;   // 4Mb GS system mem
+GSMemory gs_mem;
 
 void GSMemory::init()
 {
@@ -62,6 +63,7 @@ u8* GSMemory::get_raw(u32 addr)
 }
 
 u8* g_pbyGSClut = NULL;		// ZZ
+GSClut gs_clut_buffer;
 
 void GSClut::init()
 {
@@ -430,8 +432,9 @@ void TransferLocalHost(void* pbyMem, u32 nQWordSize)
     FUNCLOG
     assert(gs.imageTransfer == XFER_LOCAL_TO_HOST);
  
-    u8* pstart = g_pbyGSMemory + 256 * gs.srcbuf.bp;
- 
+    //u8* pstart = g_pbyGSMemory + 256 * gs.srcbuf.bp;
+    u8* pstart = gs_mem._MemoryAddress<256>(gs.srcbuf.bp);
+
     switch(PSMT_BITMODE(gs.srcbuf.psm))
     {
 		case 0:
@@ -464,8 +467,10 @@ __forceinline void _TransferLocalLocal()
     //ZZLog::Error_Log("TransferLocalLocal(0x%x, 0x%x)", gs.srcbuf.psm, gs.dstbuf.psm);
     _writePixel_0 wp = writePixelFun_0[gs.srcbuf.psm];
     _readPixel_0 rp = readPixelFun_0[gs.dstbuf.psm];
-    u8* pSrcBuf = g_pbyGSMemory + gs.srcbuf.bp * 256;
-    u8* pDstBuf = g_pbyGSMemory + gs.dstbuf.bp * 256;
+    //u8* pSrcBuf = g_pbyGSMemory + gs.srcbuf.bp * 256;
+    //u8* pDstBuf = g_pbyGSMemory + gs.dstbuf.bp * 256;
+    u8* pSrcBuf = gs_mem._MemoryAddress<256>(gs.srcbuf.bp);
+    u8* pDstBuf = gs_mem._MemoryAddress<256>(gs.dstbuf.bp);
     u32 widthlimit = 4;
     u32 maxX = gs.trxpos.sx + gs.imageNew.w;
     u32 maxY = gs.trxpos.sy + gs.imageNew.h;
@@ -501,8 +506,10 @@ __forceinline void _TransferLocalLocal_4()
     //ZZLog::Error_Log("TransferLocalLocal_4(0x%x, 0x%x)", gs.srcbuf.psm, gs.dstbuf.psm);
     _getPixelAddress_0 gsp = getPixelFun_0[gs.srcbuf.psm];
     _getPixelAddress_0 gdp = getPixelFun_0[gs.dstbuf.psm];
-    u8* pSrcBuf = g_pbyGSMemory + gs.srcbuf.bp * 256;
-    u8* pDstBuf = g_pbyGSMemory + gs.dstbuf.bp * 256;
+    //u8* pSrcBuf = g_pbyGSMemory + gs.srcbuf.bp * 256;
+    //u8* pDstBuf = g_pbyGSMemory + gs.dstbuf.bp * 256;
+    u8* pSrcBuf = gs_mem._MemoryAddress<256>(gs.srcbuf.bp);
+    u8* pDstBuf = gs_mem._MemoryAddress<256>(gs.dstbuf.bp);
     u32 maxX = gs.trxpos.sx + gs.imageNew.w;
     u32 maxY = gs.trxpos.sy + gs.imageNew.h;
  

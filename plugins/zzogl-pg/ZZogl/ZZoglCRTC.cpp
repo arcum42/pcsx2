@@ -30,7 +30,7 @@
 
 #include "ZZogl/ZZoglCRTC.h"
 #include "ZZogl/ZZoglShaders.h"
-#include "ZZogl/ZZoglShoots.h"
+#include "Screenshots.h"
 #include "ZZogl/ZZoglDrawing.h"
 #include "ZZogl/ZZoglVB.h"
 #include "ZZogl/ZZoglFlush.h"
@@ -206,12 +206,12 @@ inline void FrameSavingHelper()
 	{
 		if (vb[0].prndr != NULL)
 		{
-			SaveTexture("frame1.tga", GL_TEXTURE_RECTANGLE_NV, vb[0].prndr->ptex, RW(vb[0].prndr->fbw), RH(vb[0].prndr->fbh));
+			SaveTexture("frame1.tga", GL_TEXTURE_RECTANGLE_NV, vb[0].prndr->ptex, RW(vb[0].prndr->fbw), RH(vb[0].prndr->fbh), 0);
 		}
 
 		if (vb[1].prndr != NULL && vb[0].prndr != vb[1].prndr)
 		{
-			SaveTexture("frame2.tga", GL_TEXTURE_RECTANGLE_NV, vb[1].prndr->ptex, RW(vb[1].prndr->fbw), RH(vb[1].prndr->fbh));
+			SaveTexture("frame2.tga", GL_TEXTURE_RECTANGLE_NV, vb[1].prndr->ptex, RW(vb[1].prndr->fbw), RH(vb[1].prndr->fbh), 0);
 		}
 
 #ifdef _WIN32
@@ -609,7 +609,7 @@ inline void RenderCheckForTargets(tex0Info& texframe, list<CRenderTarget*>& list
 				continue;
 			} 
 
-			if (g_bSaveFinalFrame) SaveTexture("frame1.tga", GL_TEXTURE_RECTANGLE_NV, ptarg->ptex, RW(ptarg->fbw), RH(ptarg->fbh));
+			if (g_bSaveFinalFrame) SaveTexture("frame1.tga", GL_TEXTURE_RECTANGLE_NV, ptarg->ptex, RW(ptarg->fbw), RH(ptarg->fbh), 0);
 
 			// determine the rectangle to render
 			int dh = RenderGetOffsets(&dby, &movy, texframe, ptarg, bpp);
@@ -762,7 +762,7 @@ inline void MakeSnapshot()
 	DrawText(str, left + 1, top + 1, 0xff000000);
 	DrawText(str, left, top, 0xffc0ffff);
 
-	if (SaveRenderTarget(strSnapshot != "" ? strSnapshot.c_str() : "temp.jpg", GLWin.backbuffer.w, -GLWin.backbuffer.h, 0))  //(conf.options.tga_snap)?0:1) ) {
+	if (SaveRenderTarget(strSnapshot != "" ? strSnapshot.c_str() : "temp.jpg", GLWin.backbuffer.w, -GLWin.backbuffer.h, (int)conf.zz_options.tga_snap))  //(conf.options.tga_snap)?0:1) ) {
 	{
 		char str[255];
 		sprintf(str, "saved %s\n", strSnapshot.c_str());

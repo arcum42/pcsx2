@@ -30,7 +30,7 @@
 
 #include "Targets/targets.h"
 #include "Memory/Mem.h"
-#include "ZZoglShoots.h"
+#include "Screenshots.h"
 
 // AVI Capture
 int s_avicapturing = 0;
@@ -388,8 +388,7 @@ void CaptureFrame()
 }
 
 // It's nearly the same as save texture
-void
-SaveTex(tex0Info* ptex, int usevid)
+void SaveTex(tex0Info* ptex, int usevid)
 {
 	vector<u32> data(ptex->tw*ptex->th);
 	vector<u8> srcdata;
@@ -411,12 +410,19 @@ SaveTex(tex0Info* ptex, int usevid)
         // Note: fmt is GL_UNSIGNED_SHORT_1_5_5_5_REV
 		glGetTexImage(GL_TEXTURE_RECTANGLE_NV, 0, GL_RGBA, pmemtarg->fmt, &srcdata[0]);
 
-		u32 offset = MemorySize(pmemtarg->realy);
-
-		if (ptex->psm == PSMT8)
-			offset *= CLUT_PIXEL_SIZE(ptex->cpsm);
-		else if (ptex->psm == PSMT4)
-			offset *= CLUT_PIXEL_SIZE(ptex->cpsm) * 2;
+		u32 offset = gs_mem.MemorySize(pmemtarg->realy); /*4 * GPU_TEXWIDTH * x*/
+		
+		switch(ptex->psm)
+		{
+			case PSMT8:
+				offset *= CLUT_PIXEL_SIZE(ptex->cpsm);
+				break;
+			case PSMT4:
+				offset *= CLUT_PIXEL_SIZE(ptex->cpsm) * 2;
+				break;
+			default:
+				break;
+		}
 
 		psrc = &srcdata[0] - offset;
 	}

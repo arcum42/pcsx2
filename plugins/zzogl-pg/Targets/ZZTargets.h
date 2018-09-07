@@ -22,8 +22,6 @@
 
 #include "GS.h"
 #include "Util.h"
-
-//#include "x86.h"
 #include "ZZClut.h"
 
 #include "Memory/Mem.h"

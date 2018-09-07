@@ -194,8 +194,6 @@
     <ClInclude Include="Win32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\x86.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\zerogs.h">
       <Filter>Header Files</Filter>

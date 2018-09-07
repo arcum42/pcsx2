@@ -217,7 +217,6 @@
     <ClInclude Include="resrc1.h" />
     <ClInclude Include="..\targets.h" />
     <ClInclude Include="Win32.h" />
-    <ClInclude Include="..\x86.h" />
     <ClInclude Include="..\ZZGl.h" />
     <ClInclude Include="..\ZZHacks.h" />
     <ClInclude Include="..\ZZLog.h" />

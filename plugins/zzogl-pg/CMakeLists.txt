@@ -24,14 +24,23 @@ set(CommonFlags
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wunused-variable
-    #-H
+    -Wuninitialized  
+    -Wunknown-pragmas  
+    -Wunused-function  
+    -Wunused-label     
+    -Wunused-value     
+    -Wunused-variable  
+    -Wvolatile-register-var
+    #-Wshadow
+    -Wall
+    -Wextra
     )
 
 #Clang doesn't support a few common flags that GCC does.
 if(NOT USE_CLANG)
 	set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        ${CommonFlags} -fno-regmove
+        -fno-regmove
     )
 endif(NOT USE_CLANG) 
 
@@ -43,12 +52,12 @@ if(CMAKE_BUILD_TYPE STREQUAL Debug)
 elseif(CMAKE_BUILD_TYPE STREQUAL Devel)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        ${CommonFlags} -g -W -DZEROGS_DEVBUILD
+        ${CommonFlags} -g -DZEROGS_DEVBUILD
     )
 elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     set(zzoglFinalFlags
         ${zzoglFinalFlags}
-        ${CommonFlags} -W
+        ${CommonFlags}
     )
 endif()
 
@@ -89,7 +98,7 @@ set(zzoglSources
     Profile.cpp
     rasterfont.cpp
     Regs.cpp
-    #zpipe.cpp
+    Screenshots.cpp
     ZZClut.cpp
     ZZHacks.cpp
     ZZKeyboard.cpp
@@ -111,9 +120,7 @@ set(zzoglSources
     ZZogl/ZZoglFlush.cpp
     ZZogl/ZZoglFlushHack.cpp
     ZZogl/ZZoglSave.cpp
-    #ZZogl/ZZoglShadersGLSL.cpp
     ZZogl/ZZoglShadersGLSL4.cpp
-    ZZogl/ZZoglShoots.cpp
     ZZogl/ZZoglVB.cpp
     )
 
@@ -128,8 +135,8 @@ set(zzoglHeaders
     Profile.h
     rasterfont.h
     Regs.h
+    Screenshots.h
     Util.h
-    #zpipe.h
     ZZClut.h
     ZZGl.h
     ZZHacks.h
@@ -151,7 +158,6 @@ set(zzoglHeaders
     ZZogl/ZZoglFlush.h
     ZZogl/ZZoglMath.h
     ZZogl/ZZoglShaders.h
-    ZZogl/ZZoglShoots.h
     ZZogl/ZZoglVB.h
     )
 
@@ -214,6 +220,7 @@ set(zzoglFinalLibs
     ${LIBC_LIBRARIES}
 )
 
+message(WARNING "Flags are ${zzoglFinalFlags}")
 add_pcsx2_plugin(${Output} "${zzoglFinalSources}" "${zzoglFinalLibs}" "${zzoglFinalFlags}")
 
 # Trick that allow to compile zzogl with GSOPEN2 and the replayer with GSOPEN

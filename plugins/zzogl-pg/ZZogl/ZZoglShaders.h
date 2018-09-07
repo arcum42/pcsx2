@@ -184,29 +184,6 @@ extern int 		g_nPixelShaderVer;
 extern ZZshShaderLink 	pvs[16], g_vsprog, g_psprog;
 extern ZZshParameter 	g_vparamPosXY[2], g_fparamFogColor;
 
-#ifndef GLSL4_API
-struct FRAGMENTSHADER
-{
-	FRAGMENTSHADER() : prog(sZero), Shader(0), sMemory(pZero), sFinal(pZero), sBitwiseANDX(pZero), sBitwiseANDY(pZero), sInterlace(pZero), sCLUT(pZero), sOneColor(pZero), sBitBltZ(pZero),
-		fTexAlpha2(pZero), fTexOffset(pZero), fTexDims(pZero), fTexBlock(pZero), fClampExts(pZero), fTexWrapMode(pZero),
-		fRealTexDims(pZero), fTestBlack(pZero), fPageOffset(pZero), fTexAlpha(pZero)  {}
-	
-	ZZshShaderLink prog;						// it link to FRAGMENTSHADER structure, for compability between GLSL and CG
-	ZZshShader Shader;						// GLSL store shader's not as ready programs, but as shaders compilated object. VS and PS should be linked together to
-									// made a program.
-	ZZshShaderType ShaderType;					// Not every PS and VS are used together, only compatible ones.
-
-	ZZshParameter sMemory, sFinal, sBitwiseANDX, sBitwiseANDY, sInterlace, sCLUT;
-	ZZshParameter sOneColor, sBitBltZ, sInvTexDims;
-	ZZshParameter fTexAlpha2, fTexOffset, fTexDims, fTexBlock, fClampExts, fTexWrapMode, fRealTexDims, fTestBlack, fPageOffset, fTexAlpha;
-
-	int ParametersStart, ParametersFinish;				// this is part of UniformsIndex array in which parameters of this shader stored. Last one is ParametersFinish-1
-
-#ifdef _DEBUG
-	string filename;
-#endif
-};
-#else
 const GLenum g_texture_target[11] = {GL_TEXTURE_RECTANGLE, GL_TEXTURE_RECTANGLE, GL_TEXTURE_2D, GL_TEXTURE_2D, GL_TEXTURE_2D, GL_TEXTURE_3D, GL_TEXTURE_RECTANGLE, GL_TEXTURE_RECTANGLE, GL_TEXTURE_RECTANGLE, GL_TEXTURE_2D, GL_TEXTURE_RECTANGLE};
 
 extern uint g_current_texture_bind[11];
@@ -232,16 +209,9 @@ struct SamplerParam {
 			// 2/ delete the texture
 			// 3/ recreate a texture (with same id)
 			// 4/ => texture need to be reattached again...
-#if 0
-			if (g_current_texture_bind[unit] != texid) {
-				glActiveTexture(GL_TEXTURE0 + unit);
-				glBindTexture(target, texid);
-				g_current_texture_bind[unit] = texid;
-			}
-#else
+
 			glActiveTexture(GL_TEXTURE0 + unit);
 			glBindTexture(target, texid);
-#endif
 		}
 	}
 
@@ -356,7 +326,6 @@ struct FRAGMENTSHADER
 
 	void set_context(uint new_context) { context = new_context * NOCONTEXT;}
 };
-#endif
 
 #ifdef GLSL4_API
 struct COMMONSHADER
@@ -443,20 +412,6 @@ struct COMMONSHADER
 };
 #endif
 
-#ifndef GLSL4_API
-struct VERTEXSHADER
-{
-	VERTEXSHADER() : prog(sZero), Shader(0), sBitBltPos(pZero), sBitBltTex(pZero) {}
-	
-	ZZshShaderLink prog;
-	ZZshShader Shader;
-	ZZshShaderType ShaderType;
-
-	ZZshParameter sBitBltPos, sBitBltTex, fBitBltTrans;		 // vertex shader constants
-
-	int ParametersStart, ParametersFinish;
-};
-#else
 struct VERTEXSHADER
 {
 
@@ -501,7 +456,6 @@ struct VERTEXSHADER
 		}
 	}
 };
-#endif
 
 #ifdef GLSL4_API
 #define SAFE_RELEASE_PROG(x) 	{ \

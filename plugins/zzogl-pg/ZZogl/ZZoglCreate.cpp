@@ -127,7 +127,7 @@ u32 ptexConv32to16 = 0;
 // int g_nDepthBias = 0;
 
 extern void Delete_Avi_Capture();
-extern void ZZDestroy();
+void ZZDestroy();
 
 //------------------ Code
 
@@ -494,7 +494,7 @@ bool ZZCreate(int _width, int _height)
 	GPU_TEXWIDTH = min (g_MaxTexWidth/8, 1024);
 	g_fiGPU_TEXWIDTH = 1.0f / GPU_TEXWIDTH;
 
-#if !(defined(GLSL_API) || defined(GLSL4_API))
+#if defined(GLSL4_API)
 	if (!CreateOpenShadersFile()) return false;
 #endif
 

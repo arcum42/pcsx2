@@ -444,7 +444,7 @@ EXPORT_C_(void) GSmakeSnapshot(char *path)
 	FUNCLOG
 
 	char filename[256];
-	if (get_snapshot_filename(filename, (const char*)path, (conf.zz_options.tga_snap) ? "bmp" : "jpg"))
+	if (get_snapshot_filename(filename, (const char*)path, (conf.zz_options.tga_snap) ? "jpg" : "tga"))
 		SaveSnapshot(filename);
 }
 

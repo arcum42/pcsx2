@@ -46,7 +46,7 @@ bool CMemoryTarget::ValidateTex(const tex0Info& tex0, int starttex, int endtex, 
 	// lock and compare
 	assert(ptex != NULL && ptex->memptr != NULL);
 
-	int result = memcmp_mmx(ptex->memptr + MemorySize(checkstarty-realy), MemoryAddress(checkstarty), MemorySize(checkendy-checkstarty));
+	int result = memcmp_mmx(ptex->memptr + gs_mem.MemorySize(checkstarty-realy), gs_mem.MemoryAddress(checkstarty), gs_mem.MemorySize(checkendy-checkstarty));
 	
 	if (result == 0)
 	{
@@ -341,17 +341,17 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
 	}
 
 #if defined(ZEROGS_DEVBUILD)
-	g_TransferredToGPU += MemorySize(channels * targ->height);
+	g_TransferredToGPU += gs_mem.MemorySize(channels * targ->height);
 #endif
 
 	// fill with data
 	if (targ->ptex->memptr == NULL)
 	{
-		targ->ptex->memptr = (u8*)_aligned_malloc(MemorySize(targ->realheight), 16);
+		targ->ptex->memptr = (u8*)_aligned_malloc(gs_mem.MemorySize(targ->realheight), 16);
 		assert(targ->ptex->ref > 0);
 	}
 
-	memcpy(targ->ptex->memptr, MemoryAddress(targ->realy), MemorySize(targ->height));
+	memcpy(targ->ptex->memptr, gs_mem.MemoryAddress(targ->realy), gs_mem.MemorySize(targ->height));
 
 	__aligned16 u8* ptexdata = NULL;
 	bool has_data = false;
@@ -379,7 +379,7 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
 		ptexdata = (u8*)_aligned_malloc(CLUT_PIXEL_SIZE(tex0.cpsm) * targ->texH * targ->texW, 16);
 		has_data = true;
 
-		u8* psrc = (u8*)(MemoryAddress(targ->realy));
+		u8* psrc = (u8*)(gs_mem.MemoryAddress(targ->realy));
 
         // Fill a local clut then build the real texture
 		if (PSMT_IS32BIT(tex0.cpsm))
@@ -402,7 +402,7 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
 
         // needs to be 8 bit, use xmm for unpacking
         u16* dst = (u16*)ptexdata;
-        u16* src = (u16*)(MemoryAddress(targ->realy));
+        u16* src = (u16*)(gs_mem.MemoryAddress(targ->realy));
 
 #ifdef ZEROGS_SSE2
         assert(((u32)(uptr)dst) % 16 == 0);

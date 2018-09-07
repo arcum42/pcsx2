@@ -514,7 +514,8 @@ union tex_0_info
 #define TEX_HIGHLIGHT 2
 #define TEX_HIGHLIGHT2 3
 
-//bool SaveTexture(const char* filename, u32 textarget, u32 tex, int width, int height, int ext_format = 0);
+// For debug build.
+extern bool SaveTexture(const char* filename, u32 textarget, u32 tex, int width, int height, int ext_format);
 extern void SaveTex(tex0Info* ptex, int usevid);
 extern char* NamedSaveTex(tex0Info* ptex, int usevid);
 
@@ -647,8 +648,9 @@ typedef struct
 
 	pathInfo path[4];
 	GIFRegDIMX dimx;
-	GSMemory mem; // Unused.
-	GSClut clut_buffer; // Unused.
+	// The init function shouldn't be called twice, so...
+	//GSMemory mem; // Not actually used, but adding calls the init function.
+	//GSClut clut_buffer; // Not actually used, but adding calls the init function. 
 	
 	// Subject to change.
 	int vsync, interlace; // VSync only in GSmain, set to enabled.

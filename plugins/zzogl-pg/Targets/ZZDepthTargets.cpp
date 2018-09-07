@@ -281,7 +281,7 @@ void CDepthTarget::Update(int context, CRenderTarget* prndr)
 	if (g_bSaveZUpdate)
 	{
 		SaveTex(&texframe, 1);
-		SaveTexture("frame1.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh));
+		SaveTexture("frame1.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh), 0);
 	}
 #endif
 }

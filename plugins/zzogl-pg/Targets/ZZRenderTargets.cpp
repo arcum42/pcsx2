@@ -21,7 +21,7 @@
 
 //Move includes back for now.BindToSample
 #include "Targets/ZZTargets.h"
-#include "ZZogl/ZZoglShoots.h"
+#include "Screenshots.h"
 
 extern int s_nResolved;
 
@@ -249,7 +249,7 @@ void CRenderTarget::Resolve()
 
 		if (g_bSaveResolved)
 		{
-			SaveTexture("resolved.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh));
+			SaveTexture("resolved.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh), 0);
 			g_bSaveResolved = 0;
 		}
 
@@ -274,7 +274,7 @@ void CRenderTarget::Resolve(int startrange, int endrange)
 #if defined(ZEROGS_DEVBUILD)
 		if (g_bSaveResolved)
 		{
-			SaveTexture("resolved.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh));
+			SaveTexture("resolved.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh), 0);
 			g_bSaveResolved = 0;
 		}
 #endif
@@ -536,8 +536,8 @@ void CRenderTarget::ConvertTo32()
 	if (g_bSaveZUpdate)
 	{
 		// buggy
-		SaveTexture("tex1.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh)*2);
-		SaveTexture("tex3.tga", GL_TEXTURE_RECTANGLE_NV, ptexConv, RW(fbw), RH(fbh));
+		SaveTexture("tex1.tga", GL_TEXTURE_RECTANGLE_NV, ptex, RW(fbw), RH(fbh)*2, 0);
+		SaveTexture("tex3.tga", GL_TEXTURE_RECTANGLE_NV, ptexConv, RW(fbw), RH(fbh), 0);
 	}
 
 #endif
@@ -640,7 +640,7 @@ void CRenderTarget::ConvertTo16()
 	//g_bSaveZUpdate = 1;
 	if (g_bSaveZUpdate)
 	{
-		SaveTexture("tex1.tga", GL_TEXTURE_RECTANGLE_NV, ptexConv, RW(fbw), RH(fbh));
+		SaveTexture("tex1.tga", GL_TEXTURE_RECTANGLE_NV, ptexConv, RW(fbw), RH(fbh), 0);
 	}
 
 #endif

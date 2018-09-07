@@ -237,7 +237,9 @@ void DisplayAdvancedDialog()
 	GtkWidget *dialog;
 	
 	GtkWidget *advanced_frame, *advanced_box;
+#if GTK_MAJOR_VERSION < 3
 	GtkWidget *advanced_scroll;
+#endif
 	GtkWidget *tree;
 
 		dialog = gtk_dialog_new_with_buttons ("Advanced", NULL,
@@ -360,8 +362,8 @@ void DisplayDialog()
 	
 	snap_label = gtk_label_new("Snapshot format:");
 	snap_box = gtk_combo_box_text_new();
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "TGA");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "JPEG");
-	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "TIFF");
 	gtk_combo_box_set_active(GTK_COMBO_BOX(snap_box), conf.zz_options.tga_snap);
 
     snap_holder = zz_gtk_hbox_new(5);

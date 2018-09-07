@@ -66,7 +66,7 @@ enum ColorMask
 // extern int g_nDepthBias;
 extern float g_fBlockMult; // used for old cards, that do not support Alpha-32float textures. We store block data in u16 and use it. Note: only ever gets set to 1, so probably not working.
 extern u32 g_nCurVBOIndex; // From ZZoglCreate.cpp.
-extern u8* g_pbyGSClut; // From HostMemory.cpp. Used in x86.cpp, ZZClut.cpp, and ZZoglSave.cpp. (but not ZZoglFlush.cpp.)
+extern u8* g_pbyGSClut; // From HostMemory.cpp. Used in ZZClut.cpp, and ZZoglSave.cpp. (but not ZZoglFlush.cpp.)
 extern int ppf; // From GSmain.cpp.
 
 extern bool s_bTexFlush; // From ZZClut.cpp. Is in ZZClut.h.

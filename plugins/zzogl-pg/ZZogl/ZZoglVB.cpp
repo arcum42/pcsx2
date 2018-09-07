@@ -237,12 +237,19 @@ inline int VB::CheckFrameAddConstraints(int tbp)
 	maxmemorypos = FindMinimalMemoryConstrain(tbp, maxmemorypos);
 	maxmemorypos = FindZbufferMemoryConstrain(tbp, maxmemorypos);
 
-	int maxpos = 64 * maxmemorypos ;
+	int maxpos = 64 * maxmemorypos;
 
 	maxpos /= gsfb.fbw;
 
 	//? atelier iris crashes without it
-	if (maxpos > 256) maxpos &= ~0x1f;
+	// But does it? It hits this a bunch and doesn't crash in the opening. Let's not do this and see what happens.
+	// It would've been nice if it was documented *where* it crashed.
+	/*if (maxpos > 256) 
+	{
+		ZZLog::Debug_Log("maxpos > 256: %i.", maxpos);
+		maxpos &= ~0x1f;
+		ZZLog::Debug_Log("Set maxpos to %i.", maxpos);
+	}*/
 
 #ifdef DEVBUILD
 	int noscissorpos = maxpos;

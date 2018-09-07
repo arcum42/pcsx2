@@ -182,7 +182,9 @@ static __forceinline int RealTransfer(u32 psm, const void* pbyMem, u32 nQWordSiz
 	assert(gs.imageTransfer == XFER_HOST_TO_LOCAL);
 	TransferData data = tData[psm];
 	TransferFuncts fun(psm);
+
 	pstart = g_pbyGSMemory + gs.dstbuf.bp * 256;
+
 	const T* pbuf = (const T*)pbyMem;
 	const int tp2 = TransPitch(2, data.transfersize);
 	int nLeftOver = (nQWordSize * 4 * 2) % tp2;
@@ -198,11 +200,9 @@ static __forceinline int RealTransfer(u32 psm, const void* pbyMem, u32 nQWordSiz
 	alignedPt.x = ROUND_DOWNPOW2(gs.imageEnd.x, data.blockwidth);
 
 	pbuf = AlignOnBlockBoundry<T>(data, fun, alignedPt, endY, pbuf);
-
 	if (pbuf == NULL) return FinishTransfer(data, nLeftOver);
 
 	pbuf = TransferAligningToBlocks<T>(data, fun, alignedPt, pbuf);
-
 	if (pbuf == NULL) return FinishTransfer(data, nLeftOver);
 
 	if (TransPitch(nSize, data.transfersize) / 4 > 0)

@@ -47,7 +47,7 @@
 //------------------- Includes
 #include "Util.h"
 #include "ZZoglShaders.h"
-#include "zpipe.h"
+//#include "zpipe.h"
 #include <map>
 #include <fcntl.h>			// this for open(). Maybe linux-specific
 #include "ps2hw_gl4.h"
