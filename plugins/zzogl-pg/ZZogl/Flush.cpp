@@ -32,6 +32,7 @@
 #include "ZZogl/ZZoglShaders.h"
 #include "ZZogl/Flush.h"
 #include "Screenshots.h"
+#include "ZZGet.h"
 
 //------------------ Defines
 
@@ -410,9 +411,9 @@ inline CRenderTarget* FlushGetTarget(VB& curvb)
 	{
 		ZZLog::Error_Log("How it is possible?");
 		// not yet initied, but still need to get correct target! (xeno3 ingame)
-		tbp0 = ZZOglGet_tbp0_TexBits(curvb.uNextTex0Data[0]);
-		tbw  = ZZOglGet_tbw_TexBitsMult(curvb.uNextTex0Data[0]);
-		tpsm = ZZOglGet_psm_TexBitsFix(curvb.uNextTex0Data[0]);
+		tbp0 = ZZGet::tbp0_TexBits(curvb.uNextTex0Data[0]);
+		tbw  = ZZGet::tbw_TexBitsMult(curvb.uNextTex0Data[0]);
+		tpsm = ZZGet::psm_TexBitsFix(curvb.uNextTex0Data[0]);
 	}
 	else
 	{
@@ -538,10 +539,10 @@ inline void FlushSetColorMask(VB& curvb)
 {
 	s_dwColorWrite = (PSMT_BITMODE(curvb.prndr->psm) == 1) ? (COLORMASK_BLUE | COLORMASK_GREEN | COLORMASK_RED) : 0xf;
 
-	int maskR = ZZOglGet_fbmRed_FrameBits(curvb.frame.fbm);
-	int maskG = ZZOglGet_fbmGreen_FrameBits(curvb.frame.fbm);
-	int maskB = ZZOglGet_fbmBlue_FrameBits(curvb.frame.fbm);
-	int maskA = ZZOglGet_fbmAlpha_FrameBits(curvb.frame.fbm);
+	int maskR = ZZGet::fbmRed_FrameBits(curvb.frame.fbm);
+	int maskG = ZZGet::fbmGreen_FrameBits(curvb.frame.fbm);
+	int maskB = ZZGet::fbmBlue_FrameBits(curvb.frame.fbm);
+	int maskA = ZZGet::fbmAlpha_FrameBits(curvb.frame.fbm);
 
 	if (maskR == 0xff) s_dwColorWrite &= ~COLORMASK_RED;
 	if (maskG == 0xff) s_dwColorWrite &= ~COLORMASK_GREEN;
@@ -903,7 +904,7 @@ inline FRAGMENTSHADER* FlushRendererStage(VB& curvb, u32& dwFilterOpts, CRenderT
 inline bool AlphaCanRenderStencil(VB& curvb)
 {
 	return g_bUpdateStencil && (PSMT_BITMODE(curvb.prndr->psm) != 1) &&
-		   !ZZOglGet_fbmHighByte(curvb.frame.fbm) && !(conf.settings().no_stencil);
+		   !ZZGet::fbmHighByte(curvb.frame.fbm) && !(conf.settings().no_stencil);
 }
 
 inline void AlphaSetStencil()
@@ -971,7 +972,7 @@ inline u32 AlphaSetupBlendTest(VB& curvb)
 inline void AlphaRenderFBA(VB& curvb, FRAGMENTSHADER* pfragment)
 {
 	// needs to be before RenderAlphaTest
-	if ((gs.pabe) || (curvb.fba.fba && !ZZOglGet_fbmHighByte(curvb.frame.fbm)) || (s_bDestAlphaTest && bCanRenderStencil))
+	if ((gs.pabe) || (curvb.fba.fba && !ZZGet::fbmHighByte(curvb.frame.fbm)) || (s_bDestAlphaTest && bCanRenderStencil))
 	{
 		RenderFBA(curvb, pfragment);
 	}

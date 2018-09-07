@@ -27,7 +27,7 @@
 #include "ZZogl/Drawing.h"
 #include "ZZClut.h"
 #include "ZZogl/Flush.h"
-
+#include "ZZGet.h"
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244)
@@ -273,7 +273,7 @@ void __gifCall GIFRegHandlerTEX0(const u32* data)
 	
 	if (!NoHighlights(ctxt)) return;
 	
-	u32 psm = ZZOglGet_psm_TexBitsFix(data[0]);
+	u32 psm = ZZGet::psm_TexBitsFix(data[0]);
 
 	if (m_Blocks[psm].bpp == 0)
 	{
@@ -402,12 +402,12 @@ void __gifCall GIFRegHandlerTEX2(const u32* data)
 
 	vb[ctxt].FlushTexData();
 
-	u32 psm = ZZOglGet_psm_TexBitsFix(data[0]);
+	u32 psm = ZZGet::psm_TexBitsFix(data[0]);
 
 	u32* s_uTex0Data = vb[ctxt].uCurTex0Data;
 
 	// don't update unless necessary
-//	if( ZZOglGet_psm_TexBitsFix(*s_uTex0Data) == ZZOglGet_psm_TexBitsFix(data[0]) ) { // psm is the same
+//	if( ZZGet::psm_TexBitsFix(*s_uTex0Data) == ZZGet::psm_TexBitsFix(data[0]) ) { // psm is the same
 	if (ZZOglAllExceptClutIsSame(s_uTex0Data, data))
 	{
 		if (!PSMT_ISCLUT(psm)) return;
@@ -415,7 +415,7 @@ void __gifCall GIFRegHandlerTEX2(const u32* data)
 		// have to write the CLUT again if changed
 		if (ZZOglClutMinusCLDunchanged(s_uTex0Data, data))
 		{
-			tex0.cld = ZZOglGet_cld_TexBits(data[1]);
+			tex0.cld = ZZGet::cld_TexBits(data[1]);
 
 			if (tex0.cld != 0)
 			{
@@ -436,7 +436,7 @@ void __gifCall GIFRegHandlerTEX2(const u32* data)
 	s_uTex0Data[0] = (s_uTex0Data[0] & ~0x03f00000) | (psm << 20);
 	s_uTex0Data[1] = (s_uTex0Data[1] & 0x1f) | (data[1] & ~0x1f);
 
-	tex0.psm = ZZOglGet_psm_TexBitsFix(data[0]);
+	tex0.psm = ZZGet::psm_TexBitsFix(data[0]);
 
 	if (PSMT_ISCLUT(tex0.psm)) CluttingForFlushedTex(&tex0, data[1], ctxt);
 }
@@ -770,7 +770,7 @@ void __gifCall GIFRegHandlerFRAME(const u32* data)
 	if ((gsfb.fbp == fbp) &&
 			(gsfb.fbw == fbw) &&
 			(gsfb.psm == r->PSM) &&
-			(gsfb.fbm == ZZOglGet_fbm_FrameBitsFix(data[0], data[1])))
+			(gsfb.fbm == ZZGet::fbm_FrameBitsFix(data[0], data[1])))
 	{
 		return;
 	}
@@ -782,7 +782,7 @@ void __gifCall GIFRegHandlerFRAME(const u32* data)
 	gsfb.fbw = fbw;
 	gsfb.psm = r->PSM;
 	gsfb.fbh = fbh;
-	gsfb.fbm = ZZOglGet_fbm_FrameBitsFix(data[0], data[1]);
+	gsfb.fbm = ZZGet::fbm_FrameBitsFix(data[0], data[1]);
 	
 
 	vb[i].bNeedFrameCheck = 1;
@@ -796,21 +796,21 @@ void __gifCall GIFRegHandlerFRAME(const u32* data)
 	
 	frameInfo& gsfb = vb[ctxt].gsfb;
 
-	if ((gsfb.fbp == ZZOglGet_fbp_FrameBitsMult(data[0])) &&
-			(gsfb.fbw == ZZOglGet_fbw_FrameBitsMult(data[0])) &&
-			(gsfb.psm == ZZOglGet_psm_FrameBits(data[0])) &&
-			(gsfb.fbm == ZZOglGet_fbm_FrameBits(data[0])))
+	if ((gsfb.fbp == ZZGet::fbp_FrameBitsMult(data[0])) &&
+			(gsfb.fbw == ZZGet::fbw_FrameBitsMult(data[0])) &&
+			(gsfb.psm == ZZGet::psm_FrameBits(data[0])) &&
+			(gsfb.fbm == ZZGet::fbm_FrameBits(data[0])))
 	{
 		return;
 	}
 
 	FlushBoth();
 
-	gsfb.fbp = ZZOglGet_fbp_FrameBitsMult(data[0]);
-	gsfb.fbw = ZZOglGet_fbw_FrameBitsMult(data[0]);
-	gsfb.psm = ZZOglGet_psm_FrameBits(data[0]);
-	gsfb.fbm = ZZOglGet_fbm_FrameBitsFix(data[0], data[1]);
-	gsfb.fbh = ZZOglGet_fbh_FrameBitsCalc(data[0]);
+	gsfb.fbp = ZZGet::fbp_FrameBitsMult(data[0]);
+	gsfb.fbw = ZZGet::fbw_FrameBitsMult(data[0]);
+	gsfb.psm = ZZGet::psm_FrameBits(data[0]);
+	gsfb.fbm = ZZGet::fbm_FrameBitsFix(data[0], data[1]);
+	gsfb.fbh = ZZGet::fbh_FrameBitsCalc(data[0]);
 //	gsfb.fbhCalc = gsfb.fbh;
 
 	vb[ctxt].bNeedFrameCheck = 1;

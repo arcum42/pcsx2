@@ -26,6 +26,7 @@
 #include <map>
 //#include "GS.h"
 #include "ZZGl.h"
+#include "ZZGet.h"
 
 //#include "Targets/ZZDepthTargets.h"
 //#include "Targets/ZZMemoryTargets.h"

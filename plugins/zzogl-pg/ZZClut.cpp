@@ -23,6 +23,7 @@
 #include "ZZClut.h"
 #include "ZZogl/VB.h"
 #include "ZZogl/Flush.h"
+#include "ZZGet.h"
 
 bool s_bTexFlush = false;
 
@@ -1111,8 +1112,8 @@ template void Build_Clut_Texture<u16>(u32 psm, u32 height, u16* pclut, u8* psrc,
 bool CheckChangeInClut(u32 highdword, u32 psm)
 {
 	FUNCLOG
-	int cld = ZZOglGet_cld_TexBits(highdword);
-	int cbp = ZZOglGet_cbp_TexBits(highdword);
+	int cld = ZZGet::cld_TexBits(highdword);
+	int cbp = ZZGet::cbp_TexBits(highdword);
 
 	// processing the CLUT after tex0/2 are written
 	//ZZLog::Error_Log("high == 0x%x; cld == %d", highdword, cld);
@@ -1146,11 +1147,11 @@ bool CheckChangeInClut(u32 highdword, u32 psm)
     // Compare the cache with current memory
 
     // CSM2 is not supported
-    if (ZZOglGet_csm_TexBits(highdword))
+    if (ZZGet::csm_TexBits(highdword))
 		return true;
 
-	int cpsm = ZZOglGet_cpsm_TexBits(highdword);
-	int csa = ZZOglGet_csa_TexBits(highdword);
+	int cpsm = ZZGet::cpsm_TexBits(highdword);
+	int csa = ZZGet::csa_TexBits(highdword);
 	int entries = PSMT_IS8CLUT(psm) ? 256 : 16;
 
 	u8* GSMem = g_pbyGSMemory + cbp * 256;

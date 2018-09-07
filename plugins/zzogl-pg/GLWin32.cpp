@@ -106,7 +106,7 @@ bool GLWindow::CreateWindow(void *pDisplay)
 	GetWindowRect(GetDesktopWindow(), &rcdesktop);
 
 	NativeWindow = CreateWindowEx(	dwExStyle,				// Extended Style For The Window
-					L"PS2EMU_ZEROGS",				// Class Name
+					L"PS2EMU_ZZOGL",				// Class Name
 					L"ZZOgl",					// Window Title
 					dwStyle,				// Selected Window Style
 					(rcdesktop.right - (rc.right - rc.left)) / 2,  // Window Position

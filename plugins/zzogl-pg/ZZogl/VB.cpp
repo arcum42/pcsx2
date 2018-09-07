@@ -30,6 +30,7 @@
 
 #include "ZZogl/VB.h"
 #include "ZZogl/Flush.h"
+#include "ZZGet.h"
 
 extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height
 
@@ -424,7 +425,7 @@ void VB::CheckFrame(int tbp)
 // This is the case, most easy to perform, when nothing was changed
 inline void VB::FlushTexUnchangedClutDontUpdate()
 {
-	if (ZZOglGet_cld_TexBits(uNextTex0Data[1]))
+	if (ZZGet::cld_TexBits(uNextTex0Data[1]))
 	{
 		texClutWrite(ictx);
 		// invalidate to make sure target didn't change!
@@ -441,8 +442,8 @@ inline void VB::FlushTexClutDontUpdate()
 	// clut memory isn't going to be loaded so can ignore, but at least update CSA and CPSM!
 	uCurTex0Data[1] = (uCurTex0Data[1] & CPSM_CSA_NOTMASK) | (uNextTex0Data[1] & CPSM_CSA_BITMASK);
 
-	tex0.csa  = ZZOglGet_csa_TexBits(uNextTex0Data[1]);
-	tex0.cpsm = ZZOglGet_cpsm_TexBits(uNextTex0Data[1]);
+	tex0.csa  = ZZGet::csa_TexBits(uNextTex0Data[1]);
+	tex0.cpsm = ZZGet::cpsm_TexBits(uNextTex0Data[1]);
 
 	texClutWrite(ictx);
 
@@ -453,14 +454,14 @@ inline void VB::FlushTexClutDontUpdate()
 // Set texture variables after big change
 inline void VB::FlushTexSetNewVars(u32 psm)
 {
-	tex0.tbp0 = ZZOglGet_tbp0_TexBits(uNextTex0Data[0]);
-	tex0.tbw  = ZZOglGet_tbw_TexBitsMult(uNextTex0Data[0]);
+	tex0.tbp0 = ZZGet::tbp0_TexBits(uNextTex0Data[0]);
+	tex0.tbw  = ZZGet::tbw_TexBitsMult(uNextTex0Data[0]);
 	tex0.psm  = psm;
-	tex0.tw   = ZZOglGet_tw_TexBitsExp(uNextTex0Data[0]);
-	tex0.th   = ZZOglGet_th_TexBitsExp(uNextTex0Data[0], uNextTex0Data[1]);
+	tex0.tw   = ZZGet::tw_TexBitsExp(uNextTex0Data[0]);
+	tex0.th   = ZZGet::th_TexBitsExp(uNextTex0Data[0], uNextTex0Data[1]);
 
-	tex0.tcc  = ZZOglGet_tcc_TexBits(uNextTex0Data[1]);
-	tex0.tfx  = ZZOglGet_tfx_TexBits(uNextTex0Data[1]);
+	tex0.tcc  = ZZGet::tcc_TexBits(uNextTex0Data[1]);
+	tex0.tfx  = ZZGet::tfx_TexBits(uNextTex0Data[1]);
 
 	fiTexWidth[ictx] = (1 / 16.0f) / tex0.tw;
 	fiTexHeight[ictx] = (1 / 16.0f) / tex0.th;
@@ -477,7 +478,7 @@ void VB::FlushTexData()
 	{
 		bNeedTexCheck = 0;
 
-		u32 psm = ZZOglGet_psm_TexBitsFix(uNextTex0Data[0]);
+		u32 psm = ZZGet::psm_TexBitsFix(uNextTex0Data[0]);
 
 		// don't update unless necessary
 
@@ -494,7 +495,7 @@ void VB::FlushTexData()
 			}
 
 			// Cld bit is 0 means that clut buffer stay unchanged
-			if (ZZOglGet_cld_TexBits(uNextTex0Data[1]) == 0)
+			if (ZZGet::cld_TexBits(uNextTex0Data[1]) == 0)
 			{
 				FlushTexClutDontUpdate();
 				return;
