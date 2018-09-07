@@ -318,6 +318,7 @@ CRC::Game CRC::m_games[] =
 	{0x518DD841, Sly2, KO, 0},
 	{0x07652DD9, Sly2, US, 0},
 	{0x5B93397F, Sly2, US, 0}, // E3 Demo
+	{0xDD0B5E6C, Sly2, US, 0}, // Internal prototype disc
 	{0x615EA2DB, Sly2, JP, 0}, // Kaitou Sly Cooper 2
 	{0xFDA1CBF6, Sly2, EU, 0},
 	{0x15DD1F6F, Sly2, NoRegion, 0},
@@ -442,6 +443,7 @@ CRC::Game CRC::m_games[] =
 	{0xA60C2E65, Yakuza2, EU, 0},
 	{0x800E3E5A, Yakuza2, EU, 0},
 	{0x97E9C87E, Yakuza2, US, 0},
+	{0xB1EBD841, Yakuza2, US, 0},
 	{0xC6B95C48, Yakuza2, JP, 0},
 	{0x9000252A, SkyGunner, JP, 0},
 	{0x93092623, SkyGunner, JP, 0},
@@ -554,6 +556,8 @@ CRC::Game CRC::m_games[] =
 	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
 	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
 	{0x51E019BC, HarryPotterATPOA, NoRegion, 0 }, // EU and US versions have the same CRC - Prisoner of Azkaban
+	{0x99A8B4FF, HarryPotterATPOA, KO, 0 },
+	{0xA8901AD6, HarryPotterATPOA, JP, 0 }, // Harry Potter to Azkaban no Shuujin
 	{0x4C01B1B0, HarryPotterOOTP, US, 0}, // Order Of The Phoenix
 	{0x01A9BF0E, HarryPotterOOTP, EU, 0},
 	{0x230CB71D, SoulReaver2, US, 0},

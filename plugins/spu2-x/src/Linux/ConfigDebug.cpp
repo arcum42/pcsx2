@@ -180,6 +180,7 @@ void DisplayDialog()
         "OK", GTK_RESPONSE_ACCEPT,
         NULL);
 
+<<<<<<< HEAD
 #if GTK_MAJOR_VERSION < 3
     main_box = gtk_hbox_new(false, 5);
 #else
@@ -193,6 +194,12 @@ void DisplayDialog()
 #else
     msg_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 #endif
+=======
+    main_box = spu2x_gtk_hbox_new(5);
+
+    // Message Section
+    msg_box = spu2x_gtk_vbox_new(5);
+>>>>>>> upstream/master
 
     msg_console_check = gtk_check_button_new_with_label("Show In Console");
     msg_key_check = gtk_check_button_new_with_label("KeyOn/Off Events");
@@ -221,12 +228,17 @@ void DisplayDialog()
     msg_frame = gtk_frame_new("Message/Log Options");
     gtk_container_add(GTK_CONTAINER(msg_frame), msg_box);
 
+<<<<<<< HEAD
 // Log Section
 #if GTK_MAJOR_VERSION < 3
     log_box = gtk_vbox_new(false, 5);
 #else
     log_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 #endif
+=======
+    // Log Section
+    log_box = spu2x_gtk_vbox_new(5);
+>>>>>>> upstream/master
 
     log_access_check = gtk_check_button_new_with_label("Log Register/DMA Actions");
     log_dma_check = gtk_check_button_new_with_label("Log DMA Writes");
@@ -243,12 +255,17 @@ void DisplayDialog()
     log_frame = gtk_frame_new("Log Options");
     gtk_container_add(GTK_CONTAINER(log_frame), log_box);
 
+<<<<<<< HEAD
 // Dump Section
 #if GTK_MAJOR_VERSION < 3
     dump_box = gtk_vbox_new(false, 5);
 #else
     dump_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 #endif
+=======
+    // Dump Section
+    dump_box = spu2x_gtk_vbox_new(5);
+>>>>>>> upstream/master
 
     dump_core_check = gtk_check_button_new_with_label("Dump Core and Voice State");
     dump_mem_check = gtk_check_button_new_with_label("Dump Memory Contents");

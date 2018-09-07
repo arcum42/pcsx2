@@ -58,7 +58,7 @@ float VolumeAdjustBRdb;
 float VolumeAdjustSLdb;
 float VolumeAdjustSRdb;
 float VolumeAdjustLFEdb;
-float VolumeAdjustFL; // linear coefs calcualted from decibels,
+float VolumeAdjustFL; // linear coefs calculated from decibels,
 float VolumeAdjustC;
 float VolumeAdjustFR;
 float VolumeAdjustBL;
@@ -223,7 +223,24 @@ void debug_dialog()
 
 #if defined(__unix__)
 
+<<<<<<< HEAD
 static void toggle_sensitivity(GtkWidget *widget, gpointer data)
+=======
+// Format the slider with ms.
+static gchar *cb_scale_format_ms(GtkScale *scale, gdouble value)
+{
+    return g_strdup_printf("%g ms (avg)", value);
+}
+
+// Format the slider with a % sign.
+static gchar *cb_scale_format_percent(GtkScale *scale, gdouble value)
+{
+    return g_strdup_printf("%g %%", value);
+}
+
+// Disables and reenables the debug button.
+static void cb_toggle_sensitivity(GtkWidget *widget, gpointer data)
+>>>>>>> upstream/master
 {
     GtkButton *btn = static_cast<GtkButton *>(data);
 
@@ -274,24 +291,24 @@ void DisplayDialog()
 
     int_label = gtk_label_new("Interpolation:");
     int_box = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "0 - Nearest (fastest/bad quality)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "1 - Linear (simple/okay sound)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "2 - Cubic (artificial highs)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "3 - Hermite (better highs)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "0 - Nearest (Fastest/bad quality)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "1 - Linear (Simple/okay sound)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "2 - Cubic (Artificial highs)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "3 - Hermite (Better highs)");
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(int_box), "4 - Catmull-Rom (PS2-like/slow)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(int_box), Interpolation);
 
     effects_check = gtk_check_button_new_with_label("Disable Effects Processing");
-    dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter (overemphasizes the highs)");
+    dealias_filter = gtk_check_button_new_with_label("Use the de-alias filter (Overemphasizes the highs)");
 
     debug_check = gtk_check_button_new_with_label("Enable Debug Options");
-    debug_button = gtk_button_new_with_label("Debug...");
+    debug_button = gtk_button_new_with_label("Configure...");
 
     mod_label = gtk_label_new("Module:");
     mod_box = gtk_combo_box_text_new();
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (emulate SPU2 only)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (cross-platform)");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (recommended for PulseAudio)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "0 - No Sound (Emulate SPU2 only)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "1 - PortAudio (Cross-platform)");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "2 - SDL Audio (Recommended for PulseAudio)");
     //gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(mod_box), "3 - Alsa (probably doesn't work)");
     gtk_combo_box_set_active(GTK_COMBO_BOX(mod_box), OutputModule);
 
@@ -319,19 +336,21 @@ void DisplayDialog()
 
     latency_label = gtk_label_new("Latency:");
     const int min_latency = SynchMode == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
-#if GTK_MAJOR_VERSION < 3
-    latency_slide = gtk_hscale_new_with_range(min_latency, LATENCY_MAX, 5);
-#else
-    latency_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, min_latency, LATENCY_MAX, 5);
-#endif
+
+    latency_slide = spu2x_gtk_hscale_new_with_range(min_latency, LATENCY_MAX, 5);
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
     volume_label = gtk_label_new("Volume:");
+<<<<<<< HEAD
 #if GTK_MAJOR_VERSION < 3
     volume_slide = gtk_hscale_new_with_range(0, 100, 5);
 #else
     volume_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 5);
 #endif
+=======
+
+    volume_slide = spu2x_gtk_hscale_new_with_range(0, 100, 5);
+>>>>>>> upstream/master
     gtk_range_set_value(GTK_RANGE(volume_slide), FinalVolume * 100);
 
     sync_label = gtk_label_new("Synchronization Mode:");
@@ -343,33 +362,34 @@ void DisplayDialog()
 
     advanced_button = gtk_button_new_with_label("Advanced...");
 
+<<<<<<< HEAD
 #if GTK_MAJOR_VERSION < 3
     main_box = gtk_hbox_new(false, 5);
 #else
     main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 #endif
+=======
+    main_box = spu2x_gtk_hbox_new(5);
+>>>>>>> upstream/master
 
-#if GTK_MAJOR_VERSION < 3
-    mixing_box = gtk_vbox_new(false, 5);
-#else
-    mixing_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-#endif
+    mixing_box = spu2x_gtk_vbox_new(5);
     mixing_frame = gtk_frame_new("Mixing Settings:");
 
     gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
 
-#if GTK_MAJOR_VERSION < 3
-    output_box = gtk_vbox_new(false, 5);
-#else
-    output_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-#endif
+
+    output_box = spu2x_gtk_vbox_new(5);
     output_frame = gtk_frame_new("Output Settings:");
 
+<<<<<<< HEAD
 #if GTK_MAJOR_VERSION < 3
     debug_box = gtk_vbox_new(false, 5);
 #else
     debug_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 #endif
+=======
+    debug_box = spu2x_gtk_vbox_new(5);
+>>>>>>> upstream/master
     debug_frame = gtk_frame_new("Debug Settings:");
 
     gtk_container_add(GTK_CONTAINER(debug_box), debug_check);
@@ -412,7 +432,11 @@ void DisplayDialog()
     gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), main_box);
     gtk_widget_show_all(dialog);
 
+    g_signal_connect(volume_slide, "format_value", G_CALLBACK(cb_scale_format_percent), volume_slide);
+    g_signal_connect(latency_slide, "format_value", G_CALLBACK(cb_scale_format_ms), latency_slide);
     g_signal_connect(sync_box, "changed", G_CALLBACK(cb_adjust_latency), latency_slide);
+
+    g_signal_connect(debug_check, "clicked", G_CALLBACK(cb_toggle_sensitivity), debug_button);
     g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
     g_signal_connect(debug_check, "clicked", G_CALLBACK(toggle_sensitivity), debug_button);
     g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
