@@ -1,0 +1,133 @@
+This is highly likely to get out of date quickly, and will be a rough guide to what's in files for purposes of refactoring, general knowledge of code, etc...
+
+Also, the initial information is going to be pretty obvious, as it's off the top of my head.
+
+--arcum42
+
+First off, anything windows in here is broken and probably in need of mass reworking.
+
+CMakeLists.txt -
+Main make file.
+
+buildshaders.bat - Windows, for building shaders.
+shaders.sh  - Linux version of the same.
+ 
+ZeroGSShaders/ :
+CMakeLists.txt  copytozerogs.bat  ZeroGSShaders_2005.sln  zerogsshaders.cpp  zerogsshaders.h  zlib  zpipe.cpp  zpipe.h
+Should probably move everything shader related here.
+ 
+ps2hw_gl4.h 
+ps2hw_gl4.glsl   
+ps2hw.dat      
+ps2hw.glsl      
+ps2hw.fx      
+
+Win32/ :
+Out of date Windows files. Fix up later.
+
+Linux/ :
+Conf.cpp  Linux.cpp  Linux.h
+Dialog stuff.
+
+GLWin32.cpp -
+Not in Win32 folder for some reason?
+
+GLWinX11.cpp  - 
+X11 Windowing stuff. Could combine with GSCreate?
+
+GLWin.h  
+
+ctx0/ & ctx1/ :        
+Both contain ps2hw_ctx.fx for shaders. Needs looking at.
+
+Memory/
+HostMemory.cpp  HostMemory.h  Mem.cpp  Mem.h  Mem_Swizzle.cpp  Mem_Swizzle.h  Mem_Tables.cpp  Mem_Transmit.h
+
+Memory files, subdivided in a million pieces. Mem_Tables.cpp has tables of how the blocks are arranged.
+Has the actual memory storage, things for accessing it through pages and blocks and such.
+
+Targets/
+targets.cpp  & targets.h  \
+ZZDepthTargets.cpp  & ZZDepthTargets.h   \
+ZZMemoryTargets.cpp & ZZMemoryTargets.h   \
+ZZRenderTargets.cpp  & ZZRenderTargets.h  \
+ZZTargets.h :
+Was once one file!
+targets.h is rather overloaded. Some stuff can't be broken out of there that should, as it holds class defs for depth, memory, and render targets. Compilation totally dies if I try to split those out.
+I might be able to split targets.h in half and put all of the classes in one file, though.
+
+ZZogl  / (Dumping ground for various files)
+Drawing.cpp  Drawing.h  -
+Short. Prim and Kick functions
+
+Flush.cpp  Flush.h  FlushHack.cpp  FlushHack.h  -
+Flushing
+
+GSCreate.cpp  GSCreate.h  - 
+Main creation and destrution routines.
+
+RenderCRTC.cpp  RenderCRTC.h  - 
+Rendering stuff.
+
+VB.cpp  VB.h  - 
+Looks like stuff about frames?
+
+ZZoglMath.h  - 
+Vertex math. Not sure how much it's used.
+
+ZZoglShadersGLSL4.cpp  ZZoglShaders.h  -
+Shaders.
+
+ZZSave.cpp - 
+Save and load functions. Only used in GSmain, and is probably mergable.
+
+glprocs.c  
+glprocs.h -
+OpenGLstuff.
+
+GSDump.cpp & GSDump.h    -
+Er, Open, close, transfer, ReadFifo, and VSync?
+Used in GifTransfer and GSmain.
+
+GSUniformBufferOGL.h & GSVertexArrayOGL.h  -
+Code created for GSdx? 
+
+Profile.cpp & Profile.h & Profile_gl3.cpp &Profile_gl3.h  - 
+Profiling stuff?
+
+README.txt  
+Screenshots.cpp & Screenshots.h - 
+Handles screenshots
+      
+Regs.cpp & Regs.h  
+Main register handler. Header file is rather overloaded.
+
+CRC.h        
+ZZGl.h      
+GS.h   
+Util.h       
+
+
+ZZLog.cpp & ZZLog.h - 
+Main logging class
+
+GifTransfer.cpp & GifTransfer.h - 
+Gif Transferring code?
+
+rasterfont.cpp & rasterfont.h  -
+Font stuff for onscreen messages.
+
+ZZClut.cpp  & ZZClut.h - 
+Obviously clut (color) related stuff.
+
+ZZHacks.cpp & ZZHacks.h - 
+Structures for all the hacks.
+
+GSmain.cpp - 
+Main file
+
+linux_replay.cpp  - 
+?
+
+ZZKeyboard.cpp -
+Keyboard key handling
