@@ -145,7 +145,6 @@ set(zzoglHeaders
     Memory/HostMemory.h
     Memory/Mem.h
     Memory/Mem_Swizzle.h
-    Memory/Mem_Transmit.h
     
     Targets/targets.h
     Targets/ZZTargets.h

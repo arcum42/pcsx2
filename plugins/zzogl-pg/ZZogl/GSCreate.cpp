@@ -618,7 +618,7 @@ bool ZZCreate(int _width, int _height)
 	g_fBlockMult = 1;
 
 	vector<char> vBlockData, vBilinearData;
-	BLOCK::FillBlocks(vBlockData, vBilinearData);
+	FillBlocks(vBlockData, vBilinearData);
 
 	glGenTextures(1, &ptexBlocks);
 	glBindTexture(GL_TEXTURE_2D, ptexBlocks);

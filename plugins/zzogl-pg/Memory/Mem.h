@@ -122,8 +122,9 @@ extern u32 g_pageTable16SZ[64][64];
 extern u32 g_pageTable8[64][128];
 extern u32 g_pageTable4[128][128];
 
-struct BLOCK
+class BLOCK
 {
+	public:
 	BLOCK() { memset(this, 0, sizeof(BLOCK)); }
 
 	// shader constants for this block
@@ -147,20 +148,18 @@ struct BLOCK
 	_TransferLocalHost TransferLocalHost;
 
 	// texture must be of dims BLOCK_TEXWIDTH and BLOCK_TEXHEIGHT
-	static void FillBlocks(std::vector<char>& vBlockData, std::vector<char>& vBilinearData);
-	
 	void SetDim(u32 bw, u32 bh, u32 ox2, u32 oy2, u32 mult2)
 	{
 		ox = ox2;
 		oy = oy2;
 		mult = mult2;
 		vTexDims = float4(BLOCK_TEXWIDTH/(float)(bw), BLOCK_TEXHEIGHT/(float)bh, 0, 0); 
-		vTexBlock = float4((float)bw/BLOCK_TEXWIDTH, (float)bh/BLOCK_TEXHEIGHT, ((float)ox+0.2f)/BLOCK_TEXWIDTH, ((float)oy+0.05f)/BLOCK_TEXHEIGHT);
+		vTexBlock = float4((float)bw/BLOCK_TEXWIDTH, (float)bh/BLOCK_TEXHEIGHT, ((float)ox + 0.2f) / BLOCK_TEXWIDTH, ((float)oy + 0.05f) / BLOCK_TEXHEIGHT);
 		width = bw;
 		height = bh;
 		colwidth = bh / 4;
 		colheight = bw / 8;
-		bpp = 32/mult;
+		bpp = 32 / mult;
 	}
 	
 	void SetFun(u32 psm)
@@ -177,53 +176,61 @@ struct BLOCK
     {
         switch (psm) {
             case PSMCT32:
-                assert( sizeof(g_pageTable32) == width * height * sizeof(g_pageTable32[0][0]) );
+                assert(sizeof(g_pageTable32) == width * height * sizeof(g_pageTable32[0][0]));
                 pageTable = &g_pageTable32[0][0];
                 blockTable = &g_blockTable32[0][0];
                 columnTable = &g_columnTable32[0][0];
                 break;
+
             case PSMT32Z:
-                assert( sizeof(g_pageTable32Z) == width * height * sizeof(g_pageTable32Z[0][0]) );
+                assert( sizeof(g_pageTable32Z) == width * height * sizeof(g_pageTable32Z[0][0]));
                 pageTable = &g_pageTable32Z[0][0];
                 blockTable = &g_blockTable32Z[0][0];
                 columnTable = &g_columnTable32[0][0];
                 break;
+
             case PSMCT16:
-                assert( sizeof(g_pageTable16) == width * height * sizeof(g_pageTable16[0][0]) );
+                assert(sizeof(g_pageTable16) == width * height * sizeof(g_pageTable16[0][0]));
                 pageTable = &g_pageTable16[0][0];
                 blockTable = &g_blockTable16[0][0];
                 columnTable = &g_columnTable16[0][0];
                 break;
+
             case PSMCT16S:
-                assert( sizeof(g_pageTable16S) == width * height * sizeof(g_pageTable16S[0][0]) );
+                assert(sizeof(g_pageTable16S) == width * height * sizeof(g_pageTable16S[0][0]));
                 pageTable = &g_pageTable16S[0][0];
                 blockTable = &g_blockTable16S[0][0];
                 columnTable = &g_columnTable16[0][0];
                 break;
+
             case PSMT16Z:
-                assert( sizeof(g_pageTable16Z) == width * height * sizeof(g_pageTable16Z[0][0]) );
+                assert(sizeof(g_pageTable16Z) == width * height * sizeof(g_pageTable16Z[0][0]));
                 pageTable = &g_pageTable16Z[0][0];
                 blockTable = &g_blockTable16Z[0][0];
                 columnTable = &g_columnTable16[0][0];
                 break;
+
             case PSMT16SZ:
-                assert( sizeof(g_pageTable16SZ) == width * height * sizeof(g_pageTable16SZ[0][0]) );
+                assert(sizeof(g_pageTable16SZ) == width * height * sizeof(g_pageTable16SZ[0][0]));
                 pageTable = &g_pageTable16SZ[0][0];
                 blockTable = &g_blockTable16SZ[0][0];
                 columnTable = &g_columnTable16[0][0];
                 break;
+
             case PSMT8:
-                assert( sizeof(g_pageTable8) == width * height * sizeof(g_pageTable8[0][0]) );
+                assert(sizeof(g_pageTable8) == width * height * sizeof(g_pageTable8[0][0]));
                 pageTable = &g_pageTable8[0][0];
                 blockTable = &g_blockTable8[0][0];
                 columnTable = &g_columnTable8[0][0];
                 break;
+
             case PSMT4:
-                assert( sizeof(g_pageTable4) == width * height * sizeof(g_pageTable4[0][0]) );
+                assert(sizeof(g_pageTable4) == width * height * sizeof(g_pageTable4[0][0]));
                 pageTable = &g_pageTable4[0][0];
                 blockTable = &g_blockTable4[0][0];
                 columnTable = &g_columnTable4[0][0];
                 break;
+
             default:
                 pageTable = NULL;
                 blockTable = NULL;
@@ -231,9 +238,145 @@ struct BLOCK
                 break;
         }
     }
+
+	void Set(u32 bw, u32 bh, u32 ox2, u32 oy2, u32 mult2, u32 psm)
+	{
+		SetDim(bw, bh, ox2, oy2, mult2);
+		SetTable(psm);
+	}
+	
+	void fill(vector<char>& vBlockData, vector<char>& vBilinearData)
+	{
+		float* psrcf = (float*)&vBlockData[0] + ox + oy * BLOCK_TEXWIDTH;
+
+		for(int i = 0; i < height; ++i)
+		{
+			u32 i_width = i * BLOCK_TEXWIDTH;
+			for(int j = 0; j < width; ++j)
+			{
+				/* fill the table */
+				u32 bt = blockTable[(i / colheight)*(width/colwidth) + (j / colwidth)];
+				u32 ct = columnTable[(i % colheight) * colwidth + (j % colwidth)];
+				u32 u = bt * 64 * mult + ct;
+				pageTable[i * width + j] = u;
+				psrcf[i_width + j] = (float)(u) / (float)(GPU_TEXWIDTH * mult);
+			}
+		}
+
+		float4* psrcv = (float4*)&vBilinearData[0] + ox + oy * BLOCK_TEXWIDTH;
+
+		for(int i = 0; i < height; ++i)
+		{
+			u32 i_width = i * BLOCK_TEXWIDTH;
+			u32 i_width2 = ((i + 1) % height)*BLOCK_TEXWIDTH;
+			for(int j = 0; j < width; ++j)
+			{
+				u32 temp = ((j + 1) % width);
+				float4* pv = &psrcv[i_width + j];
+				pv->x = psrcf[i_width + j];
+				pv->y = psrcf[i_width + temp];
+				pv->z = psrcf[i_width2 + j];
+				pv->w = psrcf[i_width2 + temp];
+			}
+		}
+	}
 };
 
-extern BLOCK m_Blocks[];
+extern BLOCK m_Blocks[0x40];
+
+// BLOCK is used elsewhere, too.
+static __forceinline void FillBlocks(vector<char>& vBlockData, vector<char>& vBilinearData)
+	{
+		FUNCLOG
+		vBlockData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * 4);
+		vBilinearData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * sizeof(float4));
+
+		BLOCK b;
+
+		memset(m_Blocks, 0, sizeof(m_Blocks));
+
+		// 32
+		//b.SetDim(64, 32, 0, 0, 1);
+		//b.SetTable(PSMCT32);
+		b.Set(64, 32, 0, 0, 1, PSMCT32);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMCT32] = b;
+		m_Blocks[PSMCT32].SetFun(PSMCT32);
+
+		// 24 (same as 32 except write/readPixel are different)
+		m_Blocks[PSMCT24] = b;
+		m_Blocks[PSMCT24].SetFun(PSMCT24);
+
+		// 8H (same as 32 except write/readPixel are different)
+		m_Blocks[PSMT8H] = b;
+		m_Blocks[PSMT8H].SetFun(PSMT8H);
+
+		m_Blocks[PSMT4HL] = b;
+		m_Blocks[PSMT4HL].SetFun(PSMT4HL);
+
+		m_Blocks[PSMT4HH] = b;
+		m_Blocks[PSMT4HH].SetFun(PSMT4HH);
+
+		// 32z
+		//b.SetDim(64, 32, 64, 0, 1);
+		//b.SetTable(PSMT32Z);
+		b.Set(64, 32, 64, 0, 1, PSMT32Z);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMT32Z] = b;
+		m_Blocks[PSMT32Z].SetFun(PSMT32Z);
+
+		// 24Z (same as 32Z except write/readPixel are different)
+		m_Blocks[PSMT24Z] = b;
+		m_Blocks[PSMT24Z].SetFun(PSMT24Z);
+
+		// 16
+		//b.SetDim(64, 64, 0, 32, 2);
+		//b.SetTable(PSMCT16);
+		b.Set(64, 64, 0, 32, 2, PSMCT16);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMCT16] = b;
+		m_Blocks[PSMCT16].SetFun(PSMCT16);
+
+		// 16s
+		//b.SetDim(64, 64, 64, 32, 2);
+		//b.SetTable(PSMCT16S);
+		b.Set(64, 64, 64, 32, 2, PSMCT16S);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMCT16S] = b;
+		m_Blocks[PSMCT16S].SetFun(PSMCT16S);
+
+		// 16z
+		//b.SetDim(64, 64, 0, 96, 2);
+		//b.SetTable(PSMT16Z);
+		b.Set(64, 64, 0, 96, 2, PSMT16Z);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMT16Z] = b;
+		m_Blocks[PSMT16Z].SetFun(PSMT16Z);
+
+		// 16sz
+		//b.SetDim(64, 64, 64, 96, 2);
+		//b.SetTable(PSMT16SZ);
+		b.Set(64, 64, 64, 96, 2, PSMT16SZ);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMT16SZ] = b;
+		m_Blocks[PSMT16SZ].SetFun(PSMT16SZ);
+
+		// 8
+		//b.SetDim(128, 64, 0, 160, 4);
+		//b.SetTable(PSMT8);
+		b.Set(128, 64, 0, 160, 4, PSMT8);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMT8] = b;
+		m_Blocks[PSMT8].SetFun(PSMT8);
+
+		// 4
+		//b.SetDim(128, 128, 0, 224, 8);
+		//b.SetTable(PSMT4);
+		b.Set(128, 128, 0, 224, 8, PSMT4);
+		b.fill(vBlockData, vBilinearData);
+		m_Blocks[PSMT4] = b;
+		m_Blocks[PSMT4].SetFun(PSMT4);
+	}
 
 #define getPixelAddress24 getPixelAddress32
 #define getPixelAddress24_0 getPixelAddress32_0
@@ -343,8 +486,10 @@ static __forceinline void writePixel4(void* pmem, int x, int y, u32 pixel, u32 b
 	u32 addr = getPixelAddress4(x, y, bp, bw);
 	u8 pix = ((u8*)pmem)[addr/2];
 
-	if (addr & 0x1)((u8*)pmem)[addr/2] = (pix & 0x0f) | (pixel << 4);
-	else ((u8*)pmem)[addr/2] = (pix & 0xf0) | (pixel);
+	if (addr & 0x1)
+		((u8*)pmem)[addr/2] = (pix & 0x0f) | (pixel << 4);
+	else 
+		((u8*)pmem)[addr/2] = (pix & 0xf0) | (pixel);
 }
 
 static __forceinline void writePixel4HL(void* pmem, int x, int y, u32 pixel, u32 bp, u32 bw)

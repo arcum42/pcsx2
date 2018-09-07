@@ -19,10 +19,9 @@
 
 #include "GS.h"
 #include "Util.h"
-#include "Memory/Mem.h"
 #include "Targets/targets.h"
 
-#include "Memory/Mem_Transmit.h"
+#include "Memory/Mem.h"
 #include "Memory/Mem_Swizzle.h"
 
 BLOCK m_Blocks[0x40]; // do so blocks are indexable
@@ -36,6 +35,308 @@ int tempX, tempY;
 int pitch, area, fracX;
 int nSize;
 u8* pstart;
+
+// For debugging.
+extern const char* psm_name[64];
+
+//#define TRANSMISSION_LOG
+
+// transfers whole rows
+template <class T>
+static __forceinline const T *TransmitHostLocalY_(_writePixel_0 wp, s32 widthlimit, int endY, const T *buf)
+{
+	assert((nSize % widthlimit) == 0 && widthlimit <= 4);
+
+	if ((gs.imageEnd.x - gs.trxpos.dx) % widthlimit)
+	{
+		#ifdef TRANSMISSION_LOG
+		ZZLog::GS_Log("Bad Transmission! %d %d, psm: %s", gs.trxpos.dx, gs.imageEnd.x, psm_name[gs.dstbuf.psm]);
+		#endif
+
+		for (; tempY < endY; ++tempY)
+		{
+			for (; tempX < gs.imageEnd.x && nSize > 0; tempX += 1, nSize -= 1, buf += 1)
+			{
+				/* write as many pixel at one time as possible */
+				wp(pstart, tempX % 2048, tempY % 2048, buf[0], gs.dstbuf.bw);
+			}
+		}
+	}
+
+	for (; tempY < endY; ++tempY)
+	{
+		for (; tempX < gs.imageEnd.x && nSize > 0; tempX += widthlimit, nSize -= widthlimit, buf += widthlimit)
+		{
+
+			/* write as many pixel at one time as possible */
+			if (nSize < widthlimit) return NULL;
+
+			wp(pstart, tempX % 2048, tempY % 2048, buf[0], gs.dstbuf.bw);
+
+			if (widthlimit > 1)
+			{
+				wp(pstart, (tempX + 1) % 2048, tempY % 2048, buf[1], gs.dstbuf.bw);
+
+				if (widthlimit > 2)
+				{
+					wp(pstart, (tempX + 2) % 2048, tempY % 2048, buf[2], gs.dstbuf.bw);
+
+					if (widthlimit > 3)
+					{
+						wp(pstart, (tempX + 3) % 2048, tempY % 2048, buf[3], gs.dstbuf.bw);
+					}
+				}
+			}
+		}
+
+		if (tempX >= gs.imageEnd.x)
+		{
+			assert(tempX == gs.imageEnd.x);
+			tempX = gs.trxpos.dx;
+		}
+		else
+		{
+			assert(gs.transferring == false || nSize*sizeof(T) / 4 == 0);
+			return NULL;
+		}
+	}
+
+	return buf;
+}
+
+// transfers whole rows
+template <class T>
+static __forceinline const T *TransmitHostLocalY_24(_writePixel_0 wp, s32 widthlimit, int endY, const T *buf)
+{
+	if (widthlimit != 8 || ((gs.imageEnd.x - gs.trxpos.dx) % widthlimit))
+	{
+		#ifdef TRANSMISSION_LOG
+		ZZLog::GS_Log("Bad Transmission! %d %d, psm: %s", gs.trxpos.dx, gs.imageEnd.x, psm_name[gs.dstbuf.psm]);
+		#endif
+
+		for (; tempY < endY; ++tempY)
+		{
+			for (; tempX < gs.imageEnd.x && nSize > 0; tempX += 1, nSize -= 1, buf += 3)
+			{
+				wp(pstart, tempX % 2048, tempY % 2048, *(u32*)(buf), gs.dstbuf.bw);
+			}
+
+			if (tempX >= gs.imageEnd.x)
+			{
+				assert(gs.transferring == false || tempX == gs.imageEnd.x);
+				tempX = gs.trxpos.dx;
+			}
+			else
+			{
+				assert(gs.transferring == false || nSize == 0);
+				return NULL;
+			}
+		}
+	}
+	else
+	{
+		assert(/*(nSize%widthlimit) == 0 &&*/ widthlimit == 8);
+
+		for (; tempY < endY; ++tempY)
+		{
+			for (; tempX < gs.imageEnd.x && nSize > 0; tempX += widthlimit, nSize -= widthlimit, buf += 3 * widthlimit)
+			{
+				if (nSize < widthlimit) return NULL;
+
+				/* write as many pixel at one time as possible */
+
+				wp(pstart, tempX % 2048, tempY % 2048, *(u32*)(buf + 0), gs.dstbuf.bw);
+				wp(pstart, (tempX + 1) % 2048, tempY % 2048, *(u32*)(buf + 3), gs.dstbuf.bw);
+				wp(pstart, (tempX + 2) % 2048, tempY % 2048, *(u32*)(buf + 6), gs.dstbuf.bw);
+				wp(pstart, (tempX + 3) % 2048, tempY % 2048, *(u32*)(buf + 9), gs.dstbuf.bw);
+				wp(pstart, (tempX + 4) % 2048, tempY % 2048, *(u32*)(buf + 12), gs.dstbuf.bw);
+				wp(pstart, (tempX + 5) % 2048, tempY % 2048, *(u32*)(buf + 15), gs.dstbuf.bw);
+				wp(pstart, (tempX + 6) % 2048, tempY % 2048, *(u32*)(buf + 18), gs.dstbuf.bw);
+				wp(pstart, (tempX + 7) % 2048, tempY % 2048, *(u32*)(buf + 21), gs.dstbuf.bw);
+			}
+
+			if (tempX >= gs.imageEnd.x)
+			{
+				assert(gs.transferring == false || tempX == gs.imageEnd.x);
+				tempX = gs.trxpos.dx;
+			}
+			else
+			{
+				if (nSize < 0)
+				{
+					/* extracted too much */
+					assert((nSize % 3) == 0 && nSize > -24);
+					tempX += nSize / 3;
+					nSize = 0;
+				}
+
+				assert(gs.transferring == false || nSize == 0);
+
+				return NULL;
+			}
+		}
+	}
+
+	return buf;
+}
+
+// meant for 4bit transfers
+template <class T>
+static __forceinline const T *TransmitHostLocalY_4(_writePixel_0 wp, s32 widthlimit, int endY, const T *buf)
+{
+	for (; tempY < endY; ++tempY)
+	{
+		for (; tempX < gs.imageEnd.x && nSize > 0; tempX += widthlimit, nSize -= widthlimit)
+		{
+			/* write as many pixel at one time as possible */
+			wp(pstart, tempX % 2048, tempY % 2048, *buf&0x0f, gs.dstbuf.bw);
+			wp(pstart, (tempX + 1) % 2048, tempY % 2048, *buf >> 4, gs.dstbuf.bw);
+			buf++;
+
+			if (widthlimit > 2)
+			{
+				wp(pstart, (tempX + 2) % 2048, tempY % 2048, *buf&0x0f, gs.dstbuf.bw);
+				wp(pstart, (tempX + 3) % 2048, tempY % 2048, *buf >> 4, gs.dstbuf.bw);
+				buf++;
+
+				if (widthlimit > 4)
+				{
+					wp(pstart, (tempX + 4) % 2048, tempY % 2048, *buf&0x0f, gs.dstbuf.bw);
+					wp(pstart, (tempX + 5) % 2048, tempY % 2048, *buf >> 4, gs.dstbuf.bw);
+					buf++;
+
+					if (widthlimit > 6)
+					{
+						wp(pstart, (tempX + 6) % 2048, tempY % 2048, *buf&0x0f, gs.dstbuf.bw);
+						wp(pstart, (tempX + 7) % 2048, tempY % 2048, *buf >> 4, gs.dstbuf.bw);
+						buf++;
+					}
+				}
+			}
+		}
+
+		if (tempX >= gs.imageEnd.x)
+		{
+			tempX = gs.trxpos.dx;
+		}
+		else
+		{
+			assert(gs.transferring == false || (nSize / 32) == 0);
+			return NULL;
+		}
+	}
+
+	return buf;
+}
+
+template <class T>
+static __forceinline const T *TransmitHostLocalX_(_writePixel_0 wp, u32 widthlimit, u32 blockheight, u32 startX, const T *buf)
+{
+	for (u32 tempi = 0; tempi < blockheight; ++tempi)
+	{
+		for (tempX = startX; tempX < gs.imageEnd.x; tempX++, buf++)
+		{
+			wp(pstart, tempX % 2048, (tempY + tempi) % 2048, buf[0], gs.dstbuf.bw);
+		}
+
+		buf += pitch - fracX;
+	}
+
+	return buf;
+}
+
+// transmit until endX, don't check size since it has already been prevalidated
+template <class T>
+static __forceinline const T *TransmitHostLocalX_24(_writePixel_0 wp, u32 widthlimit, u32 blockheight, u32 startX, const T *buf)
+{
+	for (u32 tempi = 0; tempi < blockheight; ++tempi)
+	{
+		for (tempX = startX; tempX < gs.imageEnd.x; tempX++, buf += 3)
+		{
+			wp(pstart, tempX % 2048, (tempY + tempi) % 2048, *(u32*)buf, gs.dstbuf.bw);
+		}
+
+		buf += 3 * (pitch - fracX);
+	}
+
+	return buf;
+}
+
+// transmit until endX, don't check size since it has already been prevalidated
+template <class T>
+static __forceinline const T *TransmitHostLocalX_4(_writePixel_0 wp, u32 widthlimit, u32 blockheight, u32 startX, const T *buf)
+{
+	for (u32 tempi = 0; tempi < blockheight; ++tempi)
+	{
+		for (tempX = startX; tempX < gs.imageEnd.x; tempX += 2, buf++)
+		{
+			wp(pstart, tempX % 2048, (tempY + tempi) % 2048, buf[0]&0x0f, gs.dstbuf.bw);
+			wp(pstart, (tempX + 1) % 2048, (tempY + tempi) % 2048, buf[0] >> 4, gs.dstbuf.bw);
+		}
+
+		buf += (pitch - fracX) / 2;
+	}
+
+	return buf;
+}
+
+template <class T>
+static __forceinline const T *TransmitHostLocalY(u32 psm, _writePixel_0 wp, s32 widthlimit, int endY, const T *buf)
+{
+
+	#ifdef TRANSMISSION_LOG
+	ZZLog::WriteLn("TransmitHostLocalY: psm == %s, bimode == 0x%x", psm_name[psm], PSMT_BITMODE(psm));
+	#endif
+
+	switch (PSMT_BITMODE(psm))
+	{
+		case 1:
+			return TransmitHostLocalY_24<T>(wp, widthlimit, endY, buf);
+		case 4:
+			return TransmitHostLocalY_4<T>(wp, widthlimit, endY, buf);
+		default:
+			return TransmitHostLocalY_<T>(wp, widthlimit, endY, buf);
+	}
+
+	assert(0);
+
+	return NULL;
+}
+
+template <class T>
+static __forceinline const T *TransmitHostLocalX(u32 psm, _writePixel_0 wp, u32 widthlimit, u32 blockheight, u32 startX, const T *buf)
+{
+	#ifdef TRANSMISSION_LOG
+	ZZLog::WriteLn("TransmitHostLocalX: psm == %s, bimode == 0x%x", psm_name[psm], PSMT_BITMODE(psm));
+	#endif
+
+	switch (PSMT_BITMODE(psm))
+	{
+		case 1:
+			return TransmitHostLocalX_24<T>(wp, widthlimit, blockheight, startX, buf);
+		case 4:
+			return TransmitHostLocalX_4<T>(wp, widthlimit, blockheight, startX, buf);
+		default:
+			return TransmitHostLocalX_<T>(wp, widthlimit, blockheight, startX, buf);
+	}
+
+	assert(0);
+
+	return NULL;
+}
+
+// calculate pitch in source buffer
+static __forceinline u32 TransPitch(u32 pitch, u32 size)
+{
+	return pitch * size / 8;
+}
+
+//static __forceinline u32 TransPitch2(u32 pitch, u32 size)
+//{
+//	if (size == 4) return pitch / 2;
+//	if (size == 24) return pitch * 3;
+//	return pitch;
+//}
 
 // ------------------------
 // |              Y       |
@@ -63,8 +364,8 @@ static __forceinline const T* AlignOnBlockBoundry(TransferData data, TransferFun
 		if ((testwidth <= data.widthlimit) && (testwidth >= -data.widthlimit))
 		{
 			/* don't transfer */
-			/*ZZLog::Debug_Log("Bad texture %s: %d %d %d", #psm, gs.trxpos.dx, gs.imageEnd.x, nQWordSize);*/
-			//ZZLog::Error_Log("Bad texture: testwidth = %d; data.widthlimit = %d", testwidth, data.widthlimit);
+			ZZLog::Debug_Log("Bad texture %s: %d %d %d", psm_name[gs.dstbuf.psm], gs.trxpos.dx, gs.imageEnd.x, (int)nSize);
+			ZZLog::Error_Log("Bad texture: testwidth = %d; data.widthlimit = %d", testwidth, data.widthlimit);
 			gs.transferring = false;
 		}
 
@@ -218,6 +519,7 @@ static __forceinline int RealTransfer(u32 psm, const void* pbyMem, u32 nQWordSiz
 	return FinishTransfer(data, nLeftOver);
 }
 
+// The TransferHostLocal/TranferLocalHost functions here are used outside of Mem.cpp.
 int TransferHostLocal32(const void* pbyMem, u32 nQWordSize)  { return RealTransfer<u32>(PSMCT32, pbyMem, nQWordSize);  }
 int TransferHostLocal32Z(const void* pbyMem, u32 nQWordSize) { return RealTransfer<u32>(PSMT32Z, pbyMem, nQWordSize);  }
 int TransferHostLocal24(const void* pbyMem, u32 nQWordSize)  { return RealTransfer<u8>(PSMCT24, pbyMem, nQWordSize);   }
@@ -245,125 +547,3 @@ void TransferLocalHost32Z(void* pbyMem, u32 nQWordSize)		{FUNCLOG}
 void TransferLocalHost24Z(void* pbyMem, u32 nQWordSize)		{FUNCLOG}
 void TransferLocalHost16Z(void* pbyMem, u32 nQWordSize)		{FUNCLOG}
 void TransferLocalHost16SZ(void* pbyMem, u32 nQWordSize)	{FUNCLOG}
-
-void fill_block(BLOCK b, vector<char>& vBlockData, vector<char>& vBilinearData)
-{
-	float* psrcf = (float*)&vBlockData[0] + b.ox + b.oy * BLOCK_TEXWIDTH;
-
-	for(int i = 0; i < b.height; ++i)
-	{
-		u32 i_width = i*BLOCK_TEXWIDTH;
-		for(int j = 0; j < b.width; ++j)
-		{
-			/* fill the table */
-            u32 bt = b.blockTable[(i / b.colheight)*(b.width/b.colwidth) + (j / b.colwidth)];
-            u32 ct = b.columnTable[(i%b.colheight)*b.colwidth + (j%b.colwidth)];
-            u32 u = bt * 64 * b.mult + ct;
-			b.pageTable[i * b.width + j] = u;
-			psrcf[i_width + j] = (float)(u) / (float)(GPU_TEXWIDTH * b.mult);
-		}
-	}
-
-	float4* psrcv = (float4*)&vBilinearData[0] + b.ox + b.oy * BLOCK_TEXWIDTH;
-
-	for(int i = 0; i < b.height; ++i)
-	{
-		u32 i_width = i*BLOCK_TEXWIDTH;
-		u32 i_width2 = ((i+1)%b.height)*BLOCK_TEXWIDTH;
-		for(int j = 0; j < b.width; ++j)
-		{
-			u32 temp = ((j + 1) % b.width);
-			float4* pv = &psrcv[i_width + j];
-			pv->x = psrcf[i_width + j];
-			pv->y = psrcf[i_width + temp];
-			pv->z = psrcf[i_width2 + j];
-			pv->w = psrcf[i_width2 + temp];
-		}
-	}
-}
-
-void BLOCK::FillBlocks(vector<char>& vBlockData, vector<char>& vBilinearData)
-{
-	FUNCLOG
-	vBlockData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * 4);
-	vBilinearData.resize(BLOCK_TEXWIDTH * BLOCK_TEXHEIGHT * sizeof(float4));
-
-	BLOCK b;
-
-	memset(m_Blocks, 0, sizeof(m_Blocks));
-
-	// 32
-	b.SetDim(64, 32, 0, 0, 1);
-    b.SetTable(PSMCT32);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMCT32] = b;
-	m_Blocks[PSMCT32].SetFun(PSMCT32);
-
-	// 24 (same as 32 except write/readPixel are different)
-	m_Blocks[PSMCT24] = b;
-	m_Blocks[PSMCT24].SetFun(PSMCT24);
-
-	// 8H (same as 32 except write/readPixel are different)
-	m_Blocks[PSMT8H] = b;
-	m_Blocks[PSMT8H].SetFun(PSMT8H);
-
-	m_Blocks[PSMT4HL] = b;
-	m_Blocks[PSMT4HL].SetFun(PSMT4HL);
-
-	m_Blocks[PSMT4HH] = b;
-	m_Blocks[PSMT4HH].SetFun(PSMT4HH);
-
-	// 32z
-	b.SetDim(64, 32, 64, 0, 1);
-    b.SetTable(PSMT32Z);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMT32Z] = b;
-	m_Blocks[PSMT32Z].SetFun(PSMT32Z);
-
-	// 24Z (same as 32Z except write/readPixel are different)
-	m_Blocks[PSMT24Z] = b;
-	m_Blocks[PSMT24Z].SetFun(PSMT24Z);
-
-	// 16
-	b.SetDim(64, 64, 0, 32, 2);
-    b.SetTable(PSMCT16);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMCT16] = b;
-	m_Blocks[PSMCT16].SetFun(PSMCT16);
-
-	// 16s
-	b.SetDim(64, 64, 64, 32, 2);
-    b.SetTable(PSMCT16S);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMCT16S] = b;
-	m_Blocks[PSMCT16S].SetFun(PSMCT16S);
-
-	// 16z
-	b.SetDim(64, 64, 0, 96, 2);
-    b.SetTable(PSMT16Z);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMT16Z] = b;
-	m_Blocks[PSMT16Z].SetFun(PSMT16Z);
-
-	// 16sz
-	b.SetDim(64, 64, 64, 96, 2);
-    b.SetTable(PSMT16SZ);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMT16SZ] = b;
-	m_Blocks[PSMT16SZ].SetFun(PSMT16SZ);
-
-	// 8
-	b.SetDim(128, 64, 0, 160, 4);
-    b.SetTable(PSMT8);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMT8] = b;
-	m_Blocks[PSMT8].SetFun(PSMT8);
-
-	// 4
-	b.SetDim(128, 128, 0, 224, 8);
-    b.SetTable(PSMT4);
-    fill_block(b, vBlockData, vBilinearData);
-	m_Blocks[PSMT4] = b;
-	m_Blocks[PSMT4].SetFun(PSMT4);
-}
-
