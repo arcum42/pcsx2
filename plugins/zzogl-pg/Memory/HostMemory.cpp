@@ -22,7 +22,7 @@
 #include "Util.h"
 #include "Memory/Mem.h"
 #include "Targets/targets.h"
-#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/VB.h"
 
 // flush current vertices, call before setting new registers (the main render method)
 extern void Flush(int context);

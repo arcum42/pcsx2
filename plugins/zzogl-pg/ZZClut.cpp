@@ -21,8 +21,8 @@
 #include "Memory/Mem.h"
 #include "Util.h"
 #include "ZZClut.h"
-#include "ZZogl/ZZoglVB.h"
-#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/VB.h"
+#include "ZZogl/Flush.h"
 
 bool s_bTexFlush = false;
 

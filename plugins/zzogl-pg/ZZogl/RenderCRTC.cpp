@@ -28,12 +28,12 @@
 #include "Util.h"
 #include "GLWin.h"
 
-#include "ZZogl/ZZoglCRTC.h"
+#include "ZZogl/RenderCRTC.h"
 #include "ZZogl/ZZoglShaders.h"
 #include "Screenshots.h"
-#include "ZZogl/ZZoglDrawing.h"
-#include "ZZogl/ZZoglVB.h"
-#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/Drawing.h"
+#include "ZZogl/VB.h"
+#include "ZZogl/Flush.h"
 
 //------------------ Defines
 #if !defined(ZEROGS_DEVBUILD)

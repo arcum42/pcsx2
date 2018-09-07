@@ -20,10 +20,10 @@
 #ifndef ZZOGLCREATE_H_INCLUDED
 #define ZZOGLCREATE_H_INCLUDED
 
-extern int GPU_TEXWIDTH; // ZZoglCreate.cpp - seriously, a bunch of unreated files are relying on these externs being here because they happen to use targets.h?
-extern float g_fiGPU_TEXWIDTH; // ZZoglCreate.cpp
+extern int GPU_TEXWIDTH; // GSCreate.cpp - seriously, a bunch of unrelated files are relying on these externs being here because they happen to use targets.h?
+extern float g_fiGPU_TEXWIDTH; //GSCreate.cpp
 
-#define VB_BUFFERSIZE			   0x4000 // Used in ZZoglCreate.cpp and ZZoglSave.cpp.
+#define VB_BUFFERSIZE			   0x4000 // Used in GSCreate.cpp and ZZSave.cpp.
 
 extern void ZZGSStateReset();
 extern u32 g_nCurVBOIndex;

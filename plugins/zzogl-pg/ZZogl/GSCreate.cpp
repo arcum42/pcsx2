@@ -24,14 +24,14 @@
 #include "GLWin.h"
 #include "rasterfont.h" // simple font
 
-#include "ZZoglCreate.h"
+#include "GSCreate.h"
 
 #include "Memory/Mem.h"
 #include "Targets/targets.h"
 
 #include "ZZogl/ZZoglShaders.h"
-#include "ZZogl/ZZoglDrawing.h"
-#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/Drawing.h"
+#include "ZZogl/VB.h"
 
 // This include for windows resource file with Shaders
 #ifdef _WIN32
@@ -44,15 +44,15 @@ map<string, GLbyte> mapGLExtensions;
 extern bool ZZshLoadExtraEffects(); // From one of the ZZogl Shaders files.
 void SetAA(int mode);
 
-GLuint vboRect = 0; // Used in ZZoglCRTC.cpp, here, ZZRenderTargets.cpp, ZZDepthTargets.cpp.
-GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands. Used here and ZZoglFlush.cpp.
-u32 g_nCurVBOIndex = 0; // Used here, ZZoglSave.cpp, and ZZoglFlush.cpp.
+GLuint vboRect = 0; // Used in RenderCRTC.cpp, here, ZZRenderTargets.cpp, ZZDepthTargets.cpp.
+GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands. Used here and Flush.cpp.
+u32 g_nCurVBOIndex = 0; // Used here, ZZSave.cpp, and Flush.cpp.
 
 //inline bool CreateImportantCheck();
 //inline void CreateOtherCheck();
 //inline bool CreateOpenShadersFile();
 
-// Used in ZZoglCRTC.cpp.
+// Used in RenderCRTC.cpp.
 int s_nLastResolveReset = 0;
 int s_nResolveCounts[30] = {0}; // resolve counts for last 30 frames.
 
@@ -104,7 +104,7 @@ GLenum s_drawbuffers[] = { GL_COLOR_ATTACHMENT0_EXT, GL_COLOR_ATTACHMENT1_EXT };
 
 u32 ptexLogo = 0;
 int nLogoWidth, nLogoHeight;
-u32 s_ptexInterlace = 0;		 // holds interlace fields. Used here and in ZZoglCRTC.h.
+u32 s_ptexInterlace = 0;		 // holds interlace fields. Used here and in RenderCRTC.h.
 static bool vb_buffer_allocated = false;
 
 //------------------ Global Variables
@@ -117,7 +117,7 @@ namespace FB
 	u32 buf = 0;
 };
 
-RasterFont* font_p = NULL; // Used here and in ZZoglCRTC.cpp.
+RasterFont* font_p = NULL; // Used here and in RenderCRTC.cpp.
 float g_fBlockMult = 1;
 //int s_nFullscreen = 0;
 
@@ -487,7 +487,7 @@ bool ZZCreate(int _width, int _height)
 	///glGetIntegerv(GL_MAX_TEXTURE_SIZE, &g_MaxTexWidth);
     // Limit the texture size supported to 8192. We do not need bigger texture.
     // Besides the following assertion is false when texture are too big.
-    // ZZoglFlush.cpp:2349:	assert(fblockstride >= 1.0f)
+    // Flush.cpp:2349:	assert(fblockstride >= 1.0f)
     //g_MaxTexWidth = min(8192, g_MaxTexWidth);
 
 	g_MaxTexHeight = g_MaxTexWidth / 4;

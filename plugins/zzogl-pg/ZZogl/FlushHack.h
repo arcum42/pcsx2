@@ -29,7 +29,7 @@
 #include "Util.h"
 //#include "GS.h"
 #include "Targets/targets.h"
-#include "ZZoglVB.h"
+#include "VB.h"
 
 extern int g_SkipFlushFrame;
 

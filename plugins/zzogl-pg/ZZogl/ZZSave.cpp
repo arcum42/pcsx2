@@ -21,8 +21,8 @@
 
 //------------------ Includes
 #include "Util.h"
-#include "ZZogl/ZZoglCreate.h"
-#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/GSCreate.h"
+#include "ZZogl/VB.h"
 
 //----------------------- Defines
 

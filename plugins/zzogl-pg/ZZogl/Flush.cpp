@@ -28,9 +28,9 @@
 #include "Memory/Mem.h"
 #include "Targets/targets.h"
 
-#include "ZZogl/ZZoglFlushHack.h"
+#include "ZZogl/FlushHack.h"
 #include "ZZogl/ZZoglShaders.h"
-#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/Flush.h"
 #include "Screenshots.h"
 
 //------------------ Defines
@@ -264,7 +264,7 @@ inline void FlushTransferRangesHelper(VB& curvb)
 }
 
 // If set bit for texture checking, do it. Maybe it's all.
-inline bool FushTexDataHelper(VB& curvb)
+inline bool FlushTexDataHelper(VB& curvb)
 {
 	if (curvb.bNeedFrameCheck || curvb.bNeedZCheck)
 	{
@@ -307,7 +307,7 @@ inline bool FlushInitialTest(VB& curvb, const pixTest& curtest, int context)
 
 	FlushTransferRangesHelper(curvb);
 
-	if (FushTexDataHelper(curvb)) return true;
+	if (FlushTexDataHelper(curvb)) return true;
 
 	GL_REPORT_ERRORD();
 

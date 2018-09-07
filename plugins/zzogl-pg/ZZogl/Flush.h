@@ -65,17 +65,17 @@ enum ColorMask
 
 // extern int g_nDepthBias;
 extern float g_fBlockMult; // used for old cards, that do not support Alpha-32float textures. We store block data in u16 and use it. Note: only ever gets set to 1, so probably not working.
-extern u32 g_nCurVBOIndex; // From ZZoglCreate.cpp.
-extern u8* g_pbyGSClut; // From HostMemory.cpp. Used in ZZClut.cpp, and ZZoglSave.cpp. (but not ZZoglFlush.cpp.)
+extern u32 g_nCurVBOIndex; // From GSCreate.cpp.
+extern u8* g_pbyGSClut; // From HostMemory.cpp. Used in ZZClut.cpp, and ZZSave.cpp. (but not Flush.cpp.)
 extern int ppf; // From GSmain.cpp.
 
 extern bool s_bTexFlush; // From ZZClut.cpp. Is in ZZClut.h.
 
-extern vector<u32> s_vecTempTextures;		   // temporary textures, released at the end of every frame. From ZZoglCRTC.cpp.
-extern GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands. From ZZoglCreate.cpp.
+extern vector<u32> s_vecTempTextures;		   // temporary textures, released at the end of every frame. From RenderCRTC.cpp.
+extern GLuint g_vboBuffers[VB_NUMBUFFERS]; // VBOs for all drawing commands. From GSCreate.cpp.
 extern CRangeManager s_RangeMngr; // manages overwritten memory				// zz // From targets.h. :(
 
-void FlushTransferRanges(const tex0Info* ptex);						//zz // From targets.cpp. Used in ZZorglCRTC.cpp, ZZoglFlush.coo.
+void FlushTransferRanges(const tex0Info* ptex);						//zz // From targets.cpp. Used in RenderCRTC.cpp, Flush.cpp.
 
 // use to update the state
 void SetTexVariables(int context, FRAGMENTSHADER* pfragment);			// zz
@@ -99,8 +99,8 @@ void SetDestAlphaTest();
 
 // flush current vertices, call before setting new registers (the main render method)
 // All from ZZoglFlush.cpp.
-extern void Flush(int context); // Used in HostMemory.cpp, Regs.cpp, ZZClut.cpp, ZZoglDrawing.cpp, ZZoglFlush.xcpp, ZZoglVB.cpp.
-extern void FlushBoth(); // Used in ZZoglCRTC.cpp, targets.cpp, Regs.cpp.
+extern void Flush(int context); // Used in HostMemory.cpp, Regs.cpp, ZZClut.cpp, Drawing.cpp, Flush.cpp, VB.cpp.
+extern void FlushBoth(); // Used in RenderCRTC.cpp, targets.cpp, Regs.cpp.
 extern void SetTexFlush(); // Only used in Regs.cpp.
 
 #endif // ZZOGLFLUSH_H_INCLUDED

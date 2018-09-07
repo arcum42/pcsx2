@@ -19,7 +19,7 @@
 
 
 #include "Targets/ZZTargets.h"
-#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/Flush.h"
 
 #define RHA
 //#define RW
@@ -32,7 +32,7 @@ extern u32 g_nResolve;
 #	define INC_RESOLVE() ++g_nResolve
 #endif
 
-extern int s_nResolved; // From ZZoglCRTC.cpp; Used in ZZRenderTargets, targets.cpp, ZZoglCRTC.cpp.
+extern int s_nResolved; // From RenderCRTC.cpp; Used in ZZRenderTargets, targets.cpp, RenderCRTC.cpp.
 extern bool g_bSaveTrans; // Not used in targets.cpp?
 
 CRenderTargetMngr s_RTs, s_DepthRTs;

@@ -61,7 +61,7 @@ static bool SPAM_PASS;
 }
 
 #if DEBUG_PROF
-#define FILE_IS_IN_CHECK ((strcmp(__FILE__, "targets.cpp") == 0) || (strcmp(__FILE__, "ZZoglFlush.cpp") == 0))
+#define FILE_IS_IN_CHECK ((strcmp(__FILE__, "targets.cpp") == 0) || (strcmp(__FILE__, "Flush.cpp") == 0))
 
 #define FUNCLOG {\
 	static bool Was_Here = false; \

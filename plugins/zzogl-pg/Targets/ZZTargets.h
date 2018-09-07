@@ -28,6 +28,6 @@
 #include "Targets/targets.h"
 
 #include "ZZogl/ZZoglShaders.h"
-#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/VB.h"
 
-extern void FlushIfNecesary(void* ptr); //ZZoglFlush.cpp
+extern void FlushIfNecesary(void* ptr); //Flush.cpp

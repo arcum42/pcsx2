@@ -114,14 +114,14 @@ set(zzoglSources
     Targets/ZZMemoryTargets.cpp
     Targets/ZZRenderTargets.cpp
     
-    ZZogl/ZZoglDrawing.cpp
-    ZZogl/ZZoglCreate.cpp
-    ZZogl/ZZoglCRTC.cpp
-    ZZogl/ZZoglFlush.cpp
-    ZZogl/ZZoglFlushHack.cpp
-    ZZogl/ZZoglSave.cpp
+    ZZogl/Drawing.cpp
+    ZZogl/GSCreate.cpp
+    ZZogl/RenderCRTC.cpp
+    ZZogl/Flush.cpp
+    ZZogl/FlushHack.cpp
+    ZZogl/ZZSave.cpp
     ZZogl/ZZoglShadersGLSL4.cpp
-    ZZogl/ZZoglVB.cpp
+    ZZogl/VB.cpp
     )
 
 # zzogl headers
@@ -153,12 +153,14 @@ set(zzoglHeaders
     Targets/ZZRenderTargets.h
     Targets/ZZMemoryTargets.h
     
-    ZZogl/ZZoglCRTC.h
-    ZZogl/ZZoglDrawing.h
-    ZZogl/ZZoglFlush.h
+    ZZogl/RenderCRTC.h
+    ZZogl/Drawing.h
+    ZZogl/GSCreate.h
+    ZZogl/Flush.h
+    ZZogl/FlushHack.h
     ZZogl/ZZoglMath.h
     ZZogl/ZZoglShaders.h
-    ZZogl/ZZoglVB.h
+    ZZogl/VB.h
     )
 
 # zzogl shader sources

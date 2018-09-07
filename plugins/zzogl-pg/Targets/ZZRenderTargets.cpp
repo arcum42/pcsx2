@@ -27,7 +27,7 @@ extern int s_nResolved;
 
 void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode); // targets.cpp
 //void SetWriteDepth();
-bool IsWriteDepth(); // ZZoglFlush.cpp
+bool IsWriteDepth(); // Flush.cpp
 bool IsWriteDestAlphaTest();
 
 //end includes.

@@ -21,7 +21,7 @@
 #include "GS.h"
 #include "Profile.h"
 #include "GLWin.h"
-#include "ZZogl/ZZoglFlushHack.h"
+#include "ZZogl/FlushHack.h"
 #include "ZZogl/ZZoglShaders.h"
 
 

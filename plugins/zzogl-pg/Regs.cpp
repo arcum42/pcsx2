@@ -23,10 +23,10 @@
 #include "PS2Etypes.h"
 
 #include "Targets/targets.h"
-#include "ZZogl/ZZoglVB.h"
-#include "ZZogl/ZZoglDrawing.h"
+#include "ZZogl/VB.h"
+#include "ZZogl/Drawing.h"
 #include "ZZClut.h"
-#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/Flush.h"
 
 
 #ifdef _MSC_VER
@@ -80,7 +80,7 @@ u32 s_uClampData[2] = {0, };
 #endif
 
 // called on a primitive switch
-extern void Prim(); // From ZZoglDrawing.cpp.
+extern void Prim(); // From Drawing.cpp.
 
 void __gifCall GIFPackedRegHandlerNull(const u32* data)
 {

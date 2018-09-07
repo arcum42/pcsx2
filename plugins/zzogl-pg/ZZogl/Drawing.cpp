@@ -17,9 +17,9 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "ZZogl/ZZoglDrawing.h"
-#include "ZZogl/ZZoglVB.h"
-#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/Drawing.h"
+#include "ZZogl/VB.h"
+#include "ZZogl/Flush.h"
 
 Kick* ZZKick;
 
@@ -30,7 +30,7 @@ const GLenum primtype[8] = { GL_POINTS, GL_LINES, GL_LINES, GL_TRIANGLES, GL_TRI
 
 primInfo *prim;
 
-extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height. From ZZoglFlush.cpp.
+extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height. From Flush.cpp.
 
 // Still thinking about the best place to put this.
 // called on a primitive switch
@@ -44,7 +44,7 @@ void Prim()
 	curvb.SetCurrentPrim();
 }
 
-// Replaced by a macro -> see ZZoglDrawing.h 
+// Replaced by a macro -> see Drawing.h 
 // return true if triangle SHOULD be painted.
 // Hackish and should be replaced.
 // bool __forceinline NoHighlights(int i)

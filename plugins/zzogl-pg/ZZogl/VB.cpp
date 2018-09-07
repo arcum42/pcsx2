@@ -28,8 +28,8 @@
 #include "Memory/Mem.h"
 #include "Targets/targets.h"
 
-#include "ZZogl/ZZoglVB.h"
-#include "ZZogl/ZZoglFlush.h"
+#include "ZZogl/VB.h"
+#include "ZZogl/Flush.h"
 
 extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height
 

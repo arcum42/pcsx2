@@ -24,14 +24,14 @@
 #include "Targets/ZZTargets.h"
 
 #include "ZZogl/ZZoglShaders.h"
-#include "ZZogl/ZZoglVB.h"
+#include "ZZogl/VB.h"
 
-extern bool g_bUpdateStencil; // ZZoglFlush.cpp.
+extern bool g_bUpdateStencil; // Flush.cpp.
 
 //void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode); // targets.cpp
-void SetWriteDepth(); // ZZoglFlush.cpp
-bool IsWriteDepth(); // ZZoglFlush.cpp
-//bool IsWriteDestAlphaTest(); // ZZoglFlush.cpp
+void SetWriteDepth(); // Flush.cpp
+bool IsWriteDepth(); // Flush.cpp
+//bool IsWriteDestAlphaTest(); // Flush.cpp
 
 // end includes
 

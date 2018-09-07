@@ -34,8 +34,8 @@
 #define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
 #endif
 
-extern float fFPS; // Used in GSmain.cpp, ZZRenderTargets.cpp, and ZZoglCRTC.cpp.
-extern int g_LastCRC; // Used in GSMain.cpp, Linux.cpp, Win32.cpp, and ZZoglCreate.cpp
+extern float fFPS; // Used in GSmain.cpp, ZZRenderTargets.cpp, and RenderCRTC.cpp.
+extern int g_LastCRC; // Used in GSMain.cpp, Linux.cpp, Win32.cpp, and GSCreate.cpp
 extern GSconf conf;
 
 struct Vector_16F

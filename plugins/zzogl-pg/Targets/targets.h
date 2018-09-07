@@ -30,7 +30,7 @@
 //#include "Targets/ZZDepthTargets.h"
 //#include "Targets/ZZMemoryTargets.h"
 //#include "Targets/ZZRenderTargets.h"
-//#include "ZZoglVB.h"
+//#include "VB.h"
 
 #ifndef GL_TEXTURE_RECTANGLE
 #define GL_TEXTURE_RECTANGLE GL_TEXTURE_RECTANGLE_NV
@@ -39,10 +39,10 @@
 extern bool g_bSaveZUpdate; // Never actually set to true? For debugging, I'm assuming.
 
 // all textures have this width
-extern int GPU_TEXWIDTH; // ZZoglCreate.cpp - seriously, a bunch of unrelated files are relying on these externs being here because they happen to use targets.h?
-extern float g_fiGPU_TEXWIDTH; // ZZoglCreate.cpp
+extern int GPU_TEXWIDTH; // GSCreate.cpp - seriously, a bunch of unrelated files are relying on these externs being here because they happen to use targets.h?
+extern float g_fiGPU_TEXWIDTH; // GSCreate.cpp
 #define MASKDIVISOR		0							// Used for decrement bitwise mask texture size if 1024 is too big; only used in targets.cpp.
-#define GPU_TEXMASKWIDTH	(1024 >> MASKDIVISOR)	// bitwise mask width for region repeat mode; used in targets.cpp & ZZoglFlush.cpp.
+#define GPU_TEXMASKWIDTH	(1024 >> MASKDIVISOR)	// bitwise mask width for region repeat mode; used in targets.cpp & Flush.cpp.
 
 
 inline u32 GetFrameKey(int fbp, int fbw);

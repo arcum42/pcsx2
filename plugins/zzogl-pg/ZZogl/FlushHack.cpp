@@ -23,7 +23,7 @@
  * To avoid severals combo-box, the hack detects the game based on crc
  */
 
-#include "ZZogl/ZZoglFlushHack.h"
+#include "ZZogl/FlushHack.h"
 
 inline bool GABEST_HAS_SHARED_BITS (int fbp, int fpsm, int tbp, int tpsm)
 {
