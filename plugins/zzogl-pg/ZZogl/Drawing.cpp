@@ -27,6 +27,7 @@ const u32 g_primmult[8] = { 1, 2, 2, 3, 3, 3, 2, 0xff };
 const u32 g_primsub[8] = { 1, 2, 1, 3, 1, 1, 2, 0 };
 
 const GLenum primtype[8] = { GL_POINTS, GL_LINES, GL_LINES, GL_TRIANGLES, GL_TRIANGLES, GL_TRIANGLES, GL_TRIANGLES, 0xffffffff };
+const char* prim_name[8] = { "GL_POINTS", "GL_LINES", "GL_LINES2", "GL_TRIANGLES", "GL_TRIANGLES2", "GL_TRIANGLES3", "GL_TRIANGLES4", "0xffffffff" };
 
 primInfo *prim;
 
@@ -60,8 +61,10 @@ void Kick::KickVertex(bool adc)
 	FUNCLOG
 	if (++gs.primC >= (int)g_primmult[prim->prim])
 	{
-		if (!adc && NoHighlights(prim->ctxt)) DrawPrim(prim->prim);
-        else DirtyValidPrevPrim();
+		if (!adc && NoHighlights(prim->ctxt)) 
+            DrawPrim(prim->prim);
+        else 
+            DirtyValidPrevPrim();
 		
 		gs.primC -= g_primsub[prim->prim];
 		}
@@ -75,6 +78,7 @@ void Kick::Set_Vertex(VertexGPU *p, Vertex & gsvertex)
     
 	p->move_x(gsvertex, curvb.offset.x);
 	p->move_y(gsvertex, curvb.offset.y);
+
     if(DO_Z_FOG) {
         p->move_z(gsvertex, curvb.zprimmask);
         p->move_fog(gsvertex);
@@ -204,9 +208,10 @@ void Kick::DrawPrim(u32 prim_type)
             prev = gs.primPrev();
             last = gs.primIndex;
 
+            //ZZLog::GS_Log("Sprite: x: %d aa: %d y: %d aa: %d",(int)gs.gsvertex[last].x, AA.x, (int)gs.gsvertex[last].y, AA.y);
             // sprite is too small and AA shows lines (tek4, Mana Khemia)
-            gs.gsvertex[last].x += (4 * AA.x);
-            gs.gsvertex[last].y += (4 * AA.y);
+            gs.gsvertex[last].x += (4 * (AA.x + 1));
+            gs.gsvertex[last].y += (4 * (AA.y + 1));
 
             // might be bad sprite (KH dialog text)
             //if( gs.gsvertex[prev].x == gs.gsvertex[last].x || gs.gsvertex[prev].y == gs.gsvertex[last].y )

@@ -225,7 +225,7 @@ void InitTransferHostLocal()
  
     assert(gs.imageEnd.x < 2048 && gs.imageEnd.y < 2048);
  
-    // This needs to be looked in to, since psm should *not* be 63.
+    // This needs to be looked into, since psm should *not* be 63.
     // hack! viewful joe
     if (gs.dstbuf.psm == 63) 
     {
@@ -432,7 +432,6 @@ void TransferLocalHost(void* pbyMem, u32 nQWordSize)
     FUNCLOG
     assert(gs.imageTransfer == XFER_LOCAL_TO_HOST);
  
-    //u8* pstart = g_pbyGSMemory + 256 * gs.srcbuf.bp;
     u8* pstart = gs_mem._MemoryAddress<256>(gs.srcbuf.bp);
 
     switch(PSMT_BITMODE(gs.srcbuf.psm))
@@ -467,8 +466,6 @@ __forceinline void _TransferLocalLocal()
     //ZZLog::Error_Log("TransferLocalLocal(0x%x, 0x%x)", gs.srcbuf.psm, gs.dstbuf.psm);
     _writePixel_0 wp = writePixelFun_0[gs.srcbuf.psm];
     _readPixel_0 rp = readPixelFun_0[gs.dstbuf.psm];
-    //u8* pSrcBuf = g_pbyGSMemory + gs.srcbuf.bp * 256;
-    //u8* pDstBuf = g_pbyGSMemory + gs.dstbuf.bp * 256;
     u8* pSrcBuf = gs_mem._MemoryAddress<256>(gs.srcbuf.bp);
     u8* pDstBuf = gs_mem._MemoryAddress<256>(gs.dstbuf.bp);
     u32 widthlimit = 4;
@@ -506,8 +503,6 @@ __forceinline void _TransferLocalLocal_4()
     //ZZLog::Error_Log("TransferLocalLocal_4(0x%x, 0x%x)", gs.srcbuf.psm, gs.dstbuf.psm);
     _getPixelAddress_0 gsp = getPixelFun_0[gs.srcbuf.psm];
     _getPixelAddress_0 gdp = getPixelFun_0[gs.dstbuf.psm];
-    //u8* pSrcBuf = g_pbyGSMemory + gs.srcbuf.bp * 256;
-    //u8* pDstBuf = g_pbyGSMemory + gs.dstbuf.bp * 256;
     u8* pSrcBuf = gs_mem._MemoryAddress<256>(gs.srcbuf.bp);
     u8* pDstBuf = gs_mem._MemoryAddress<256>(gs.dstbuf.bp);
     u32 maxX = gs.trxpos.sx + gs.imageNew.w;

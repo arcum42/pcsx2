@@ -379,6 +379,7 @@ __forceinline void GSMem_to_ClutBuffer__T32_I4_CSM1_c(u32* vm, u32 csa)
 	int entries = PSMT_IS8CLUT(tex0.psm) ? 256 : 16;
 
     u8* _src = g_pbyGSMemory + 256 * tex0.cbp;
+    //u8* _src = gs_mem._MemoryAddress<256>(tex0.cbp);
 
 	if (tex0.csm)
 	{
@@ -427,7 +428,8 @@ __forceinline void GSMem_to_ClutBuffer__T32_I4_CSM1_c(u32* vm, u32 csa)
 
 				// check if address exceeds src
 
-				if (src + getPixelAddress32_0(gs.clut.cou + entries - 1, gs.clut.cov, gs.clut.cbw) >= (u32*)g_pbyGSMemory + 0x00100000)
+				//if (src + getPixelAddress32_0(gs.clut.cou + entries - 1, gs.clut.cov, gs.clut.cbw) >= (u32*)g_pbyGSMemory + 0x00100000)
+				if (src + getPixelAddress32_0(gs.clut.cou + entries - 1, gs.clut.cov, gs.clut.cbw) >= (u32*)gs_mem.get_raw(0x00100000))
 					ZZLog::Error_Log("texClutWrite out of bounds.");
 				else
 					for (int i = 0; i < entries; ++i)
@@ -1154,7 +1156,8 @@ bool CheckChangeInClut(u32 highdword, u32 psm)
 	int csa = ZZGet::csa_TexBits(highdword);
 	int entries = PSMT_IS8CLUT(psm) ? 256 : 16;
 
-	u8* GSMem = g_pbyGSMemory + cbp * 256;
+	//u8* GSMem = g_pbyGSMemory + cbp * 256;
+    u8* GSMem = gs_mem._MemoryAddress<256>(cbp);
 
     if (PSMT_IS32BIT(cpsm))
         return Cmp_ClutBuffer_GSMem<u32>((u32*)GSMem, csa, entries*4);

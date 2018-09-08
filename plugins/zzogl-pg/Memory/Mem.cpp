@@ -485,6 +485,7 @@ static __forceinline int RealTransfer(u32 psm, const void* pbyMem, u32 nQWordSiz
 	TransferFuncts fun(psm);
 
 	pstart = g_pbyGSMemory + gs.dstbuf.bp * 256;
+	//pstart = gs_mem._MemoryAddress<256>(gs.dstbuf.bp);
 
 	const T* pbuf = (const T*)pbyMem;
 	const int tp2 = TransPitch(2, data.transfersize);

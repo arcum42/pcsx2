@@ -42,7 +42,15 @@ class GSMemory
 		template <u32 mult>
 		inline u8* _MemoryAddress(int x) 
 		{
+			
 			return g_pbyGSMemory + mult * x;
+		}
+
+		template <u32 mult>
+		inline u32* _MemoryAddress32(int x) 
+		{
+			
+			return (u32*)g_pbyGSMemory + (mult * x);
 		}
 		// The size in bytes of x strings (of texture).
 		

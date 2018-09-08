@@ -490,7 +490,8 @@ inline void Resolve_32_Bit(const void* psrc, int fbp, int fbw, int fbh, const in
         imask = fbm;
     }
 
-    Tdst* pPageOffset = (Tdst*)g_pbyGSMemory + fbp*(256/sizeof(Tdst));
+    //Tdst* pPageOffset = (Tdst*)g_pbyGSMemory + fbp*(256/sizeof(Tdst));
+    Tdst* pPageOffset = (Tdst*)gs_mem._MemoryAddress<256/sizeof(Tdst)>(fbp);
     Tdst* dst;
     Tdst  dsrc;
 
@@ -802,8 +803,10 @@ void Resolve_32_Bit_sse2(const void* psrc, int fbp, int fbw, int fbh, u32 fbm)
 
     // Note GS register: frame_register__fbp is specified in units of the 32 bits address divided by 2048
     // fbp is stored as 32*frame_register__fbp
-    u32* pPageOffset = (u32*)g_pbyGSMemory + (fbp/32)*2048;
-
+    //u32* pPageOffset = (u32*)g_pbyGSMemory + (fbp/32)*2048;
+    //u32* pPageOffset = (u32*)gs_mem._MemoryAddress<2048>(fbp/32); //returns a u8!
+    u32* pPageOffset = (u32*)gs_mem._MemoryAddress32<2048>(fbp/32);
+    ZZLog::Dev_Log("fbp = %d; fbp/32 = %d; fbp/32*2048 = %d; (fbp/32)*2048 = %d", fbp, fbp/32, fbp/32*2048, (fbp/32)*2048);
     int maxfbh;
     int memory_space = MEMORY_END-(fbp/32)*2048*4;
     if (PSMT_ISHALF(psm))

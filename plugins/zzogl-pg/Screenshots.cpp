@@ -394,7 +394,8 @@ void SaveTex(tex0Info* ptex, int usevid)
 	vector<u8> srcdata;
 
 	u32* dst = &data[0];
-	u8* psrc = g_pbyGSMemory;
+	//u8* psrc = g_pbyGSMemory;
+	u8* psrc = gs_mem.get();
 
 	CMemoryTarget* pmemtarg = NULL;
 
