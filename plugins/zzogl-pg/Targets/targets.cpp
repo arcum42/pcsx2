@@ -806,9 +806,10 @@ void Resolve_32_Bit_sse2(const void* psrc, int fbp, int fbw, int fbh, u32 fbm)
     //u32* pPageOffset = (u32*)g_pbyGSMemory + (fbp/32)*2048;
     //u32* pPageOffset = (u32*)gs_mem._MemoryAddress<2048>(fbp/32); //returns a u8!
     u32* pPageOffset = (u32*)gs_mem._MemoryAddress32<2048>(fbp/32);
-    ZZLog::Dev_Log("fbp = %d; fbp/32 = %d; fbp/32*2048 = %d; (fbp/32)*2048 = %d", fbp, fbp/32, fbp/32*2048, (fbp/32)*2048);
+    //ZZLog::Dev_Log("fbp = %d; fbp/32 = %d; fbp/32*2048 = %d; (fbp/32)*2048 = %d", fbp, fbp/32, fbp/32*2048, (fbp/32)*2048);
     int maxfbh;
-    int memory_space = MEMORY_END-(fbp/32)*2048*4;
+    int memory_space = MEMORY_END - (fbp / 32) * 2048 * 4;
+
     if (PSMT_ISHALF(psm))
         maxfbh = memory_space / (2*fbw);
     else

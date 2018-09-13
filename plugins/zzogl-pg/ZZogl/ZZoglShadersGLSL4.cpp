@@ -139,6 +139,8 @@ bool ZZshCheckProfilesSupport() {
 }
 
 bool ZZshStartUsingShaders() {
+	clampInfo temp;
+	bool bFailed;
 
 	ZZLog::Error_Log("Creating effects.");
 	B_G(LoadEffects(), return false);
@@ -151,12 +153,10 @@ bool ZZshStartUsingShaders() {
 	init_shader();
 
 	// create a sample shader
-	clampInfo temp;
 	memset(&temp, 0, sizeof(temp));
 	temp.wms = 3; temp.wmt = 3;
 
 	// test
-	bool bFailed;
 	FRAGMENTSHADER* pfrag = ZZshLoadShadeEffect(0, 1, 1, 1, 1, temp, 0, &bFailed);
 	if( bFailed || pfrag == NULL ) {
 		ZZLog::Error_Log("Shader test failed.");
@@ -228,7 +228,9 @@ void ZZshSetParameter4fv(ZZshShaderLink& prog, ZZshParameter param, const float*
 		FRAGMENTSHADER* shader = (FRAGMENTSHADER*)prog.link;
 		shader->ZZshSetParameter4fv(param, v);
 		dirty_fragment_buffer = true;
-	} else {
+	} 
+		else 
+	{
 		VERTEXSHADER* shader = (VERTEXSHADER*)prog.link;
 		shader->ZZshSetParameter4fv(param, v);
 		dirty_vertex_buffer = true;
@@ -278,9 +280,11 @@ static bool ValidateProgram(ZZshProgram Prog) {
 }
 
 static void ValidatePipeline(GLuint pipeline) {
-	glValidateProgramPipeline(pipeline);
 	GLint isValid;
+
+	glValidateProgramPipeline(pipeline);
 	glGetProgramPipelineiv(pipeline, GL_VALIDATE_STATUS, &isValid);
+
 	if (!isValid) {
 		int lenght, infologlength;
 		glGetProgramPipelineiv(pipeline, GL_INFO_LOG_LENGTH, &infologlength);

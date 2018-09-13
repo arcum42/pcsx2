@@ -11,11 +11,6 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
-# Allow to build the shader files
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg/opengl/ZeroGSShaders" AND REBUILD_SHADER AND NOT GLSL_API)
-    add_subdirectory(ZeroGSShaders)
-endif(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg/opengl/ZeroGSShaders" AND REBUILD_SHADER AND NOT GLSL_API)
-
 # plugin name
 set(Output zzogl-0.4.0)
 
@@ -61,19 +56,11 @@ elseif(CMAKE_BUILD_TYPE STREQUAL Release)
     )
 endif()
 
-# Select the shader API - HACK - Choose GLSL4 regardless, as I'm removing CG.
-if(GLSL_API)
-    set(zzoglFinalFlags
-        ${zzoglFinalFlags}
-        -DGLSL4_API -DOGL4_LOG
-    )
-    #-DGLSL_API
-else(GLSL_API)
-    set(zzoglFinalFlags
-        ${zzoglFinalFlags}
-         -DGLSL4_API -DOGL4_LOG
-    )
-endif(GLSL_API)
+# Select the shader API
+set(zzoglFinalFlags
+    ${zzoglFinalFlags}
+    -DGLSL4_API -DOGL4_LOG
+)
 
 # Select the EGL API
 if(EGL_API AND EGL_FOUND)
@@ -203,13 +190,6 @@ if(EGL_API AND EGL_FOUND AND EGL_GL_CONTEXT_SUPPORT)
         ${EGL_LIBRARIES}
     )
 endif()
-
-#if(NOT GLSL_API)
-#    set(zzoglFinalLibs
-#    ${zzoglFinalLibs}
-#       ${CG_LIBRARIES}
-#    )
-#endif(NOT GLSL_API)
 
 set(zzoglFinalLibs
     ${zzoglFinalLibs}
