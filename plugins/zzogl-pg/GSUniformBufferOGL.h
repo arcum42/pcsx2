@@ -23,7 +23,6 @@
 
 #pragma once
 
-#ifdef GLSL4_API
 class GSUniformBufferOGL {
 	GLuint buffer;		// data object
 	GLuint index;		// GLSL slot
@@ -72,4 +71,3 @@ public:
 		glDeleteBuffers(1, &buffer);
 	}
 };
-#endif

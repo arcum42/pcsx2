@@ -45,10 +45,9 @@ void GPU_Profile::dump(bool flush)
 void GPU_Profile::create_timer()
 {
 	u32 timer = 0;
-#ifdef GLSL4_API
+
 	glGenQueries(1, &timer);
 	glQueryCounter(timer, GL_TIMESTAMP);
-#endif
 	datas.push_back(ProfileInfo(timer, frame, draw));
 
 #ifdef ENABLE_MARKER
@@ -58,7 +57,6 @@ void GPU_Profile::create_timer()
 
 u32 GPU_Profile::read_diff_timers(u32 start_timer, u32 stop_timer)
 {
-#ifdef GLSL4_API
 	if(!start_timer || !stop_timer) return -1;
 
 	int stopTimerAvailable = 0;
@@ -75,8 +73,5 @@ u32 GPU_Profile::read_diff_timers(u32 start_timer, u32 stop_timer)
 	glDeleteQueries(1, &stop_timer);
 
 	return (stop-start)/1000;
-#else
-	return 0;
-#endif
 }
 

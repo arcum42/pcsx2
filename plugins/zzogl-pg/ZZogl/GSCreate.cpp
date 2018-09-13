@@ -494,9 +494,7 @@ bool ZZCreate(int _width, int _height)
 	GPU_TEXWIDTH = min (g_MaxTexWidth/8, 1024);
 	g_fiGPU_TEXWIDTH = 1.0f / GPU_TEXWIDTH;
 
-#if defined(GLSL4_API)
 	if (!CreateOpenShadersFile()) return false;
-#endif
 
 	GL_REPORT_ERROR();
 
@@ -584,7 +582,6 @@ bool ZZCreate(int _width, int _height)
 
 	GL_REPORT_ERROR();
 
-#ifdef GLSL4_API
 	GSInputLayoutOGL vert_format[] =
 	{
 		{0 , 4 , GL_SHORT , GL_FALSE , sizeof(VertexGPU) , (const GLvoid*)(0) }  , // vertex
@@ -594,19 +591,17 @@ bool ZZCreate(int _width, int _height)
 	};
 
 	vertex_array = new GSVertexBufferStateOGL(sizeof(VertexGPU), vert_format, 4);
-#endif
 
 	g_nCurVBOIndex = 0;
 
     if (!vb_buffer_allocated) {
         glGenBuffers((GLsizei)ArraySize(g_vboBuffers), g_vboBuffers);
+		
         for (u32 i = 0; i < ArraySize(g_vboBuffers); ++i)
         {
             glBindBuffer(GL_ARRAY_BUFFER, g_vboBuffers[i]);
             glBufferData(GL_ARRAY_BUFFER, 0x100*sizeof(VertexGPU), NULL, GL_STREAM_DRAW);
-#ifdef GLSL4_API
 			vertex_array->set_internal_format();
-#endif
         }
         vb_buffer_allocated = true; // mark the buffer allocated
     }
@@ -624,24 +619,12 @@ bool ZZCreate(int _width, int _height)
 	glBindTexture(GL_TEXTURE_2D, ptexBlocks);
 	
 	// Opensource driver -> Intel (need gen4) (enabled by default on mesa 9). Radeon depends on the HW capability
-#ifdef GLSL4_API
 	// texture float -> GL3.0
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_R32F, BLOCK_TEXWIDTH, BLOCK_TEXHEIGHT, 0, GL_RED, GL_FLOAT, &vBlockData[0]);
 	if (glGetError() != GL_NO_ERROR) {
 		ZZLog::Error_Log("ZZogl ERROR: could not fill blocks");
 		return false;
 	}
-#else
-	if 	(TryBlockFormat(GL_RGBA32F, &vBlockData[0]))
-		ZZLog::Error_Log("Use GL_RGBA32F for blockdata.");
-	else if (TryBlockFormat(GL_ALPHA_FLOAT32_ATI, &vBlockData[0]))
-	 	ZZLog::Error_Log("Use ATI_texture_float for blockdata.");
-	else {
-		ZZLog::Error_Log("ZZogl ERROR: float texture not supported. If you use opensource driver (aka Mesa), you probably need to compile it with texture float support.");
-		ZZLog::Error_Log("ZZogl ERROR: Otherwise you probably have a very very old GPU, either use an older version of the plugin or upgrade your computer");
-		return false;
-	}
-#endif
 
 	setTex2DFilters(GL_NEAREST);
 	setTex2DWrap(GL_REPEAT);
@@ -650,19 +633,8 @@ bool ZZCreate(int _width, int _height)
 	glGenTextures(1, &ptexBilinearBlocks);
 	glBindTexture(GL_TEXTURE_2D, ptexBilinearBlocks);
 
-#ifdef GLSL4_API
 	if 	(!TryBlinearFormat(GL_RGBA32F, &vBilinearData[0]))
 		ZZLog::Error_Log("Fill bilinear blocks failed.");
-#else
-	if 	(TryBlinearFormat(GL_RGBA32F, &vBilinearData[0]))
-		ZZLog::Error_Log("Fill bilinear blocks OK.!");
-	else if (TryBlinearFormat(GL_RGBA_FLOAT32_ATI, &vBilinearData[0]))
-		ZZLog::Error_Log("Fill bilinear blocks with ATI_texture_float.");
-	else if (TryBlinearFormat(GL_FLOAT_RGBA32_NV, &vBilinearData[0]))
-		ZZLog::Error_Log("ZZogl Fill bilinear blocks with NVidia_float.");
-	else
-		ZZLog::Error_Log("Fill bilinear blocks failed.");
-#endif
 
 	setTex2DFilters(GL_NEAREST);
 	setTex2DWrap(GL_REPEAT);
@@ -678,9 +650,7 @@ bool ZZCreate(int _width, int _height)
 	// fill a simple rect
 	glGenBuffers(1, &vboRect);
 	glBindBuffer(GL_ARRAY_BUFFER, vboRect);
-#ifdef GLSL4_API
 	vertex_array->set_internal_format();
-#endif
 
 	vector<VertexGPU> verts(4);
 
@@ -699,16 +669,6 @@ bool ZZCreate(int _width, int _height)
 	pvert++;
 
 	glBufferDataARB(GL_ARRAY_BUFFER, 4*sizeof(VertexGPU), &verts[0], GL_STATIC_DRAW);
-
-#ifndef GLSL4_API
-	// setup the default vertex declaration
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glClientActiveTexture(GL_TEXTURE0);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_SECONDARY_COLOR_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	GL_REPORT_ERROR();
-#endif
 
 	// create the conversion textures
 	glGenTextures(1, &ptexConv16to32);
@@ -827,12 +787,10 @@ void ZZDestroy()
         vb_buffer_allocated = false; // mark the buffer unallocated
 	}
 
-#ifdef GLSL4_API
 	if (vertex_array != NULL) {
 		delete vertex_array;
 		vertex_array = NULL;
 	}
-#endif
 
 	g_nCurVBOIndex = 0;
 	

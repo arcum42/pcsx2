@@ -17,7 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifdef GLSL4_API 		// This code is only for GLSL API
+// This code is only for GLSL API
 // ZZogl Shader manipulation functions.
 
 /*
@@ -591,4 +591,3 @@ FRAGMENTSHADER* ZZshLoadShadeEffect(int type, int texfilter, int fog, int testae
 	return pf;
 }
 
-#endif // GLSL4_API

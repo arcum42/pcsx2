@@ -23,7 +23,6 @@
 
 #pragma once
 
-#ifdef GLSL4_API
 struct GSInputLayoutOGL {
 	GLuint  index;
 	GLint   size;
@@ -284,4 +283,3 @@ public:
 
 	}
 };
-#endif

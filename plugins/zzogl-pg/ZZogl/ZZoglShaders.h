@@ -35,21 +35,16 @@
 #include "GS.h"
 
 // By default enable glsl 4 api
-#if !defined(GLSL4_API)
-#define GLSL4_API
-#endif
+
 // --------------------------- API abstraction level --------------------------------
 
-#ifdef GLSL4_API
 #include "GSUniformBufferOGL.h"
 #include "GSVertexArrayOGL.h"
-#endif
 
 // GLSL only
 // Set it to 0 to diable context usage, 1 -- to enable. FFX-1 have a strange issue with ClampExt.
 #define NOCONTEXT		0
 
-#if defined(GLSL4_API)
 
 typedef struct {
 	void*	 	link;
@@ -67,15 +62,12 @@ typedef struct {
 #define pZero			0
 
 const ZZshShaderLink sZero = {link: NULL, isFragment: false};
-#endif
 
 // ---------------------------
 
 extern float4 g_vdepth;
 extern float4 vlogz;
 
-
-#ifdef GLSL4_API
 enum {
 	ZZSH_CTX_0   = 0,
 	ZZSH_CTX_1   = 1,
@@ -170,7 +162,6 @@ struct VertexUniform {
 		linear[indice+3] = v[3];
 	}
 };
-#endif
 
 
 
@@ -327,7 +318,6 @@ struct FRAGMENTSHADER
 	void set_context(uint new_context) { context = new_context * NOCONTEXT;}
 };
 
-#ifdef GLSL4_API
 struct COMMONSHADER
 {
 	COMMONSHADER() : context(0)
@@ -410,7 +400,6 @@ struct COMMONSHADER
 
 	void set_context(uint new_context) { context = new_context * NOCONTEXT;}
 };
-#endif
 
 struct VERTEXSHADER
 {
@@ -457,7 +446,6 @@ struct VERTEXSHADER
 	}
 };
 
-#ifdef GLSL4_API
 #define SAFE_RELEASE_PROG(x) 	{ \
 	if ((x.link) != NULL) { \
 		if (x.isFragment) { \
@@ -469,7 +457,6 @@ struct VERTEXSHADER
 		} \
 	} \
 }
-#endif
 
 	extern VERTEXSHADER pvsBitBlt;
 	extern FRAGMENTSHADER ppsBitBlt[2], ppsBitBltDepth, ppsOne;					// ppsOne used to stop using shaders for draw
@@ -477,10 +464,8 @@ struct VERTEXSHADER
 
 	extern FRAGMENTSHADER ppsRegular[4], ppsTexture[NUM_SHADERS];
 	extern FRAGMENTSHADER ppsCRTC[2], /*ppsCRTC24[2],*/ ppsCRTCTarg[2];
-#ifdef GLSL4_API
-	extern COMMONSHADER g_cs;
-#endif
 
+	extern COMMONSHADER g_cs;
 	extern int interlace_mode;
 
 	enum CRTC_TYPE
@@ -507,11 +492,9 @@ struct VERTEXSHADER
 	}
 // ------------------------- Functions -------------------------------
 
-#if defined(GLSL4_API)
 inline bool ZZshExistProgram(FRAGMENTSHADER* pf) {return (pf->program != 0); };
 inline bool ZZshExistProgram(VERTEXSHADER* pf) {return (pf->program != 0); };
 inline bool ZZshExistProgram(ZZshShaderLink prog) {return (prog.link != NULL); }		// This is used for pvs mainly. No NULL means that we do LOAD_VS
-#endif
 
 extern const char* ShaderCallerName;
 extern const char* ShaderHandleName;
@@ -586,7 +569,6 @@ extern u32 ptexConv16to32;	// does not exists. This textures should be created o
 extern u32 ptexBilinearBlocks;
 extern u32 ptexConv32to16;
 
-#ifdef GLSL4_API
 extern GSUniformBufferOGL *constant_buffer;
 extern GSUniformBufferOGL *common_buffer;
 extern GSUniformBufferOGL *vertex_buffer;
@@ -600,7 +582,5 @@ extern void init_shader();
 extern void PutParametersInProgram(VERTEXSHADER* vs, FRAGMENTSHADER* ps);
 extern void init_shader();
 extern void ZZshSetupShader();
-
-#endif
 
 #endif

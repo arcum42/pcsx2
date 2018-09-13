@@ -294,22 +294,9 @@ bool GLWindow::CreateContextGL(int major, int minor)
 bool GLWindow::CreateContextGL()
 {
 	bool ret;
-#if defined(OGL4_LOG) || defined(GLSL4_API)
 	// We need to define a debug context. So we need at a 3.0 context (if not 3.2 actually)
 	ret = CreateContextGL(3, 3);
-#else
-	// FIXME there was some issue with previous context creation on Geforce7. Code was rewritten
-	// for GSdx unfortunately it was not tested on Geforce7 so keep the 2.0 context for now.
-	// Note: Geforce 6&7 was dropped from nvidia driver (2012)
-#if 0
-	ret = CreateContextGL(3, 0)
-	if (! ret )
-		ret = CreateContextGL(2, 0);
-#else
-	ret = CreateContextGL(2, 0);
-#endif
 
-#endif
 	return ret;
 }
 
