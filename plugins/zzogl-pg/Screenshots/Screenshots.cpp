@@ -37,7 +37,7 @@ bool g_bMakeSnapshot = false;
 
 //------------------ Code
 
-// Set variables need to made a snapshoot when it's possible
+// Set variables need to make a snapshot when it's possible
 void SaveSnapshot(const char* filename)
 {
 	g_bMakeSnapshot = true;
@@ -82,6 +82,9 @@ bool SaveRenderTarget(const char* filename, int width, int height, int format)
 			break;
 
 		case EXT_PNG:
+			return SavePNG(filename, width, height, &data[0]);
+			break;
+
 		default:
 			return false;
 	}

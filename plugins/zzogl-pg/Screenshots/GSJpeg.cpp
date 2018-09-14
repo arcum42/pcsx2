@@ -40,6 +40,13 @@ bool SaveJPEG(const char* filename, int image_width, int image_height, const voi
 	u8* image_buffer = new u8[image_width * image_height * 3];
 	u8* psrc = (u8*)pdata;
 
+	// Compression parameters.
+	struct jpeg_compress_struct cinfo;
+	struct jpeg_error_mgr jerr;
+	FILE * outfile;
+	JSAMPROW row_pointer[1];	/* pointer to JSAMPLE row[s] */
+	int row_stride;	 /* physical row width in image buffer */
+    
 	// input data is rgba format, so convert to rgb
 	u8* p = image_buffer;
 
@@ -54,13 +61,6 @@ bool SaveJPEG(const char* filename, int image_width, int image_height, const voi
 			psrc += 4;
 		}
 	}
-	
-	// Compression parameters.
-	struct jpeg_compress_struct cinfo;
-	struct jpeg_error_mgr jerr;
-	FILE * outfile;
-	JSAMPROW row_pointer[1];	/* pointer to JSAMPLE row[s] */
-	int row_stride;	 /* physical row width in image buffer */
 
 	// Set up error handling and compression object.
 	cinfo.err = jpeg_std_error(&jerr);

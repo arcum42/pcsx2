@@ -756,12 +756,15 @@ inline void MakeSnapshot()
 	
 	if (!g_bMakeSnapshot) return;
 	
+#ifdef TEXT_ON_SCREENSHOTS
 	char str[64];
 	int left = 200, top = 15;
-	sprintf(str, "ZeroGS %d.%d.%d - %.1f fps %s", zgsrevision, zgsbuild, zgsminor, fFPS, s_frameskipping ? " - frameskipping" : "");
+
+	sprintf(str, "ZZogl-PG %d.%d.%d - %.1f fps %s", zgsrevision, zgsbuild, zgsminor, fFPS, s_frameskipping ? " - frameskipping" : "");
 
 	DrawText(str, left + 1, top + 1, 0xff000000);
 	DrawText(str, left, top, 0xffc0ffff);
+#endif
 
 	if (SaveRenderTarget(strSnapshot != "" ? strSnapshot.c_str() : "temp.jpg", GLWin.backbuffer.w, -GLWin.backbuffer.h, (int)conf.zz_options.snap_ext))  //(conf.options.snap_ext)?0:1) ) {
 	{
