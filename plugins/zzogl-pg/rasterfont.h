@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef RasterFont_Header
-#define RasterFont_Header
+#pragma once
 
 class RasterFont
 {
@@ -39,5 +38,3 @@ class RasterFont
 		void printString(const char *s, double x, double y, double z = 0.0);
 		void printCenteredString(const char *s, double y, int screen_width, double z = 0.0);
 };
-
-#endif

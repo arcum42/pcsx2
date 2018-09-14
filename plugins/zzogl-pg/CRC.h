@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef CRC_H_INCLUDED
-#define CRC_H_INCLUDED
+#pragma once
 
 #include "ZZHacks.h"
 
@@ -403,6 +402,3 @@ static const Game_Info crc_game_list[] =
 };
 
 #define GAME_INFO_INDEX (sizeof(crc_game_list)/sizeof(Game_Info))
-
-
-#endif // CRC_H_INCLUDED

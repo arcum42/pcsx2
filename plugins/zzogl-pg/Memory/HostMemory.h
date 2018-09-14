@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
  
-#ifndef HOSTMEMORY_H_INCLUDED
-#define HOSTMEMORY_H_INCLUDED
+#pragma once
 
 #include "GLWin.h"
 //#include "GS.h"
@@ -111,5 +110,3 @@ extern void InitTransferLocalHost();
 extern void TransferLocalHost(void* pbyMem, u32 nQWordSize);
 
 extern void TransferLocalLocal();
-
-#endif // HOSTMEMORY_H_INCLUDED

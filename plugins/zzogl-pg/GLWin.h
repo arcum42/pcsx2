@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef GLWIN_H_INCLUDED
-#define GLWIN_H_INCLUDED
+#pragma once
 
 #ifdef _WIN32
 #define GL_WIN32_WINDOW
@@ -146,5 +145,3 @@ class GLWindow
 };
 
 extern GLWindow GLWin;
-
-#endif // GLWIN_H_INCLUDED

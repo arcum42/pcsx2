@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ZZOGLMATH_H_INCLUDED
-#define ZZOGLMATH_H_INCLUDED
+#pragma once
 
 //Remind me to check and see if this is necessary, and what uses it. --arcum42
 #ifndef _WIN32
@@ -505,7 +504,5 @@ class float4
 			z = ((color >> 16) & 0xff) / 255.0f;
 		}
 };
-
-#endif
 
 #endif

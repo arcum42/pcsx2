@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __MEM_H__
-#define __MEM_H__
+#pragma once
 
 #include <assert.h>
 #include <vector>
@@ -679,5 +678,3 @@ extern void TransferLocalHost32Z(void* pbyMem, u32 nQWordSize);
 extern void TransferLocalHost24Z(void* pbyMem, u32 nQWordSize);
 extern void TransferLocalHost16Z(void* pbyMem, u32 nQWordSize);
 extern void TransferLocalHost16SZ(void* pbyMem, u32 nQWordSize);
-
-#endif /* __MEM_H__ */

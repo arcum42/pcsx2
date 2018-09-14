@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef MEM_SWIZZLE_H_INCLUDED
-#define MEM_SWIZZLE_H_INCLUDED
+#pragma once
 
 #include "Util.h"
 #include "GS.h"
@@ -59,5 +58,3 @@ extern __forceinline void SwizzleBlock4HL(u8 *dst, u8 *src, int pitch);
 #define SwizzleBlock24Zu SwizzleBlock24u
 #define SwizzleBlock16Zu SwizzleBlock16u
 #define SwizzleBlock16SZu SwizzleBlock16u
-
-#endif // MEM_SWIZZLE_H_INCLUDED

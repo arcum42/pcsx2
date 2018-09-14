@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __ZEROGS_TARGETS_H__
-#define __ZEROGS_TARGETS_H__
+#pragma once
 
 #define TARGET_VIRTUAL_KEY 0x80000000
 #include "PS2Edefs.h"
@@ -511,6 +510,3 @@ inline u32 Pitch(int fbw) { return (RW(fbw) * 4) ; }
 
 // memory size of whole texture. It is number of rows multiplied by memory size of row
 inline u32 Tex_Memory_Size(int fbw, int fbh) { return (RH(fbh) * Pitch(fbw)); }
-
-
-#endif

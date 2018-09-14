@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef GIFTRANSFER_H_INCLUDED
-#define GIFTRANSFER_H_INCLUDED
+#pragma once
 
 #include "Util.h"
 #include "GS.h"
@@ -131,4 +130,3 @@ extern void GSgifTransfer0(u32* pMem, u32 addr);
 extern GIFRegHandler g_GIFPackedRegHandlers[];
 extern GIFRegHandler g_GIFRegHandlers[];
 extern void InitPath();
-#endif // GIFTRANSFER_H_INCLUDED

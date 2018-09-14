@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ZZHACKS_H_INCLUDED
-#define ZZHACKS_H_INCLUDED
+#pragma once
 
 #include "PS2Edefs.h"
 
@@ -114,5 +113,3 @@ extern void ListHacks();
 
 extern void DisplayHack(int hack);
 extern void ChangeCurrentHack(int hack);
-
-#endif // ZZHACKS_H_INCLUDED

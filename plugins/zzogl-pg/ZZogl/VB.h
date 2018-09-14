@@ -20,8 +20,7 @@
 // Zerogs:VB implementation.
 // VB stands for Visual Buffer, as I think
 
-#ifndef ZZOGLVB_H_INCLUDED
-#define ZZOGLVB_H_INCLUDED
+#pragma once
 
 #include "Targets/targets.h"
 #include "Targets/ZZDepthTargets.h"
@@ -157,5 +156,3 @@ class VB
 
 // VB variables
 extern VB vb[2];
-
-#endif // ZZOGLVB_H_INCLUDED

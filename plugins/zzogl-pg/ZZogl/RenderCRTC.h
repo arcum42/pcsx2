@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ZZOGLCRTC_H_INCLUDED
-#define ZZOGLCRTC_H_INCLUDED
+#pragma once
 
 #include <stdlib.h>
 #include "Targets/targets.h"
@@ -87,5 +86,3 @@ inline u32 CreateInterlaceTex(int width)
 
 	return s_ptexInterlace;
 }
-
-#endif // ZZOGLCRTC_H_INCLUDED

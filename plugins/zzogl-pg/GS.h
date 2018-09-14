@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __GS_H__
-#define __GS_H__
+#pragma once
 
 #define ZZNORMAL_MEMORY
 #define VB_NUMBUFFERS			   128 // number of vbo buffer allocated
@@ -783,5 +782,3 @@ inline void FillAlowedPsnTable() {
 	PSM_value_Table[PSMT16Z]  = PSMT16Z;
 	PSM_value_Table[PSMT16SZ] = PSMT16SZ;
 };
-
-#endif

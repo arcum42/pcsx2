@@ -19,9 +19,6 @@
 
 #pragma once
 
-#ifndef __ZEROGS_SHADERS_H__
-#define __ZEROGS_SHADERS_H__
-
 // -- Not very important things, but we keep it to enumerate shader
 #define NUM_FILTERS 2 		// texture filtering
 #define NUM_TYPES 5 		// types of texture read modes
@@ -603,5 +600,3 @@ extern void init_shader();
 extern void PutParametersInProgram(VERTEXSHADER* vs, FRAGMENTSHADER* ps);
 extern void init_shader();
 extern void ZZshSetupShader();
-
-#endif

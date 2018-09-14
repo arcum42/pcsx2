@@ -16,8 +16,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __LINUX_H__
-#define __LINUX_H__
+#pragma once
 
 struct confOptsStruct
 {
@@ -27,5 +26,3 @@ struct confOptsStruct
 
 
 void OnToggle_advopts(GtkCellRendererToggle *cell, gchar *path, gpointer user_data);
-
-#endif

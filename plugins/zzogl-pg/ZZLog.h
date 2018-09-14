@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ZZLOG_H_INCLUDED
-#define ZZLOG_H_INCLUDED
+#pragma once
 
 #include "Util.h"
 #include <cstring>
@@ -209,5 +208,3 @@ extern void Check_GL_Error();
 extern void GL_Error_Log(unsigned int source, unsigned int type, unsigned int id, unsigned int severity, const char* message);
 
 };
-
-#endif // ZZLOG_H_INCLUDED

@@ -17,9 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef UTIL_H_INCLUDED
-#define UTIL_H_INCLUDED
-
+#pragma once
 
 #ifdef _WIN32
 
@@ -323,5 +321,3 @@ extern bool g_bSaveTrans, g_bUpdateEffect, g_bSaveTex, g_bSaveResolved;
 #endif
 
 extern bool g_bDisplayFPS; // should we display FPS on screen?
-
-#endif // UTIL_H_INCLUDED

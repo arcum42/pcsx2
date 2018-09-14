@@ -23,8 +23,7 @@
  * To avoid severals combo-box, the hack detects the game based on crc
  */
 
-#ifndef ZZOGL_FLUSH_HACK_H_INCLUDED
-#define ZZOGL_FLUSH_HACK_H_INCLUDED
+#pragma once
 
 #include "Util.h"
 //#include "GS.h"
@@ -82,4 +81,3 @@ void GSC_ValkyrieProfile2(const GSFrameInfo& fi, int& skip);
 void GSC_RadiataStories(const GSFrameInfo& fi, int& skip);
 
 extern bool IsBadFrame(VB& curvb);
-#endif

@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef __GSREGS_H__
-#define __GSREGS_H__
+#pragma once
 
 enum GIF_REG
 {
@@ -1025,5 +1024,3 @@ static __forceinline bool Circuit_Enabled(int circuit)
 {
 	return (circuit) ? PMODE->EN2 : PMODE->EN1;
 }
-
-#endif

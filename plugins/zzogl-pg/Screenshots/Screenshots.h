@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
  
-#ifndef ZZOGLSHOOTS_H_INCLUDED
-#define ZZOGLSHOOTS_H_INCLUDED
+#pragma once
 
 void SaveSnapshot(const char* filename);
 bool SaveRenderTarget(const char* filename, int width, int height, int jpeg);
@@ -40,5 +39,3 @@ enum {
 	EXT_JPG = 2,
 	EXT_PNG = 3
 };
-
-#endif // ZZOGLSHOOTS_H_INCLUDED

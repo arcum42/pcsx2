@@ -19,8 +19,7 @@
 
 #include "Util.h"
 
-#ifndef _PROFILE_GL3_H_
-#define _PROFILE_GL3_H_
+#pragma once
 
 #define ENABLE_MARKER // Fire some marker for opengl Debugger (apitrace, gdebugger)
 
@@ -53,5 +52,3 @@ class GPU_Profile {
 	void dump(bool flush = false);
 };
 extern GPU_Profile GPU_Timer;
-
-#endif

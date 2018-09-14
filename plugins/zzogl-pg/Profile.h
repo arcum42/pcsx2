@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef PROFILE_H_INCLUDED
-#define PROFILE_H_INCLUDED
+#pragma once
 
 #include "Util.h"
 
@@ -168,5 +167,3 @@ class CInterfacePtr
 };
 
 extern void InitProfile();
-
-#endif // PROFILE_H_INCLUDED

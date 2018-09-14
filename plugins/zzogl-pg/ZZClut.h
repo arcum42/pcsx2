@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef CLUT_H_INCLUDED
-#define CLUT_H_INCLUDED
+#pragma once
 
 extern bool s_bTexFlush;
 
@@ -30,5 +29,3 @@ template <class T> extern void Build_Clut_Texture(u32 psm, u32 height, T* pclut,
 
 template <class T> extern bool Cmp_ClutBuffer_GSMem(T* GSmem, u32 csa, u32 clutsize);
 template <class T> extern bool Cmp_ClutBuffer_SavedClut(T* saved_clut, u32 csa, u32 clutsize);
-
-#endif // CLUT_H_INCLUDED

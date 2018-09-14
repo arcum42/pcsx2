@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ZZOGLDRAWING_H_INCLUDED
-#define ZZOGLDRAWING_H_INCLUDED
+#pragma once
 
 #include "Util.h"
 #include "GS.h"
@@ -63,5 +62,3 @@ class Kick
         }
 };
 extern Kick* ZZKick;
-
-#endif // ZZOGLDRAWING_H_INCLUDED

@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ZZGL_H_INCLUDED
-#define ZZGL_H_INCLUDED
+#pragma once
 
 #include "PS2Etypes.h"
 #include "PS2Edefs.h"
@@ -338,5 +337,3 @@ static __forceinline void GL_BLENDEQ_ALPHA(GLenum eq)
 	s_alphaeq = eq;
 	zgsBlendEquationSeparateEXT(s_rgbeq, s_alphaeq);
 }
-
-#endif // ZZGL_H_INCLUDED

@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
  
-#ifndef ZZOGLFLUSH_H_INCLUDED
-#define ZZOGLFLUSH_H_INCLUDED
+#pragma once
 
 #ifndef ZEROGS_DEVBUILD
 
@@ -102,5 +101,3 @@ void SetDestAlphaTest();
 extern void Flush(int context); // Used in HostMemory.cpp, Regs.cpp, ZZClut.cpp, Drawing.cpp, Flush.cpp, VB.cpp.
 extern void FlushBoth(); // Used in RenderCRTC.cpp, targets.cpp, Regs.cpp.
 extern void SetTexFlush(); // Only used in Regs.cpp.
-
-#endif // ZZOGLFLUSH_H_INCLUDED

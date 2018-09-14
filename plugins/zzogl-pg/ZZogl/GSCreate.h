@@ -17,8 +17,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#ifndef ZZOGLCREATE_H_INCLUDED
-#define ZZOGLCREATE_H_INCLUDED
+#pragma once
 
 extern int GPU_TEXWIDTH; // GSCreate.cpp - seriously, a bunch of unrelated files are relying on these externs being here because they happen to use targets.h?
 extern float g_fiGPU_TEXWIDTH; //GSCreate.cpp
@@ -27,5 +26,3 @@ extern float g_fiGPU_TEXWIDTH; //GSCreate.cpp
 
 extern void ZZGSStateReset();
 extern u32 g_nCurVBOIndex;
-
-#endif
