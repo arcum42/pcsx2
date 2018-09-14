@@ -311,7 +311,7 @@ inline int VB::CheckFrameResolveRender(int tbp)
 	prndr = NULL;
 	CDepthTarget* pprevdepth = pdepth;
 	pdepth = NULL;
-	// Set renderes to NULL to prevent Flushing.
+	// Set renderers to NULL to prevent Flushing.
 
 	CRenderTarget* pnewtarg = s_RTs.GetTarg(frame, 0, maxmin);
 	assert(pnewtarg != NULL);

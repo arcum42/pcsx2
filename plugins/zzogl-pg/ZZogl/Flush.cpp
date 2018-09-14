@@ -1370,7 +1370,7 @@ void FlushBoth()
 
 // Often called for several reasons
 // Call flush if renderer or depth target is equal to ptr
-void FlushIfNecesary(void* ptr)
+void FlushIfNecessary(void* ptr)
 {
 	if (vb[0].prndr == ptr || vb[0].pdepth == ptr) Flush(0);
 	if (vb[1].prndr == ptr || vb[1].pdepth == ptr) Flush(1);

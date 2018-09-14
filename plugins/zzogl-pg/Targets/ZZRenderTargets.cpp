@@ -222,10 +222,10 @@ void CRenderTarget::Resolve()
 {
 	FUNCLOG
 
-	if (ptex != 0 && !(status&TS_Resolved) && !(status&TS_NeedUpdate))
+	if (ptex != 0 && !(status & TS_Resolved) && !(status & TS_NeedUpdate))
 	{
 		// flush if necessary
-		FlushIfNecesary(this) ;
+		FlushIfNecessary(this);
 
 		if ((IsDepth() && !IsWriteDepth()) || NotResolveHelper())
 		{
@@ -269,7 +269,7 @@ void CRenderTarget::Resolve(int startrange, int endrange)
 	if (ptex != 0 && !(status&TS_Resolved) && !(status&TS_NeedUpdate))
 	{
 		// flush if necessary
-		FlushIfNecesary(this) ;
+		FlushIfNecessary(this) ;
 
 #if defined(ZEROGS_DEVBUILD)
 		if (g_bSaveResolved)
@@ -818,7 +818,7 @@ void CRenderTargetMngr::DestroyAllTargs(int start, int end, int fbw)
 				}
 				else
 				{
-					FlushIfNecesary(it->second);
+					FlushIfNecessary(it->second);
 					it->second->status |= CRenderTarget::TS_Resolved;
 				}
 			}
@@ -830,7 +830,7 @@ void CRenderTargetMngr::DestroyAllTargs(int start, int end, int fbw)
 				}
 				else
 				{
-					FlushIfNecesary(it->second);
+					FlushIfNecessary(it->second);
 					it->second->status |= CRenderTarget::TS_Resolved;
 				}
 			}

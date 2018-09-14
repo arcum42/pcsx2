@@ -69,13 +69,13 @@ extern RasterFont* font_p;
 int interlace_mode = 0; // 0 - not interlacing, 1 - interlacing.
 bool bUsingStencil = false;
 
-//int count = 0;
-
 void ExtWrite()
 {
 	FUNCLOG
 	ZZLog::Warn_Log("A hollow voice says 'EXTWRITE'! Nothing happens.");
 
+	ExtWrite();
+	EXTWRITE->WRITE = 0;
 	// use local DISPFB, EXTDATA, EXTBUF, and PMODE
 //  int bpp, start, end;
 //  tex0Info texframe;
@@ -579,8 +579,6 @@ inline bool RenderLookForABetterTarget(int fbp, int tbp, list<CRenderTarget*>& l
 	return false;
 }
 
-inline void RenderCheckForMemory(tex0Info& texframe, list<CRenderTarget*>& listTargs, int circuit);
-
 // First try to draw frame from targets. 
 inline void RenderCheckForTargets(tex0Info& texframe, list<CRenderTarget*>& listTargs, int circuit)
 {
@@ -627,6 +625,7 @@ inline void RenderCheckForTargets(tex0Info& texframe, list<CRenderTarget*>& list
 				{
 					// Sometimes calculated position onscreen is misaligned, ie in FFX-2 intro. In such case some part of image are out of
 					// border's and we should move it manually.
+					ZZLog::WriteLn("Some parts of image are out of borders. Moving manually.");
 					dby -= ((ptarg->fbh - dby) >> 2) -  ((tex_th + movy) >> 1);
 				}
 
@@ -666,7 +665,6 @@ inline void RenderCheckForTargets(tex0Info& texframe, list<CRenderTarget*>& list
 
 		++it;
 	}
-	RenderCheckForMemory(texframe, listTargs, circuit);
 }
 
 
@@ -677,8 +675,10 @@ inline void RenderCheckForMemory(tex0Info& texframe, list<CRenderTarget*>& listT
 {
 	float4 v;
 	
+	//ZZLog::Error_Log("Render Check for Memory: %d targets.", listTargs.size());
 	for (list<CRenderTarget*>::iterator it = listTargs.begin(); it != listTargs.end(); ++it)
-	{
+	{	
+		//ZZLog::Error_Log("Resolve -> RenderCheckForMemory.");
 		(*it)->Resolve();
 	}
 
@@ -825,18 +825,15 @@ inline void CountStatistics()
 	g_nDepthUpdateCount = 0;
 }
 
-// This all could be easily forefeit
-inline void AfterRendererUnimportantJob()
+void RendererFinish()
 {
+	// Do unimportant jobs. All of this could be easily forfeit.
 	ProcessMessages();
 
 	if (g_bDisplayFPS) DisplayFPS();
 
 	// Swapping buffers, so we could use another window
 	GLWin.SwapGLBuffers();
-
-	// clear all targets
-	if (conf.wireframe()) s_nWireframeCount = 1;
 
 	if (g_bMakeSnapshot) MakeSnapshot();
 
@@ -845,36 +842,31 @@ inline void AfterRendererUnimportantJob()
 
 	if (s_nNewWidth >= 0 && s_nNewHeight >= 0) 
 	{
-		// If needed reset
+		// If needed, reset.
 		ZZReset();
 
 		ChangeDeviceSize(s_nNewWidth, s_nNewHeight);
 		s_nNewWidth = s_nNewHeight = -1;
 	}
 
+	// Set back to original, seemingly arbitrary value set when initialized.
 	maxmin = 608;
-}
 
-// Swich Framebuffers
-inline void AfterRendererSwitchBackToTextures()
-{
+	// Switch back to textures. Switch framebuffer.
 	FB::Bind();
 
 	g_MemTargs.DestroyCleared();
 
-	if (s_vecTempTextures.size() > 0)
-		glDeleteTextures((GLsizei)s_vecTempTextures.size(), &s_vecTempTextures[0]);
-
+	if (s_vecTempTextures.size() > 0) glDeleteTextures((GLsizei)s_vecTempTextures.size(), &s_vecTempTextures[0]);
 	s_vecTempTextures.clear();
 
-	if (EXTWRITE->WRITE & 1)
-	{
-		ZZLog::Warn_Log("EXTWRITE!");
-		ExtWrite();
-		EXTWRITE->WRITE = 0;
-	}
+	if (EXTWRITE->WRITE & 1) ExtWrite();
 
-	if (conf.wireframe()) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	if (conf.wireframe()) 
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		s_nWireframeCount = 1;
+	}
 
 	glEnable(GL_SCISSOR_TEST);
 
@@ -884,11 +876,8 @@ inline void AfterRendererSwitchBackToTextures()
 		vb[icurctx].bVarsTexSync = false;
 		vb[0].bVarsTexSync = false;
 	}
-}
 
-// Reset Targets Helper, for hack.
-inline void AfterRendererAutoresetTargets()
-{
+	// Autoreset targets. Reset Targets Helper, for hack.
 	if (conf.settings().auto_reset)
 	{
 		s_nResolveCounts[s_nCurResolveIndex] = s_nResolved;
@@ -971,15 +960,14 @@ void RenderCRTC()
 		// We shader targets between two functions, so declare it here;
 		list<CRenderTarget*> listTargs;
 
-		// if we could not draw image from target's, do it from memory
 		RenderCheckForTargets(texframe, listTargs, i);
+		// if we could not draw image from target's, do it from memory
+		RenderCheckForMemory(texframe, listTargs, i);
 	}
 
 	GL_REPORT_ERRORD();
 
 	glDisable(GL_BLEND);
 
-	AfterRendererUnimportantJob();
-	AfterRendererSwitchBackToTextures();
-	AfterRendererAutoresetTargets();
+	RendererFinish();
 }

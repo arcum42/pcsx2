@@ -30,4 +30,4 @@
 #include "ZZogl/ZZoglShaders.h"
 #include "ZZogl/VB.h"
 
-extern void FlushIfNecesary(void* ptr); //Flush.cpp
+extern void FlushIfNecessary(void* ptr); //Flush.cpp
