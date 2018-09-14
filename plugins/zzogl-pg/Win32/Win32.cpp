@@ -174,7 +174,7 @@ void OnInitConfDialog(HWND hW)
 	CheckDlgButton(hW, IDC_CONFIG_CAPTUREAVI, (conf.captureAvi()) ? 1 : 0);
 	CheckDlgButton(hW, IDC_CONFIG_FULLSCREEN, (conf.fullscreen()) ? 1 : 0);
 	CheckDlgButton(hW, IDC_CONFIG_WIDESCREEN, (conf.widescreen()) ? 1 : 0);
-	CheckDlgButton(hW, IDC_CONFIG_BMPSS, (conf.zz_options.tga_snap) ? 1 : 0);
+	CheckDlgButton(hW, IDC_CONFIG_BMPSS, (conf.zz_options.snap_ext) ? 1 : 0);
 
 	prevbilinearfilter = conf.bilinear;
 }
@@ -202,7 +202,7 @@ void OnConfOK(HWND hW)
 	conf.zz_options.wireframe = IsDlgButtonChecked(hW, IDC_CONFIG_WIREFRAME) ? 1 : 0;
 	conf.zz_options.fullscreen = IsDlgButtonChecked(hW, IDC_CONFIG_FULLSCREEN) ? 1 : 0;
 	conf.zz_options.widescreen = IsDlgButtonChecked(hW, IDC_CONFIG_WIDESCREEN) ? 1 : 0;
-	conf.zz_options.tga_snap = IsDlgButtonChecked(hW, IDC_CONFIG_BMPSS) ? 1 : 0;
+	conf.zz_options.snap_ext = IsDlgButtonChecked(hW, IDC_CONFIG_BMPSS) ? 1 : 0;
 
 	if (ComboBox_GetCurSel(GetDlgItem(hW, IDC_WIN_SIZE_COMBO)) == 0) 
 		conf.zz_options.dimensions = GSDim_640;

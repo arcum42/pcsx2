@@ -47,7 +47,6 @@
 //------------------- Includes
 #include "Util.h"
 #include "ZZoglShaders.h"
-//#include "zpipe.h"
 #include <map>
 #include <fcntl.h>			// this for open(). Maybe linux-specific
 #include "ps2hw_gl4.h"
@@ -65,7 +64,7 @@
 #	define UNIFORM_ERROR_LOG
 #endif
 
-// Set it to 0 to diable context usage, 1 -- to enable. FFX-1 have a strange issue with ClampExt.
+// Set it to 0 to disable context usage, 1 -- to enable. FFX-1 have a strange issue with ClampExt.
 #define NOCONTEXT		0
 #define NUMBER_OF_SAMPLERS 	11
 #define MAX_SHADER_NAME_SIZE	25
@@ -307,18 +306,10 @@ inline bool CompileShaderFromFile(ZZshProgram& program, const std::string& Defin
 
 	const GLchar* ShaderSource[2];
 
-#if 0
-	// It sucks because it doesn't report the good line for error/warnings!
-	// But at least this stupid AMD drivers doesn't crash...
-	ShaderSource[0] = header.append(ps2hw_gl4_glsl).c_str();
-	program = glCreateShaderProgramv(ShaderType, 1, &ShaderSource[0]);
-
-#else
 	ShaderSource[0] = header.c_str();
 	ShaderSource[1] = ps2hw_gl4_glsl;
 
 	program = glCreateShaderProgramv(ShaderType, 2, &ShaderSource[0]);
-#endif
 
 	ZZLog::Debug_Log("Creating program %d for %s", program, main_entry.c_str());
 
@@ -327,7 +318,6 @@ inline bool CompileShaderFromFile(ZZshProgram& program, const std::string& Defin
 #endif
 
 	return true;
-
 }
 
 //-------------------------------------------------------------------------------------

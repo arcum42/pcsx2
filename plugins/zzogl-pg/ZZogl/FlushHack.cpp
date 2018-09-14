@@ -486,7 +486,7 @@ void RecordNewFrames(VB& curvb, GSFrameInfo fi) {
         // Dump a nice picture of the frame
         char filename[255];
         sprintf(filename, "SkipFlushFrame_%d__%d.tga", g_SkipFlushFrame, Rec_Numbers);
-        SaveRenderTarget(filename, curvb.prndr->fbw, curvb.prndr->fbh, 0);
+        SaveRenderTarget(filename, curvb.prndr->fbw, curvb.prndr->fbh, EXT_TGA);
     }
 }
 #endif

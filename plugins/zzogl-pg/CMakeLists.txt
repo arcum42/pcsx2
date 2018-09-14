@@ -85,7 +85,6 @@ set(zzoglSources
     Profile.cpp
     rasterfont.cpp
     Regs.cpp
-    Screenshots.cpp
     ZZClut.cpp
     ZZHacks.cpp
     ZZKeyboard.cpp
@@ -96,6 +95,14 @@ set(zzoglSources
     Memory/Mem_Swizzle.cpp
     Memory/Mem_Tables.cpp
     
+    Screenshots/Screenshots.cpp
+    Screenshots/GSBmp.cpp
+    Screenshots/GSJpeg.cpp
+    Screenshots/GSPng.cpp
+    Screenshots/GSTga.cpp
+    Screenshots/GSAvi.cpp
+
+
     Targets/targets.cpp
     Targets/ZZDepthTargets.cpp
     Targets/ZZMemoryTargets.cpp
@@ -122,7 +129,7 @@ set(zzoglHeaders
     Profile.h
     rasterfont.h
     Regs.h
-    Screenshots.h
+    Screenshots/Screenshots.h
     Util.h
     ZZClut.h
     ZZGl.h
@@ -196,6 +203,7 @@ set(zzoglFinalLibs
     ${GLEW_LIBRARY}
     ${X11_LIBRARIES}
     ${JPEG_LIBRARIES}
+    ${PNG_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${LIBC_LIBRARIES}

@@ -30,7 +30,7 @@
 
 #include "ZZogl/RenderCRTC.h"
 #include "ZZogl/ZZoglShaders.h"
-#include "Screenshots.h"
+#include "Screenshots/Screenshots.h"
 #include "ZZogl/Drawing.h"
 #include "ZZogl/VB.h"
 #include "ZZogl/Flush.h"
@@ -62,6 +62,14 @@ int s_nNewWidth = -1, s_nNewHeight = -1;
 int g_nDepthUpdateCount = 0;
 
 extern void ZZDestroy();
+extern RasterFont* font_p;
+
+// I'm making this variable global for the moment in the course of fiddling with the interlace code 
+// to try and make it more straightforward.
+int interlace_mode = 0; // 0 - not interlacing, 1 - interlacing.
+bool bUsingStencil = false;
+
+//int count = 0;
 
 void ExtWrite()
 {
@@ -79,11 +87,6 @@ void ExtWrite()
 //  // get the start and end addresses of the buffer
 //  GetRectMemAddressZero(start, end, texframe.psm, texframe.tw, texframe.th, texframe.tbp0, texframe.tbw);
 }
-
-// I'm making this variable global for the moment in the course of fiddling with the interlace code 
-// to try and make it more straightforward.
-int interlace_mode = 0; // 0 - not interlacing, 1 - interlacing.
-bool bUsingStencil = false;
 
 bool INTERLACE_COUNT()
 {
@@ -723,8 +726,6 @@ inline void RenderCheckForMemory(tex0Info& texframe, list<CRenderTarget*>& listT
 	DrawTriangleArray();
 }
 
-extern RasterFont* font_p;
-
 void DrawText(const char* pstr, int left, int top, u32 color)
 {
 	FUNCLOG
@@ -762,7 +763,7 @@ inline void MakeSnapshot()
 	DrawText(str, left + 1, top + 1, 0xff000000);
 	DrawText(str, left, top, 0xffc0ffff);
 
-	if (SaveRenderTarget(strSnapshot != "" ? strSnapshot.c_str() : "temp.jpg", GLWin.backbuffer.w, -GLWin.backbuffer.h, (int)conf.zz_options.tga_snap))  //(conf.options.tga_snap)?0:1) ) {
+	if (SaveRenderTarget(strSnapshot != "" ? strSnapshot.c_str() : "temp.jpg", GLWin.backbuffer.w, -GLWin.backbuffer.h, (int)conf.zz_options.snap_ext))  //(conf.options.snap_ext)?0:1) ) {
 	{
 		char str[255];
 		sprintf(str, "saved %s\n", strSnapshot.c_str());
@@ -917,8 +918,6 @@ inline void AfterRendererAutoresetTargets()
 		--s_nResolved;
 }
 
-int count = 0;
-
 // The main renderer function
 void RenderCRTC()
 {
@@ -940,7 +939,7 @@ void RenderCRTC()
 		if (!Circuit_Enabled(i)) continue;
 		tex0Info& texframe = dispinfo[i];
 
-		// I don't think this is neccessary, now that we make sure the ciruit we are working with is enabled.
+		// I don't think this is necessary, now that we make sure the circuit we are working with is enabled.
 		// 
 		// Actually it seems there are still empty frame in some games (persona 4 and tales of abyss). I'm not sure it 
 		// is normal, for the moment keep the check to avoid some undefined behavior. -- Gregory

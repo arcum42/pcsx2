@@ -31,7 +31,7 @@
 #include "ZZogl/FlushHack.h"
 #include "ZZogl/ZZoglShaders.h"
 #include "ZZogl/Flush.h"
-#include "Screenshots.h"
+#include "Screenshots/Screenshots.h"
 #include "ZZGet.h"
 
 //------------------ Defines
@@ -218,7 +218,7 @@ inline void SaveRendererTarget(VB& curvb)
 //		Needs a # after rndr to work...
 //		char str[255];
 //		sprintf(str, "rndr.tga");
-//		SaveRenderTarget(str, curvb.prndr->fbw, curvb.prndr->fbh, 0);
+//		SaveRenderTarget(str, curvb.prndr->fbw, curvb.prndr->fbh, EXT_TGA);
 
 #endif
 }
@@ -1288,7 +1288,7 @@ inline void AlphaSaveTarget(VB& curvb)
 //		//FB::Unbind(); // switch to the backbuffer
 //		//glFlush();
 //		//SaveTexture("tex.jpg", GL_TEXTURE_RECTANGLE_NV, curvb.prndr->ptex, RW(curvb.prndr->fbw), RH(curvb.prndr->fbh), 0);
-//		SaveRenderTarget(str, RW(curvb.prndr->fbw), RH(curvb.prndr->fbh), 0);
+//		SaveRenderTarget(str, RW(curvb.prndr->fbw), RH(curvb.prndr->fbh), EXT_TGA);
 #endif
 }
 

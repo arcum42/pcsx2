@@ -363,8 +363,10 @@ void DisplayDialog()
 	snap_label = gtk_label_new("Snapshot format:");
 	snap_box = gtk_combo_box_text_new();
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "TGA");
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "BMP");
 	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "JPEG");
-	gtk_combo_box_set_active(GTK_COMBO_BOX(snap_box), conf.zz_options.tga_snap);
+	gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(snap_box), "PNG");
+	gtk_combo_box_set_active(GTK_COMBO_BOX(snap_box), conf.zz_options.snap_ext);
 
     snap_holder = zz_gtk_hbox_new(5);
 
@@ -454,7 +456,7 @@ void DisplayDialog()
 
 		conf.log = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(log_check));
 		fake_options.widescreen = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widescreen_check));
-		fake_options.tga_snap = gtk_combo_box_get_active(GTK_COMBO_BOX(snap_box));
+		fake_options.snap_ext = gtk_combo_box_get_active(GTK_COMBO_BOX(snap_box));
 		
 #ifdef ZEROGS_DEVBUILD
 		conf.SkipDraw = atoi((char*)gtk_entry_get_text(GTK_ENTRY(skipdraw_text)));

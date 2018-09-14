@@ -17,6 +17,8 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#pragma once
+
 #ifndef __ZEROGS_SHADERS_H__
 #define __ZEROGS_SHADERS_H__
 
@@ -166,7 +168,7 @@ struct VertexUniform {
 
 
 enum ZZshShaderType {ZZ_SH_ZERO, ZZ_SH_REGULAR, ZZ_SH_REGULAR_FOG, ZZ_SH_TEXTURE, ZZ_SH_TEXTURE_FOG, ZZ_SH_CRTC, ZZ_SH_NONE};
-// We have "compatible" shaders, as RegularFogVS and RegularFogPS. if don't need to wory about incompatible shaders
+// We have "compatible" shaders, as RegularFogVS and RegularFogPS. if don't need to worry about incompatible shaders
 // It used only in GLSL mode. 
 
 // ------------------------- Variables -------------------------------
@@ -446,7 +448,26 @@ struct VERTEXSHADER
 	}
 };
 
-#define SAFE_RELEASE_PROG(x) 	{ \
+static __forceinline void SafeReleaseProg(ZZshShaderLink x)
+{
+		if ((x.link) != NULL) 
+		{ 
+		if (x.isFragment) 
+		{ 
+			FRAGMENTSHADER* shader = (FRAGMENTSHADER*)x.link; 
+			shader->release_prog(); 
+		} 
+			else 
+		{ 
+			VERTEXSHADER* shader = (VERTEXSHADER*)x.link; 
+			shader->release_prog(); 
+		} 
+	} 
+}
+
+#define SAFE_RELEASE_PROG(x) SafeReleaseProg(x)
+
+/*#define SAFE_RELEASE_PROG(x) 	{ \
 	if ((x.link) != NULL) { \
 		if (x.isFragment) { \
 			FRAGMENTSHADER* shader = (FRAGMENTSHADER*)x.link; \
@@ -456,7 +477,7 @@ struct VERTEXSHADER
 			shader->release_prog(); \
 		} \
 	} \
-}
+}*/
 
 	extern VERTEXSHADER pvsBitBlt;
 	extern FRAGMENTSHADER ppsBitBlt[2], ppsBitBltDepth, ppsOne;					// ppsOne used to stop using shaders for draw

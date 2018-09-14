@@ -160,7 +160,7 @@ typedef union
 	struct
 	{
 		u32 fullscreen : 1;
-		u32 tga_snap : 1;
+		u32 snap_ext : 2;
 		u32 capture_avi : 1;
 		u32 widescreen : 1;
 		u32 wireframe : 1;

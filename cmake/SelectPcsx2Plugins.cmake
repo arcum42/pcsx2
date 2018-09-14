@@ -189,7 +189,7 @@ endif()
 #           -common_libs
 #---------------------------------------
 if(EXTRA_PLUGINS)
-    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND GLSL_API)
+    if((GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND PNG_FOUND AND JPEG_FOUND AND common_libs AND GTKn_FOUND) AND GLSL_API)
         set(zzogl TRUE)
     elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zzogl-pg")
         set(zzogl FALSE)

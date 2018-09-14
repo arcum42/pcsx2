@@ -23,6 +23,7 @@
 #include "GLWin.h"
 #include "ZZogl/FlushHack.h"
 #include "ZZogl/ZZoglShaders.h"
+#include "Screenshots/Screenshots.h"
 
 
 using namespace std;
@@ -444,8 +445,27 @@ EXPORT_C_(void) GSmakeSnapshot(char *path)
 	FUNCLOG
 
 	char filename[256];
-	if (get_snapshot_filename(filename, (const char*)path, (conf.zz_options.tga_snap) ? "jpg" : "tga"))
-		SaveSnapshot(filename);
+	char extension[4];
+
+	switch (conf.zz_options.snap_ext)
+	{
+		case EXT_BMP:
+			strcpy(extension,"bmp");
+			break;
+		case EXT_TGA:
+			strcpy(extension, "tga");
+			break;
+		case EXT_JPG:
+			strcpy(extension, "jpg");
+			break;
+		case EXT_PNG:
+			strcpy(extension, "png");
+			break;
+		default:
+			strcpy(extension, "tga");
+			break;
+	}
+		if (get_snapshot_filename(filename, (const char*)path, (const char*)&extension)) SaveSnapshot(filename);
 }
 
 // I'll probably move this somewhere else later, but it's got a ton of dependencies.

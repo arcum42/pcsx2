@@ -21,7 +21,7 @@
 
 //Move includes back for now.BindToSample
 #include "Targets/ZZTargets.h"
-#include "Screenshots.h"
+#include "Screenshots/Screenshots.h"
 
 extern int s_nResolved;
 

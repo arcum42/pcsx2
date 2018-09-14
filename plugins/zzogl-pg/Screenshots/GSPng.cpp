@@ -16,27 +16,18 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
- 
-#ifndef ZZOGLSHOOTS_H_INCLUDED
-#define ZZOGLSHOOTS_H_INCLUDED
 
-void SaveSnapshot(const char* filename);
-bool SaveRenderTarget(const char* filename, int width, int height, int jpeg);
-bool SaveTexture(const char* filename, u32 textarget, u32 tex, int width, int height, int ext_format);
-bool SaveJPEG(const char* filename, int width, int height, const void* pdata, int quality);
-bool SaveTGA(const char* filename, int width, int height, void* pdata);
-bool SaveBMP(const char* filename, int width, int height, void* pdata);
-void Stop_Avi();
-void Delete_Avi_Capture();
+#include "Util.h"
+#include "Targets/targets.h"
+#include "Memory/Mem.h"
+#include "Screenshots/Screenshots.h"
 
-void StartCapture();
-void StopCapture();
-void CaptureFrame();
+#include <png.h>
 
-enum {
-	EXT_TGA = 0,
-	EXT_BMP = 1,
-	EXT_JPG = 2
-};
-
-#endif // ZZOGLSHOOTS_H_INCLUDED
+// Save image as PNG
+bool SavePNG(const char* filename, int width, int height, void* pdata)
+{
+	// FIXME
+	assert(0);
+	return false;
+}
