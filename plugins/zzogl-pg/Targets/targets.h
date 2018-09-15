@@ -22,14 +22,12 @@
 #include "PS2Edefs.h"
 #include <list>
 #include <map>
-//#include "GS.h"
 #include "ZZGl.h"
 #include "ZZGet.h"
 
 #include "Targets/ZZRenderTargets.h"
 #include "Targets/ZZDepthTargets.h"
 #include "Targets/ZZMemoryTargets.h"
-//#include "VB.h"
 
 #ifndef GL_TEXTURE_RECTANGLE
 #define GL_TEXTURE_RECTANGLE GL_TEXTURE_RECTANGLE_NV

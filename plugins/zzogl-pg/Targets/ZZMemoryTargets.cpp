@@ -102,6 +102,7 @@ inline list<CMemoryTarget>::iterator CMemoryTargetMngr::DestroyTargetIter(list<C
 
 	if (listClearedTargets.size() > TEXDESTROY_THRESH)
 	{
+		ZZLog::Error_Log("Destroying large memory targets. %d", listClearedTargets.size());
 		listClearedTargets.pop_front();
 	}
 
