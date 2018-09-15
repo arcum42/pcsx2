@@ -22,12 +22,17 @@
 
 #pragma once
 
-#include "Targets/targets.h"
-#include "Targets/ZZDepthTargets.h"
-#include "Targets/ZZMemoryTargets.h"
-#include "Targets/ZZRenderTargets.h"
+#include "Drawing.h"
+//#include "Targets/targets.h"
+//#include "Targets/ZZDepthTargets.h"
+//#include "Targets/ZZMemoryTargets.h"
+//#include "Targets/ZZRenderTargets.h"
 
 extern const GLenum primtype[8];
+
+class CMemoryTarget;
+class CDepthTarget;
+class CRenderTarget;
 
 class VB
 {

@@ -32,6 +32,7 @@ const char* prim_name[8] = { "GL_POINTS", "GL_LINES", "GL_LINES2", "GL_TRIANGLES
 primInfo *prim;
 
 extern float fiTexWidth[2], fiTexHeight[2];	// current tex width and height. From Flush.cpp.
+extern Point AA;
 
 // Still thinking about the best place to put this.
 // called on a primitive switch

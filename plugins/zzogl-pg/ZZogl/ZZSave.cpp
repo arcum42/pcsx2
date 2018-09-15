@@ -23,6 +23,7 @@
 #include "Util.h"
 #include "ZZogl/GSCreate.h"
 #include "ZZogl/VB.h"
+#include "Targets/targets.h"
 
 //----------------------- Defines
 

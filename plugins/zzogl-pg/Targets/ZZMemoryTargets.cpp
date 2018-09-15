@@ -18,6 +18,8 @@
  */
 
 #include "Targets/ZZMemoryTargets.h"
+#include "Targets/ZZTargets.h"
+#include "targets.h"
 
 void CMemoryTargetMngr::Destroy()
 {

@@ -42,6 +42,9 @@ extern bool g_bSaveTex;	// saves the current texture
 extern bool g_bSaveResolved;
 #endif // !defined(ZEROGS_DEVBUILD)
 
+#include "ZZoglShaders.h"
+class CRangeManager;
+
 enum StencilBits
 {
 	STENCIL_ALPHABIT = 1,		// if set, dest alpha >= 0x80

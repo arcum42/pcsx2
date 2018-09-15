@@ -18,3 +18,30 @@
  */
 
 #pragma once
+
+#include "ZZRenderTargets.h"
+
+// manages zbuffers
+class CDepthTarget : public CRenderTarget
+{
+
+	public:
+		CDepthTarget();
+		virtual ~CDepthTarget();
+
+		virtual bool Create(const frameInfo& frame);
+		virtual void Destroy();
+
+		virtual bool ResolveCheck();
+		virtual void Resolve();
+		virtual void Resolve(int startrange, int endrange); // resolves only in the allowed range
+		virtual void Update(int context, CRenderTarget* prndr);
+
+		virtual bool IsDepth() { return true; }
+
+		void SetDepthStencilSurface();
+
+		u32 pdepth;		 // 24 bit, will contain the stencil buffer if possible
+		u32 pstencil;	   // if not 0, contains the stencil buffer
+		int icount;		 // internal counter
+};
