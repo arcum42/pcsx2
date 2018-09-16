@@ -336,11 +336,9 @@ inline int VB::CheckFrameResolveRender(int tbp)
 
 	ZZLog::Prim_Log("frame_%d: fbp=0x%x fbw=%d fbh=%d(%d) psm=0x%x fbm=0x%x\n", ictx, gsfb.fbp, gsfb.fbw, gsfb.fbh, pnewtarg->fbh, gsfb.psm, gsfb.fbm);
 
-	if ((pprevrndr != pnewtarg) || (pprevrndr != NULL && (pprevrndr->status & CRenderTarget::TS_NeedUpdate)))
-		result = 1;
+	if ((pprevrndr != pnewtarg) || (pprevrndr != NULL && (pprevrndr->status & CRenderTarget::TS_NeedUpdate))) result = 1;
 
 	prndr = pnewtarg;
-
 	pdepth = pprevdepth;
 
 	result |= CheckFrameResolveDepth(tbp);

@@ -109,7 +109,7 @@ struct ConstantUniform {
 		};
 		float linear[6*4];
 	};
-	void SettleFloat(uint indice, const float* v) {
+	void SettleFloat(uint indice, /*const*/ float* v) {
 		assert(indice + 3 < 6*4);
 		linear[indice+0] = v[0];
 		linear[indice+1] = v[1];
@@ -194,7 +194,7 @@ struct SamplerParam {
 		assert(unit >= 0);
 		assert(unit < 11);
 		if (texid) {
-			// Unfortunately there is a nastly corner case
+			// Unfortunately there is a nasty corner case
 			// 1/ Attach a texture to the unit
 			// 2/ delete the texture
 			// 3/ recreate a texture (with same id)

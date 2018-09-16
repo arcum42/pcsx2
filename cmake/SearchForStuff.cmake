@@ -12,8 +12,11 @@ if(EXISTS ${PROJECT_SOURCE_DIR}/.git)
 endif()
 find_package(LibLZMA)
 find_package(OpenGL)
+find_package(GLM)
+find_package(Vulkan)
 find_package(PNG)
 find_package(Vtune)
+
 # The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)
 # Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
@@ -23,6 +26,7 @@ find_package(Vtune)
 # Fedora uses an extra non-standard option ... Arch must be the first option.
 # They do uname -m if missing so only fix for cross compilations.
 # http://pkgs.fedoraproject.org/cgit/wxGTK.git/plain/wx-config
+
 if(Fedora AND CMAKE_CROSSCOMPILING)
     set(wxWidgets_CONFIG_OPTIONS --arch ${PCSX2_TARGET_ARCHITECTURES} --unicode=yes)
 else()
@@ -175,6 +179,14 @@ endif()
 
 if(ZLIB_FOUND)
 	include_directories(${ZLIB_INCLUDE_DIRS})
+endif()
+
+if(GLM_FOUND)
+	include_directories(${GLM_INCLUDE_DIRS})
+endif()
+
+if(Vulkan_FOUND)
+	include_directories(${Vulcan_INCLUDE_DIRS})
 endif()
 
 #----------------------------------------

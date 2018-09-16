@@ -51,7 +51,6 @@ typedef struct _keyEvent keyEvent;
 enum GS_ONE_RENDERER
 {
     GS_ONE_NULL = 0,
-    GS_ONE_OPENGL,
     GS_ONE_VULKAN
 };
 

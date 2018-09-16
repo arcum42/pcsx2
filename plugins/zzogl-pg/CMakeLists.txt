@@ -207,6 +207,7 @@ set(zzoglFinalLibs
     ${GTK2_LIBRARIES}
     ${ZLIB_LIBRARIES}
     ${LIBC_LIBRARIES}
+    ${GLM_LIBRARIES}
 )
 
 message(WARNING "Flags are ${zzoglFinalFlags}")

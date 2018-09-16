@@ -16,5 +16,10 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "OpenGL.h"
+#ifndef __GS_VULKAN_H__
+#define __GS_VULKAN_H__
 
+#include "GS.h"
+#include <vulkan/vulkan.h>
+
+#endif

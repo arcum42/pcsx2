@@ -22,22 +22,14 @@ set(GSoneHeaders
 	GifTransfer.h
 	GS.h
 	Registers.h)
-
-# GSone Opengl sources
-set(GSoneOpenglSources
-	Opengl/OpenGL.cpp)
-
-# GSone Opengl headers
-set(GSoneOpenglHeaders
-	Opengl/OpenGL.h)
 	
 # GSone Vulkan sources
 set(GSoneVulkanSources
-	Vulkan/Vulkan.cpp)
+	Vulkan/GSVulkan.cpp)
 
 # GSone Vulkan headers
 set(GSoneVulkanHeaders
-	Vulkan/Vulkan.h)
+	Vulkan/GSVulkan.h)
 	
 # GSone Linux sources
 set(GSoneLinuxSources
@@ -78,11 +70,15 @@ set(GSoneFinalSources
 	${GSonenullHeaders}
 	${GSoneLinuxSources}
 	${GSoneLinuxHeaders}
+	${GSoneVulkanSources}
+	${GSoneVulkanHeaders}
 )
 
 set(GSoneFinalLibs
 	${GTK2_LIBRARIES}
 	${X11_LIBRARIES}
+	${Vulkan_LIBRARIES}
+    ${GLM_LIBRARIES}
 )
 
 add_pcsx2_plugin(${Output} "${GSoneFinalSources}" "${GSoneFinalLibs}" "${GSoneFinalFlags}")

@@ -56,8 +56,7 @@ void CreateDialog()
     rend_label = gtk_label_new("Renderer:");
     rend_combo = gtk_combo_box_text_new();
     gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rend_combo), "0 - Null");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rend_combo), "1 - OpenGL");
-    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rend_combo), "2 - Vulkan");
+    gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rend_combo), "1 - Vulkan");
     gtk_combo_box_set_active(GTK_COMBO_BOX(rend_combo), (int)conf.renderer);
 
 #if GTK_MAJOR_VERSION < 3

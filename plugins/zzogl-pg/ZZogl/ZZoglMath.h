@@ -27,9 +27,10 @@
 #include <assert.h>
 #include "Pcsx2Defs.h"
 
-//#define ZZ_MMATH
+#define ZZ_MMATH
+//#define GLM_MATH
 
-#ifndef ZZ_MMATH
+#if !defined(ZZ_MMATH) && !defined(GLM_MATH)
 
 template <class T>
 class Vector4
@@ -207,7 +208,16 @@ class Vector4
 
 typedef Vector4<float> float4;
 
-#else
+#endif
+
+#ifdef GLM_MATH
+
+#include "glm/glm.hpp"
+
+typedef glm::vec4 float4;
+#endif
+
+#ifdef ZZ_MMATH
 
 // Reimplement, swiping a bunch of code from GSdx and adapting it. (specifically GSVector.h)
 // This doesn't include more then half of the functions in there, as well as some of the structs...
