@@ -20,6 +20,7 @@
 #include "Targets/ZZMemoryTargets.h"
 #include "Targets/ZZTargets.h"
 #include "targets.h"
+#include "ScopedAlloc.h"
 
 void CMemoryTargetMngr::Destroy()
 {
@@ -59,7 +60,6 @@ bool CMemoryTarget::ValidateTex(const tex0Info& tex0, int starttex, int endtex, 
 	if (!bDeleteBadTex) return false;
 
 	// delete clearminy, clearmaxy range (not the checkstarty, checkendy range)
-	//int newstarty = 0;
 	if (clearminy <= starty)
 	{
 		if (clearmaxy < starty + height)
@@ -92,7 +92,6 @@ bool CMemoryTarget::ValidateTex(const tex0Info& tex0, int starttex, int endtex, 
 
 extern int g_MaxTexWidth, g_MaxTexHeight; // Maximum height & width of supported texture.
 
-//#define SORT_TARGETS
 inline list<CMemoryTarget>::iterator CMemoryTargetMngr::DestroyTargetIter(list<CMemoryTarget>::iterator& it)
 {
 	// find the target and destroy
@@ -102,7 +101,6 @@ inline list<CMemoryTarget>::iterator CMemoryTargetMngr::DestroyTargetIter(list<C
 
 	if (listClearedTargets.size() > TEXDESTROY_THRESH)
 	{
-		ZZLog::Error_Log("Destroying large memory targets. %d", listClearedTargets.size());
 		listClearedTargets.pop_front();
 	}
 
@@ -166,70 +164,87 @@ void CMemoryTargetMngr::GetMemAddress(int& start, int& end,  const tex0Info& tex
 
 }
 
-CMemoryTarget* CMemoryTargetMngr::SearchExistTarget(int start, int end, int clutsize, const tex0Info& tex0, int forcevalidate)
+CMemoryTarget* CMemoryTargetMngr::SearchExistForceTarget(int start, int end, int clutsize, const tex0Info& tex0)
 {
 	for (list<CMemoryTarget>::iterator it = listTargets.begin(); it != listTargets.end();)
 	{
+		int calc_end = it->starty + it->height;
 
-		if (it->starty <= start && it->starty + it->height >= end)
+		if (it->starty <= start && calc_end >= end)
 		{
-
-			int res = CompareTarget(it, tex0, clutsize);
-
-			if (res == 1)
+			//ZZLog::Warn_Log("ForceTarget: %d<=%d && %d >= %d", it->starty, start, calc_end, end);
+			switch (CompareTarget(it, tex0, clutsize))
 			{
-				if (it->validatecount++ > VALIDATE_THRESH)
-				{
-					it = DestroyTargetIter(it);
+				case 0: // Match! Do more validation checking. Delete if it hasn't been used for a while.
+					if (!it->ValidateTex(tex0, start, end, curstamp > it->usedstamp + FORCE_TEXDESTROY_THRESH))
+					{
+						if (it->height <= 0)
+						{	
+							it = DestroyTargetIter(it);
+							if (listTargets.size() == 0) return NULL;
+						}
+						else
+							++it;
 
-					if (listTargets.size() == 0) break;
-				}
-				else
-					++it;
+						continue;
+					}
 
-				continue;
-			}
-			else if (res == 2)
-			{
-				++it;
-				continue;
-			}
+					it->usedstamp = curstamp;
+					it->validatecount = 0;
+					return &(*it);
+					break;
 
-			if (forcevalidate)   //&& listTargets.size() < TARGET_THRESH ) {
-			{
-				// do more validation checking. delete if not been used for a while
-
-				if (!it->ValidateTex(tex0, start, end, curstamp > it->usedstamp + FORCE_TEXDESTROY_THRESH))
-				{
-
-					if (it->height <= 0)
+				case 1:
+					if (it->validatecount++ > VALIDATE_THRESH)
 					{
 						it = DestroyTargetIter(it);
-
-						if (listTargets.size() == 0) break;
+						if (listTargets.size() == 0) return NULL;
 					}
-					else
+					else	
 						++it;
-
 					continue;
-				}
+
+				case 2:
+				default:
+					break;
 			}
-
-			it->usedstamp = curstamp;
-
-			it->validatecount = 0;
-
-			return &(*it);
 		}
-
-#ifdef SORT_TARGETS
-		else if (it->starty >= end) break;
-
-#endif
-
 		++it;
 	}
+	return NULL;
+}
 
+CMemoryTarget* CMemoryTargetMngr::SearchExistTarget(int start, int end, int clutsize, const tex0Info& tex0)
+{
+	for (list<CMemoryTarget>::iterator it = listTargets.begin(); it != listTargets.end();)
+	{
+		int calc_end = it->starty + it->height;
+
+		if (it->starty <= start && calc_end >= end)
+		{
+			//ZZLog::Warn_Log("Target: %d<=%d && %d >= %d", it->starty, start, calc_end, end);
+			switch (CompareTarget(it, tex0, clutsize))
+			{
+				case 0: // Match!
+					it->usedstamp = curstamp;
+					it->validatecount = 0;
+					return &(*it);
+
+				case 1:
+					if (it->validatecount++ > VALIDATE_THRESH)
+					{
+						it = DestroyTargetIter(it);
+						if (listTargets.size() == 0) return NULL;
+					}
+					break;
+
+				case 2:
+				default:
+					break;
+			}
+		}
+		++it;
+	}
 	return NULL;
 }
 
@@ -274,7 +289,8 @@ CMemoryTarget* CMemoryTargetMngr::ClearedTargetsSearch(u32 fmt, int widthmult, i
 	return targ;
 }
 
-CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forcevalidate)
+
+CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, bool forcevalidate)
 {
 	FUNCLOG
 	int start, end, clutsize;
@@ -282,15 +298,94 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
 	GetClutVariables(clutsize, tex0);
 	GetMemAddress(start, end, tex0);
 
-	CMemoryTarget* it = SearchExistTarget(start, end, clutsize, tex0, forcevalidate);
+	CMemoryTarget* it;
+	if (forcevalidate)
+		it = SearchExistForceTarget(start, end, clutsize, tex0);
+	else
+		it = SearchExistTarget(start, end, clutsize, tex0);
 
 	if (it != NULL) return it;
 
+	return CreateMemoryTarget(tex0, start, end, clutsize);
+}
+
+#if defined(ZEROGS_SSE2)
+__forceinline void unpack16_sse2(u16* src, u16* dst, int height)
+{
+	ZZLog::Warn_Log("Unpack 16 SSE2!");
+    assert(((u32)(uptr)dst) % 16 == 0);
+
+    __m128i zero_128 = _mm_setzero_si128();
+    // NOTE: future performance improvement
+    // SSE4.1 support uncacheable load 128bits. Maybe it can
+    // avoid some cache pollution
+    // NOTE2: I create multiple _n variable to mimic the previous ASM behavior
+    // but I'm not sure there are real gains.
+
+    for (int i = height * GPU_TEXWIDTH/16 ; i > 0 ; --i)
+    {
+        // Convert 16 bits pixels to 32bits (zero extended)
+        // Batch 64 bytes (32 pixels) at once.
+        __m128i pixels_1 = _mm_load_si128((__m128i*)src);
+        __m128i pixels_2 = _mm_load_si128((__m128i*)(src+8));
+        __m128i pixels_3 = _mm_load_si128((__m128i*)(src+16));
+        __m128i pixels_4 = _mm_load_si128((__m128i*)(src+24));
+
+        __m128i pix_low_1 = _mm_unpacklo_epi16(pixels_1, zero_128);
+        __m128i pix_high_1 = _mm_unpackhi_epi16(pixels_1, zero_128);
+        __m128i pix_low_2 = _mm_unpacklo_epi16(pixels_2, zero_128);
+        __m128i pix_high_2 = _mm_unpackhi_epi16(pixels_2, zero_128);
+
+        // Note: bypass cache
+        _mm_stream_si128((__m128i*)dst, pix_low_1);
+        _mm_stream_si128((__m128i*)(dst+8), pix_high_1);
+        _mm_stream_si128((__m128i*)(dst+16), pix_low_2);
+        _mm_stream_si128((__m128i*)(dst+24), pix_high_2);
+
+         __m128i pix_low_3 = _mm_unpacklo_epi16(pixels_3, zero_128);
+        __m128i pix_high_3 = _mm_unpackhi_epi16(pixels_3, zero_128);
+         __m128i pix_low_4 = _mm_unpacklo_epi16(pixels_4, zero_128);
+        __m128i pix_high_4 = _mm_unpackhi_epi16(pixels_4, zero_128);
+
+        // Note: bypass cache
+        _mm_stream_si128((__m128i*)(dst+32), pix_low_3);
+        _mm_stream_si128((__m128i*)(dst+40), pix_high_3);
+        _mm_stream_si128((__m128i*)(dst+48), pix_low_4);
+        _mm_stream_si128((__m128i*)(dst+56), pix_high_4);
+
+        src += 32;
+        dst += 64;
+    }
+        // It is advise to use a fence instruction after non temporal move (mm_stream) instruction...
+        // store fence insures that previous store are finish before execute new one.
+        _mm_sfence();
+}
+#endif
+
+__forceinline void unpack16(u16* src, u16* dst, int height)
+{
+	ZZLog::Warn_Log("Unpack 16!");
+	for (int i = 0; i < height; ++i)
+	{
+		for (int j = 0; j < GPU_TEXWIDTH; ++j)
+		{
+			dst[0] = src[0];
+			dst[1] = 0;
+			dst[2] = src[1];
+			dst[3] = 0;
+			dst += 4;
+			src += 2;
+		}
+	}
+}
+
+CMemoryTarget* CMemoryTargetMngr::CreateMemoryTarget(const tex0Info& tex0, int start, int end, int clutsize)
+{
 	// couldn't find so create
 	CMemoryTarget* targ;
+	u32 fmt, internal_fmt;
+	int widthmult = 1, channels = 1;
 
-	u32 fmt;
-    u32 internal_fmt;
 	if (PSMT_ISHALF_STORAGE(tex0)) {
         // RGBA_5551 storage format
         fmt = GL_UNSIGNED_SHORT_1_5_5_5_REV;
@@ -301,8 +396,6 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
         internal_fmt = GL_RGBA;
     }
 
-	int widthmult = 1, channels = 1;
-
 	// If our texture is too big and could not be placed in 1 GPU texture. Pretty rare in modern cards.
 	if ((g_MaxTexHeight < 4096) && (end - start > g_MaxTexHeight)) 
 	{
@@ -312,7 +405,6 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
 	}
 	
 	channels = PIXELS_PER_WORD(tex0.psm);
-
 	targ = ClearedTargetsSearch(fmt, widthmult, channels, end - start);
 
 	if (targ->ptex != NULL)
@@ -368,14 +460,17 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
 
         // Allocate a local clut array
         targ->clutsize = clutsize;
+
         if(targ->clut == NULL)
             targ->clut = (u8*)_aligned_malloc(clutsize, 16);
         else {
-            // In case it could occured
-            // realloc would be better but you need to get it from libutilies first
+			//ZZLog::Warn_Log("Doing it!");
+            // In case it could occur
+            // realloc would be better but you need to get it from libutilites first
             // _aligned_realloc is brought in from ScopedAlloc.h now. --arcum42
-            _aligned_free(targ->clut);
-            targ->clut = (u8*)_aligned_malloc(clutsize, 16);
+            //_aligned_free(targ->clut);
+        	//targ->clut = (u8*)_aligned_malloc(clutsize, 16);
+			targ->clut = (u8*)pcsx2_aligned_realloc(targ->clut, clutsize, 16, sizeof(targ->clut));
         }
 
         // texture parameter
@@ -407,67 +502,10 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, int forc
         u16* dst = (u16*)ptexdata;
         u16* src = (u16*)(gs_mem.MemoryAddress(targ->realy));
 
-#ifdef ZEROGS_SSE2
-        assert(((u32)(uptr)dst) % 16 == 0);
-
-        __m128i zero_128 = _mm_setzero_si128();
-        // NOTE: future performance improvement
-        // SSE4.1 support uncacheable load 128bits. Maybe it can
-        // avoid some cache pollution
-        // NOTE2: I create multiple _n variable to mimic the previous ASM behavior
-        // but I'm not sure there are real gains.
-        for (int i = targ->height * GPU_TEXWIDTH/16 ; i > 0 ; --i)
-        {
-            // Convert 16 bits pixels to 32bits (zero extended)
-            // Batch 64 bytes (32 pixels) at once.
-            __m128i pixels_1 = _mm_load_si128((__m128i*)src);
-            __m128i pixels_2 = _mm_load_si128((__m128i*)(src+8));
-            __m128i pixels_3 = _mm_load_si128((__m128i*)(src+16));
-            __m128i pixels_4 = _mm_load_si128((__m128i*)(src+24));
-
-            __m128i pix_low_1 = _mm_unpacklo_epi16(pixels_1, zero_128);
-            __m128i pix_high_1 = _mm_unpackhi_epi16(pixels_1, zero_128);
-            __m128i pix_low_2 = _mm_unpacklo_epi16(pixels_2, zero_128);
-            __m128i pix_high_2 = _mm_unpackhi_epi16(pixels_2, zero_128);
-
-            // Note: bypass cache
-            _mm_stream_si128((__m128i*)dst, pix_low_1);
-            _mm_stream_si128((__m128i*)(dst+8), pix_high_1);
-            _mm_stream_si128((__m128i*)(dst+16), pix_low_2);
-            _mm_stream_si128((__m128i*)(dst+24), pix_high_2);
-
-            __m128i pix_low_3 = _mm_unpacklo_epi16(pixels_3, zero_128);
-            __m128i pix_high_3 = _mm_unpackhi_epi16(pixels_3, zero_128);
-            __m128i pix_low_4 = _mm_unpacklo_epi16(pixels_4, zero_128);
-            __m128i pix_high_4 = _mm_unpackhi_epi16(pixels_4, zero_128);
-
-            // Note: bypass cache
-            _mm_stream_si128((__m128i*)(dst+32), pix_low_3);
-            _mm_stream_si128((__m128i*)(dst+40), pix_high_3);
-            _mm_stream_si128((__m128i*)(dst+48), pix_low_4);
-            _mm_stream_si128((__m128i*)(dst+56), pix_high_4);
-
-            src += 32;
-            dst += 64;
-        }
-        // It is advise to use a fence instruction after non temporal move (mm_stream) instruction...
-        // store fence insures that previous store are finish before execute new one.
-        _mm_sfence();
+#if defined(ZEROGS_SSE2)
+		unpack16_sse2(src, dst, targ->height);
 #else // ZEROGS_SSE2
-
-        for (int i = 0; i < targ->height; ++i)
-        {
-            for (int j = 0; j < GPU_TEXWIDTH; ++j)
-            {
-                dst[0] = src[0];
-                dst[1] = 0;
-                dst[2] = src[1];
-                dst[3] = 0;
-                dst += 4;
-                src += 2;
-            }
-        }
-
+        unpack16(src, dst, targ->height);
 #endif // ZEROGS_SSE2
     }
     else
@@ -590,8 +628,7 @@ void CMemoryTargetMngr::DestroyOldest()
 {
 	FUNCLOG
 
-	if (listTargets.size() == 0)
-		return;
+	if (listTargets.size() == 0) return;
 
 	list<CMemoryTarget>::iterator it, itbest;
 

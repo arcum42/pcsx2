@@ -159,7 +159,7 @@ void CDepthTarget::Resolve(int startrange, int endrange)
 	else
 	{
 		// flush if necessary
-		FlushIfNecessary(this) ;
+		FlushIfNecessary(this);
 
 		if (!(status & TS_Virtual))
 			status |= TS_Resolved;

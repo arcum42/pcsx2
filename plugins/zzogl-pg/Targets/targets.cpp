@@ -21,9 +21,6 @@
 #include "Targets/ZZTargets.h"
 #include "ZZogl/Flush.h"
 
-#define RHA
-//#define RW
-
 // From GSMain.cpp.
 extern u32 g_nResolve;
 #if !defined(ZEROGS_DEVBUILD)
@@ -39,17 +36,11 @@ CRenderTargetMngr s_RTs, s_DepthRTs;
 CBitwiseTextureMngr s_BitwiseTextures;
 CMemoryTargetMngr g_MemTargs;
 
-//extern u32 s_ptexCurSet[2];
 bool g_bSaveZUpdate = false;
 
 int VALIDATE_THRESH = 8;
 u32 TEXDESTROY_THRESH = 16;
 #define FORCE_TEXDESTROY_THRESH (3) // destroy texture after FORCE_TEXDESTROY_THRESH frames
-
-//void _Resolve(const void* psrc, int fbp, int fbw, int fbh, int psm, u32 fbm, bool mode);
-//void SetWriteDepth();
-//bool IsWriteDepth();
-//bool IsWriteDestAlphaTest();
 
 //--------------------------------------------------
 
@@ -128,7 +119,8 @@ u32 CBitwiseTextureMngr::GetTexInt(u32 bitvalue, u32 ptexDoNotDelete)
 
 //	Removing clamping, as it seems lead to numerous troubles at some drivers
 //	Need to observe, may be clamping is not really needed.
-	/* setRectWrap2(GL_REPEAT);
+#ifdef ZZOGL_CLAMPING
+	 setRectWrap2(GL_REPEAT);
 
 	GLint Error = glGetError();
 	if( Error != GL_NO_ERROR ) {
@@ -143,7 +135,8 @@ u32 CBitwiseTextureMngr::GetTexInt(u32 bitvalue, u32 ptexDoNotDelete)
 			}
 		}
 		return 0;
-	}*/
+	}
+#endif
 
 	mapTextures[bitvalue] = ptex;
 
@@ -329,7 +322,7 @@ void ResolveInRange(int start, int end)
 	{
 		FlushBoth();
 
-		// We need another list, because old one could be brocken by Flush().
+		// We need another list, because old one could be broken by Flush().
 		listTargs.clear();
 		listTargs = CreateTargetsList(start, end);
 		/*		s_DepthRTs.GetTargs(start, end, listTargs_1);
@@ -491,7 +484,7 @@ inline void Resolve_32_Bit(const void* psrc, int fbp, int fbw, int fbh, const in
     }
 
     //Tdst* pPageOffset = (Tdst*)g_pbyGSMemory + fbp*(256/sizeof(Tdst));
-    Tdst* pPageOffset = (Tdst*)gs_mem._MemoryAddress<256/sizeof(Tdst)>(fbp);
+    Tdst* pPageOffset = (Tdst*)gs_mem._MemoryAddress32<256/sizeof(Tdst)>(fbp);
     Tdst* dst;
     Tdst  dsrc;
 

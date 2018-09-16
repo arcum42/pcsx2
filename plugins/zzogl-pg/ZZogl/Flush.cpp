@@ -808,16 +808,19 @@ inline FRAGMENTSHADER* FlushMadeNewTarget(VB& curvb, int exactcolor, int context
 	{
         // FIXME: I suspect one of g_bSaveTex test variable is wrong
 		// g_bSaveTex is never true!
-		if (g_bSaveTex == true)
-		{
-			SaveTex(&curvb.tex0, 1);
-			/*CMemoryTarget* pmemtarg = */
-			g_MemTargs.GetMemoryTarget(curvb.tex0, 0);
-		}
-		else 
-		{
-			SaveTex(&curvb.tex0, 0);
-		}
+		//if (g_bSaveTex == true)
+		//{
+		//	SaveTex(&curvb.tex0, 1);
+		//	/*CMemoryTarget* pmemtarg = */
+		//	g_MemTargs.GetMemoryTarget(curvb.tex0, false);
+		//}
+		//else 
+		//{
+		//	SaveTex(&curvb.tex0, 0);
+		//}
+		
+		SaveTex(&curvb.tex0, 1);
+		g_MemTargs.GetMemoryTarget(curvb.tex0, false);
 	}
 
 	FRAGMENTSHADER* pfragment = ZZshLoadShadeEffect(0, GetTexFilter(curvb.tex1), curvb.curprim.fge,
@@ -1946,7 +1949,7 @@ void SetTexVariablesInt(int context, int bilinear, const tex0Info& tex0, bool Ch
 {
 	FUNCLOG
 	float4 v;
-	CMemoryTarget* pmemtarg = g_MemTargs.GetMemoryTarget(tex0, 1);
+	CMemoryTarget* pmemtarg = g_MemTargs.GetMemoryTarget(tex0, true);
 
 	assert( pmemtarg != NULL && pfragment != NULL && pmemtarg->ptex != NULL);	
 	if (pmemtarg == NULL || pfragment == NULL || pmemtarg->ptex == NULL)

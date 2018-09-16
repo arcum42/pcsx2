@@ -104,7 +104,7 @@ void SaveTex(tex0Info* ptex, int usevid)
 
 	if (usevid)
 	{
-		pmemtarg = g_MemTargs.GetMemoryTarget(*ptex, 0);
+		pmemtarg = g_MemTargs.GetMemoryTarget(*ptex, false);
 		assert(pmemtarg != NULL);
 
 		glBindTexture(GL_TEXTURE_RECTANGLE_NV, pmemtarg->ptex->tex);

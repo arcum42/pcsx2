@@ -124,15 +124,14 @@ class CMemoryTargetMngr
 	public:
 		CMemoryTargetMngr() : curstamp(0) {}
 
-		CMemoryTarget* GetMemoryTarget(const tex0Info& tex0, int forcevalidate); // pcbp is pointer to start of clut
-		CMemoryTarget* SearchExistTarget(int start, int end, int clutsize, const tex0Info& tex0, int forcevalidate);
+		CMemoryTarget* GetMemoryTarget(const tex0Info& tex0, bool forcevalidate); // pcbp is pointer to start of clut
 		CMemoryTarget* ClearedTargetsSearch(u32 fmt, int widthmult, int channels, int height);
 		int CompareTarget(list<CMemoryTarget>::iterator& it, const tex0Info& tex0, int clutsize);
 
 		void Destroy(); // destroy all targs
 
 		void ClearRange(int starty, int endy); // set all targets to cleared
-		void DestroyCleared(); // flush all cleared targes
+		void DestroyCleared(); // flush all cleared targets
 		void DestroyOldest();
 
 		list<CMemoryTarget> listTargets, listClearedTargets;
@@ -142,4 +141,101 @@ class CMemoryTargetMngr
 		list<CMemoryTarget>::iterator DestroyTargetIter(list<CMemoryTarget>::iterator& it);
 		void GetClutVariables(int& clutsize, const tex0Info& tex0);
 		void GetMemAddress(int& start, int& end,  const tex0Info& tex0);
+		CMemoryTarget* SearchExistTarget(int start, int end, int clutsize, const tex0Info& tex0);
+		CMemoryTarget* SearchExistForceTarget(int start, int end, int clutsize, const tex0Info& tex0);
+        CMemoryTarget* CreateMemoryTarget(const tex0Info& tex0, int start, int end, int clutsize);
 };
+
+#if 0
+
+CMemoryTarget* CMemoryTargetMngr::SearchExistForceTarget(int start, int end, int clutsize, const tex0Info& tex0)
+{
+	for (list<CMemoryTarget>::iterator it = listTargets.begin(); it != listTargets.end();)
+	{
+		int calc_end = it->starty + it->height;
+
+		if (it->starty <= start && calc_end >= end)
+		{
+			ZZLog::Warn_Log("ForceTarget: %d<=%d && %d >= %d", it->starty, start, calc_end, end);
+			switch (CompareTarget(it, tex0, clutsize))
+			{
+				case 0: // Match! Do more validation checking. delete if not been used for a while
+					ZZLog::Warn_Log("Case 0.");
+					if (!it->ValidateTex(tex0, start, end, curstamp > it->usedstamp + FORCE_TEXDESTROY_THRESH))
+					{
+						ZZLog::Warn_Log("Not Valid.");
+						if (it->height <= 0)
+						{	
+							ZZLog::Warn_Log("Height <=0.");
+							it = DestroyTargetIter(it);
+							if (listTargets.size() == 0) return NULL;
+						}
+						else
+							++it;
+
+						continue;
+					}
+
+					it->usedstamp = curstamp;
+					it->validatecount = 0;
+					ZZLog::Warn_Log("Created!");
+					return &(*it);
+					break;
+
+				case 1:
+					ZZLog::Warn_Log("Case 1.");
+					if (it->validatecount++ > VALIDATE_THRESH)
+					{
+						ZZLog::Warn_Log("> VALIDATE_THRESH.");
+						it = DestroyTargetIter(it);
+						if (listTargets.size() == 0) return NULL;
+					}
+					else	
+						++it;
+					continue;
+
+				case 2:
+				default:
+					ZZLog::Warn_Log("Case 2/default.");
+					break;
+			}
+		}
+		++it;
+	}
+	return NULL;
+}
+
+CMemoryTarget* CMemoryTargetMngr::SearchExistTarget(int start, int end, int clutsize, const tex0Info& tex0)
+{
+	for (list<CMemoryTarget>::iterator it = listTargets.begin(); it != listTargets.end();)
+	{
+		int calc_end = it->starty + it->height;
+
+		if (it->starty <= start && calc_end >= end)
+		{
+			ZZLog::Warn_Log("Target: %d<=%d && %d >= %d", it->starty, start, calc_end, end);
+			switch (CompareTarget(it, tex0, clutsize))
+			{
+				case 0: // Match!
+					it->usedstamp = curstamp;
+					it->validatecount = 0;
+					return &(*it);
+
+				case 1:
+					if (it->validatecount++ > VALIDATE_THRESH)
+					{
+						it = DestroyTargetIter(it);
+						if (listTargets.size() == 0) return NULL;
+					}
+					break;
+
+				case 2:
+				default:
+					break;
+			}
+		}
+		++it;
+	}
+	return NULL;
+}
+#endif

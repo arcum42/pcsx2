@@ -211,8 +211,8 @@ void Kick::DrawPrim(u32 prim_type)
 
             //ZZLog::GS_Log("Sprite: x: %d aa: %d y: %d aa: %d",(int)gs.gsvertex[last].x, AA.x, (int)gs.gsvertex[last].y, AA.y);
             // sprite is too small and AA shows lines (tek4, Mana Khemia)
-            gs.gsvertex[last].x += (4 * (AA.x + 1));
-            gs.gsvertex[last].y += (4 * (AA.y + 1));
+            gs.gsvertex[last].x += (4 * AA.x);
+            gs.gsvertex[last].y += (4 * AA.y);
 
             // might be bad sprite (KH dialog text)
             //if( gs.gsvertex[prev].x == gs.gsvertex[last].x || gs.gsvertex[prev].y == gs.gsvertex[last].y )
