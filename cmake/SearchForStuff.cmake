@@ -14,6 +14,7 @@ find_package(LibLZMA)
 find_package(OpenGL)
 find_package(GLM)
 find_package(Vulkan)
+#find_package(glfw3)
 find_package(PNG)
 find_package(Vtune)
 
@@ -188,6 +189,10 @@ endif()
 if(Vulkan_FOUND)
 	include_directories(${Vulcan_INCLUDE_DIRS})
 endif()
+
+#if(GLFW_Found)
+#	include_directories(${GLFW_INCLUDE_DIRS})
+#endif()
 
 #----------------------------------------
 #  Use  project-wide include directories

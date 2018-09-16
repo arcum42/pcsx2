@@ -18,13 +18,23 @@
 
 #include "GS.h"
 #include "GSLinux.h"
+//#define GLFW_INCLUDE_VULKAN
+//#include <GLFW/glfw3.h>
 
 Display *display;
 int screen;
 GtkScrolledWindow *win;
+//GLFWwindow* window;
 
 int GSOpenWindow(void *pDsp, const char *Title)
 {
+    //glfwInit();
+
+    //glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    //glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+
+    //window = glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr);
+    //return 0;
     display = XOpenDisplay(0);
     screen = DefaultScreen(display);
 
@@ -54,6 +64,7 @@ void GSCloseWindow()
 
 void GSProcessMessages()
 {
+    //glfwPollEvents();
     if (GSKeyEvent) {
         int myKeyEvent = GSKeyEvent;
         bool myShift = GSShift;
