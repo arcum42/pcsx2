@@ -22,4 +22,11 @@
 #include "GS.h"
 #include <vulkan/vulkan.h>
 
+#define VK_VER_MAJOR(X) ((((uint32_t)(X))>>22)&0x3FF)
+#define VK_VER_MINOR(X) ((((uint32_t)(X))>>12)&0x3FF)
+#define VK_VER_PATCH(X) (((uint32_t)(X)) & 0xFFF)
+
+void InitVulkan();
+void DestroyVulkan();
+
 #endif

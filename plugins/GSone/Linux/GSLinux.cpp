@@ -18,13 +18,22 @@
 
 #include "GS.h"
 #include "GSLinux.h"
+#include <stdlib.h>
+#include <X11/Xlib.h>
+
+#include "Vulkan/GSVulkan.h"
+
 //#define GLFW_INCLUDE_VULKAN
 //#include <GLFW/glfw3.h>
 
+//GtkScrolledWindow *win;
+
 Display *display;
 int screen;
-GtkScrolledWindow *win;
+Window NativeWindow;
+
 //GLFWwindow* window;
+//Display *NativeDisplay;
 
 int GSOpenWindow(void *pDsp, const char *Title)
 {
@@ -35,11 +44,19 @@ int GSOpenWindow(void *pDsp, const char *Title)
 
     //window = glfwCreateWindow(800, 600, "Vulkan", nullptr, nullptr);
     //return 0;
+
+	NativeWindow = (Window)*((u32*)(pDsp)+1);
     display = XOpenDisplay(0);
     screen = DefaultScreen(display);
 
     if (pDsp != NULL)
+    {
         *(Display **)pDsp = display;
+
+        InitVulkan();
+
+        return 0;
+    }
     else
         return -1;
 
@@ -48,8 +65,22 @@ int GSOpenWindow(void *pDsp, const char *Title)
 
 int GSOpenWindow2(void *pDsp, u32 flags)
 {
+
+
     if (pDsp != NULL)
-        win = *(GtkScrolledWindow **)pDsp;
+    {
+        //win = *(GtkScrolledWindow **)pDsp;
+        NativeWindow = (Window)*((u32*)(pDsp)+1);
+        // Do not take the display which come from pcsx2 neither change it.
+	    // You need a new one to do the operation in the GS thread
+	    display = XOpenDisplay(NULL);
+
+	    if (!display) return -1;
+
+        InitVulkan();
+
+        return 0;
+    }
     else
         return -1;
 
@@ -60,6 +91,8 @@ void GSCloseWindow()
 {
     if (display != NULL)
         XCloseDisplay(display);
+
+    DestroyVulkan();
 }
 
 void GSProcessMessages()

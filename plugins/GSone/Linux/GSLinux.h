@@ -21,6 +21,7 @@
 #include <gtk/gtk.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include "GS.h"
 
 extern int GSOpenWindow(void *pDsp, const char *Title);
 extern int GSOpenWindow2(void *pDsp, u32 flags);
