@@ -118,6 +118,26 @@ void DisplayDialog()
     over_slide = spu2x_gtk_hscale_new_with_range(Overlap_Min, Overlap_Max, 2);
     gtk_range_set_value(GTK_RANGE(over_slide), OverlapMS);
 
+<<<<<<< HEAD
+#if GTK_MAJOR_VERSION < 3
+    adv_box = gtk_vbox_new(false, 5);
+#else
+    adv_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
+
+    gtk_box_pack_start(GTK_BOX(adv_box), main_label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(adv_box), default_button, TRUE, TRUE, 5);
+
+    gtk_box_pack_start(GTK_BOX(adv_box), seq_label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(adv_box), seq_slide, TRUE, TRUE, 5);
+
+    gtk_box_pack_start(GTK_BOX(adv_box), seek_label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(adv_box), seek_slide, TRUE, TRUE, 5);
+
+    gtk_box_pack_start(GTK_BOX(adv_box), over_label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(adv_box), over_slide, TRUE, TRUE, 5);
+
+=======
     adv_box = spu2x_gtk_vbox_new(5);
 
     gtk_box_pack_start(GTK_BOX(adv_box), main_label, TRUE, TRUE, 0);
@@ -132,6 +152,7 @@ void DisplayDialog()
     gtk_box_pack_start(GTK_BOX(adv_box), over_label, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(adv_box), over_slide, TRUE, TRUE, 5);
 
+>>>>>>> upstream/master
     gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(GTK_DIALOG(dialog))), adv_box);
     g_signal_connect_swapped(default_button, "clicked", G_CALLBACK(restore_defaults), default_button);
     gtk_widget_show_all(dialog);

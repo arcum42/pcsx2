@@ -223,6 +223,9 @@ void debug_dialog()
 
 #if defined(__unix__)
 
+<<<<<<< HEAD
+static void toggle_sensitivity(GtkWidget *widget, gpointer data)
+=======
 // Format the slider with ms.
 static gchar *cb_scale_format_ms(GtkScale *scale, gdouble value)
 {
@@ -237,6 +240,7 @@ static gchar *cb_scale_format_percent(GtkScale *scale, gdouble value)
 
 // Disables and reenables the debug button.
 static void cb_toggle_sensitivity(GtkWidget *widget, gpointer data)
+>>>>>>> upstream/master
 {
     GtkButton *btn = static_cast<GtkButton *>(data);
 
@@ -337,8 +341,16 @@ void DisplayDialog()
     gtk_range_set_value(GTK_RANGE(latency_slide), SndOutLatencyMS);
 
     volume_label = gtk_label_new("Volume:");
+<<<<<<< HEAD
+#if GTK_MAJOR_VERSION < 3
+    volume_slide = gtk_hscale_new_with_range(0, 100, 5);
+#else
+    volume_slide = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 5);
+#endif
+=======
 
     volume_slide = spu2x_gtk_hscale_new_with_range(0, 100, 5);
+>>>>>>> upstream/master
     gtk_range_set_value(GTK_RANGE(volume_slide), FinalVolume * 100);
 
     sync_label = gtk_label_new("Synchronization Mode:");
@@ -350,17 +362,34 @@ void DisplayDialog()
 
     advanced_button = gtk_button_new_with_label("Advanced...");
 
+<<<<<<< HEAD
+#if GTK_MAJOR_VERSION < 3
+    main_box = gtk_hbox_new(false, 5);
+#else
+    main_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#endif
+=======
     main_box = spu2x_gtk_hbox_new(5);
+>>>>>>> upstream/master
 
     mixing_box = spu2x_gtk_vbox_new(5);
     mixing_frame = gtk_frame_new("Mixing Settings:");
+
     gtk_container_add(GTK_CONTAINER(mixing_frame), mixing_box);
 
 
     output_box = spu2x_gtk_vbox_new(5);
     output_frame = gtk_frame_new("Output Settings:");
 
+<<<<<<< HEAD
+#if GTK_MAJOR_VERSION < 3
+    debug_box = gtk_vbox_new(false, 5);
+#else
+    debug_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#endif
+=======
     debug_box = spu2x_gtk_vbox_new(5);
+>>>>>>> upstream/master
     debug_frame = gtk_frame_new("Debug Settings:");
 
     gtk_container_add(GTK_CONTAINER(debug_box), debug_check);
@@ -409,6 +438,7 @@ void DisplayDialog()
 
     g_signal_connect(debug_check, "clicked", G_CALLBACK(cb_toggle_sensitivity), debug_button);
     g_signal_connect_swapped(advanced_button, "clicked", G_CALLBACK(advanced_dialog), advanced_button);
+    g_signal_connect(debug_check, "clicked", G_CALLBACK(toggle_sensitivity), debug_button);
     g_signal_connect_swapped(debug_button, "clicked", G_CALLBACK(debug_dialog), debug_button);
 
     return_value = gtk_dialog_run(GTK_DIALOG(dialog));
