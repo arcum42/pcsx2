@@ -29,7 +29,10 @@ using namespace std;
 
 #include "GS.h"
 #include "GifTransfer.h"
+#include "GSFifo.h"
 #include "null/GSnull.h"
+#include "Vulkan/GSVulkan.h"
+
 #ifdef _MSC_VER
 #include "svnrev.h"
 #endif
@@ -58,8 +61,7 @@ extern void SetMultithreaded();
 extern void SetFrameSkip(bool skip);
 extern void InitPath();
 
-EXPORT_C_(u32)
-PS2EgetLibType()
+EXPORT_C_(u32) PS2EgetLibType()
 {
     return PS2E_LT_GS;
 }
@@ -68,8 +70,7 @@ PS2EgetLibType()
 static char libraryName[256];
 #endif
 
-EXPORT_C_(const char *)
-PS2EgetLibName()
+EXPORT_C_(const char *) PS2EgetLibName()
 {
 #ifdef _MSC_VER
     sprintf_s(libraryName, "GSone Driver %lld%s", SVN_REV, SVN_MODS ? "m" : "");
@@ -79,21 +80,18 @@ PS2EgetLibName()
 #endif
 }
 
-EXPORT_C_(u32)
-PS2EgetLibVersion2(u32 type)
+EXPORT_C_(u32) PS2EgetLibVersion2(u32 type)
 {
     return (version << 16) | (revision << 8) | build;
 }
 
 // basic funcs
-EXPORT_C_(void)
-GSsetSettingsDir(const char *dir)
+EXPORT_C_(void) GSsetSettingsDir(const char *dir)
 {
     s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
-EXPORT_C_(void)
-GSsetLogDir(const char *dir)
+EXPORT_C_(void) GSsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
     s_strLogPath = (dir == NULL) ? "logs" : dir;
@@ -103,27 +101,26 @@ GSsetLogDir(const char *dir)
     GSLog::Open();
 }
 
-EXPORT_C_(s32)
-GSinit()
+EXPORT_C_(s32) GSinit()
 {
     LoadConfig();
 
     GSLog::Open();
 
     GSLog::WriteLn("Initializing GSOne.");
+
+    InitVulkan();
     return 0;
 }
 
-EXPORT_C_(void)
-GSshutdown()
+EXPORT_C_(void) GSshutdown()
 {
     GSLog::WriteLn("Shutting down GSOne.");
     GSCloseWindow();
     GSLog::Close();
 }
 
-EXPORT_C_(s32)
-GSopen(void *pDsp, const char *Title, int multithread)
+EXPORT_C_(s32) GSopen(void *pDsp, const char *Title, int multithread)
 {
     int err = 0;
     GSLog::WriteLn("GS open.");
@@ -140,8 +137,7 @@ GSopen(void *pDsp, const char *Title, int multithread)
 }
 
 #ifdef USE_GSOPEN2
-EXPORT_C_(s32)
-GSopen2(void *pDsp, u32 flags)
+EXPORT_C_(s32) GSopen2(void *pDsp, u32 flags)
 {
     GSLog::WriteLn("GS open2.");
 
@@ -157,8 +153,7 @@ GSopen2(void *pDsp, u32 flags)
 }
 #endif
 
-EXPORT_C_(void)
-GSclose()
+EXPORT_C_(void) GSclose()
 {
     GSLog::WriteLn("Closing GSOne.");
 
@@ -167,96 +162,84 @@ GSclose()
     //GSCloseWindow();
 }
 
-EXPORT_C_(void)
-GSirqCallback(void (*callback)())
+EXPORT_C_(void) GSirqCallback(void (*callback)())
 {
     GSirq = callback;
 }
 
-EXPORT_C_(s32)
-GSfreeze(int mode, freezeData *data)
+EXPORT_C_(s32) GSfreeze(int mode, freezeData *data)
 {
     return 0;
 }
 
-EXPORT_C_(s32)
-GStest()
+EXPORT_C_(s32) GStest()
 {
     GSLog::WriteLn("Testing GSOne.");
     return 0;
 }
 
-EXPORT_C_(void)
-GSvsync(int field)
+EXPORT_C_(void) GSvsync(int field)
 {
     GSProcessMessages();
 }
 
 // returns the last tag processed (64 bits)
-EXPORT_C_(void)
-GSgetLastTag(u64 *ptag)
+EXPORT_C_(void) GSgetLastTag(u64 *ptag)
 {
     *(u32 *)ptag = gs.nPath3Hack;
     gs.nPath3Hack = 0;
 }
 
-EXPORT_C_(void)
-GSgifSoftReset(u32 mask)
+EXPORT_C_(void) GSgifSoftReset(u32 mask)
 {
     GSLog::WriteLn("Doing a soft reset of the GS plugin.");
 }
 
-EXPORT_C_(void)
-GSreadFIFO(u64 *mem)
+EXPORT_C_(void) GSreadFIFO(u64 *mem)
 {
+    //Same as GSreadFIFO2, only with 1 for qwc.
+	TransferFifo(mem, 1);
 }
 
-EXPORT_C_(void)
-GSreadFIFO2(u64 *mem, int qwc)
+EXPORT_C_(void) GSreadFIFO2(u64 *mem, int qwc)
 {
+	TransferFifo(mem, qwc);
 }
 
 // extended funcs
 
 // GSkeyEvent gets called when there is a keyEvent from the PAD plugin
-EXPORT_C_(void)
-GSkeyEvent(keyEvent *ev)
+EXPORT_C_(void) GSkeyEvent(keyEvent *ev)
 {
     HandleKeyEvent(ev);
 }
 
-EXPORT_C_(void)
-GSchangeSaveState(int, const char *filename)
+EXPORT_C_(void) GSchangeSaveState(int, const char *filename)
 {
 }
 
-EXPORT_C_(void)
-GSmakeSnapshot(char *path)
+EXPORT_C_(void) GSmakeSnapshot(char *path)
 {
 
     GSLog::WriteLn("Taking a snapshot.");
 }
 
-EXPORT_C_(void)
-GSmakeSnapshot2(char *pathname, int *snapdone, int savejpg)
+EXPORT_C_(void) GSmakeSnapshot2(char *pathname, int *snapdone, int savejpg)
 {
     GSLog::WriteLn("Taking a snapshot to %s.", pathname);
 }
 
-EXPORT_C_(void)
-GSsetBaseMem(void *)
+EXPORT_C_(void) GSsetBaseMem(void *)
 {
 }
 
-EXPORT_C_(void)
-GSsetGameCRC(int crc, int gameoptions)
+EXPORT_C_(void) GSsetGameCRC(int crc, int gameoptions)
 {
     GSLog::WriteLn("Setting the crc to '%x' with 0x%x for options.", crc, gameoptions);
 }
 
 // controls frame skipping in the GS, if this routine isn't present, frame skipping won't be done
-EXPORT_C_(void)
-GSsetFrameSkip(int frameskip)
+EXPORT_C_(void) GSsetFrameSkip(int frameskip)
 {
     SetFrameSkip(frameskip != 0);
     GSLog::WriteLn("Frameskip set to %d.", frameskip);
@@ -265,8 +248,7 @@ GSsetFrameSkip(int frameskip)
 // if start is 1, starts recording spu2 data, else stops
 // returns a non zero value if successful
 // for now, pData is not used
-EXPORT_C_(int)
-GSsetupRecording(int start, void *pData)
+EXPORT_C_(int) GSsetupRecording(int start, void *pData)
 {
     if (start)
         GSLog::WriteLn("Pretending to record.");
@@ -276,18 +258,17 @@ GSsetupRecording(int start, void *pData)
     return 1;
 }
 
-EXPORT_C_(void)
-GSreset()
+EXPORT_C_(void) GSreset()
 {
     GSLog::WriteLn("Doing a reset of the GS plugin.");
 }
 
-EXPORT_C_(void)
-GSwriteCSR(u32 value)
+EXPORT_C_(void) GSwriteCSR(u32 value)
 {
+	gs.CSRsignal = (value & 0x1);
+    gs.CSRfinish = (value & 0x2);
 }
 
-EXPORT_C_(void)
-GSgetDriverInfo(GSdriverInfo *info)
+EXPORT_C_(void) GSgetDriverInfo(GSdriverInfo *info)
 {
 }

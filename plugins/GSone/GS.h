@@ -67,7 +67,10 @@ typedef struct
 
 typedef struct
 {
-    u32 CSRw;
+    //u32 CSRw; // Divided CSRw into the two values we check.
+    bool CSRsignal;
+    bool CSRfinish;
+
     pathInfo path[4];
     bool Path3transfer;
     float q;

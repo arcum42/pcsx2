@@ -52,8 +52,7 @@ int GSOpenWindow(void *pDsp, const char *Title)
     if (pDsp != NULL)
     {
         *(Display **)pDsp = display;
-
-        InitVulkan();
+        // Point Vulkan surface to display here.
 
         return 0;
     }
@@ -77,7 +76,7 @@ int GSOpenWindow2(void *pDsp, u32 flags)
 
 	    if (!display) return -1;
 
-        InitVulkan();
+        // Point Vulkan surface to display here.
 
         return 0;
     }

@@ -14,6 +14,7 @@ set(GSnullFinalFlags "")
 set(GSoneSources
 	GifTransfer.cpp
 	GS.cpp
+	GSFifo.cpp
 	GSLog.cpp
 	Registers.cpp)
 
@@ -21,6 +22,7 @@ set(GSoneSources
 set(GSoneHeaders
 	GifTransfer.h
 	GS.h
+	GSFifo.h
 	Registers.h)
 	
 # GSone Vulkan sources

@@ -18,19 +18,78 @@
 
 #include "GSVulkan.h"
 #include <vector>
+#include <set>
 
-struct vulkan_context {
-								
-    uint32_t width;
-    uint32_t height;
+vulkan_context nimoy;
 
-    VkInstance instance;
-};
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) 
+{
+    GSLog::WriteLn("Validation layer: %s", pCallbackData->pMessage);
 
-vulkan_context context;
-VkInstance vk_inst;
+    return VK_FALSE;
+}
 
-bool CreateInstance(bool use_layers)
+VkResult CreateDebugUtilsMessengerEXT(const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator) 
+{
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(nimoy.instance, "vkCreateDebugUtilsMessengerEXT");
+
+    if (func != nullptr) 
+    {
+        return func(nimoy.instance, pCreateInfo, pAllocator, &nimoy.callback);
+    } 
+    else 
+    {
+        return VK_ERROR_EXTENSION_NOT_PRESENT;
+    }
+}
+
+void DestroyDebugUtilsMessengerEXT(const VkAllocationCallbacks* pAllocator) 
+{
+    auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(nimoy.instance, "vkDestroyDebugUtilsMessengerEXT");
+
+    if (func != nullptr) 
+    {
+        func(nimoy.instance, nimoy.callback, pAllocator);
+    }
+}
+
+ void setupDebugCallback() 
+ {
+    VkResult res;
+    VkDebugUtilsMessengerCreateInfoEXT createInfo = {};
+        
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = debugCallback;
+
+    res = CreateDebugUtilsMessengerEXT(&createInfo, nullptr);
+    if (res != VK_SUCCESS) 
+    {
+        GSLog::WriteLn("Failed to set up debug callback! (%s)", VkResultToString(res));
+    }
+}
+
+std::set<std::string> get_supported_extensions() 
+{
+    uint32_t count;
+
+    //Get number of extensions.
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, nullptr); 
+
+    //Pull list.
+    std::vector<VkExtensionProperties> extensions(count);
+    vkEnumerateInstanceExtensionProperties(nullptr, &count, extensions.data()); 
+
+    std::set<std::string> results;
+    for (auto & extension : extensions) 
+    {
+        results.insert(extension.extensionName);
+    }
+    return results;
+}
+
+bool CreateInstance()
 {
     const char *layers[] = { "VK_LAYER_LUNARG_standard_validation" };
     VkResult res;
@@ -54,7 +113,7 @@ bool CreateInstance(bool use_layers)
     inst_info.enabledExtensionCount = 0;
     inst_info.ppEnabledExtensionNames = NULL;
 
-    if (use_layers)
+    if (nimoy.enableValidationLayers)
     {
         inst_info.enabledLayerCount = 1;
         inst_info.ppEnabledLayerNames = layers;
@@ -66,18 +125,13 @@ bool CreateInstance(bool use_layers)
     }
 
 
-    res = vkCreateInstance(&inst_info, NULL, &context.instance);
+    res = vkCreateInstance(&inst_info, NULL, &nimoy.instance);
 
-    if (res == VK_ERROR_INCOMPATIBLE_DRIVER) 
+    if (res != VK_SUCCESS) 
     {
-        GSLog::WriteLn("Incompatible driver! Vulkan instance not created.");
+        GSLog::WriteLn("Vulkan instance not created! (%s)", VkResultToString(res));
         return false;
     } 
-    else if (res) 
-    {
-        GSLog::WriteLn("Unknown error! Vulkan instance not created.");
-        return false;
-    }
 
     GSLog::WriteLn("Vulkan instance created.");
     return true;
@@ -124,30 +178,30 @@ bool CheckDevices()
     uint32_t deviceCount = 0;
 
     // The first time, we call it to get the number of devices.
-    VkResult result = vkEnumeratePhysicalDevices(context.instance, &deviceCount, NULL);
-    if (result != VK_SUCCESS) 
+    VkResult res = vkEnumeratePhysicalDevices(nimoy.instance, &deviceCount, NULL);
+    if (res != VK_SUCCESS) 
     {
-        GSLog::WriteLn("Failed to query the number of physical devices present: %d\n", result);
+        GSLog::WriteLn("Failed to query the number of physical devices present. (%s)", VkResultToString(res));
         return false;
     }
 
     // There has to be at least one device present
     if (deviceCount == 0) 
     {
-        GSLog::WriteLn("Couldn't detect any device present with Vulkan support: %d\n", result);
+        GSLog::WriteLn("Couldn't detect any device present with Vulkan support. (%s)", VkResultToString(res));
         return false;
     }
 
     // Get the physical devices with the number gotten from the first call.
     std::vector<VkPhysicalDevice> physicalDevices(deviceCount);
-    result = vkEnumeratePhysicalDevices(context.instance, &deviceCount, &physicalDevices[0]);
-    if (result != VK_SUCCESS) 
+    res = vkEnumeratePhysicalDevices(nimoy.instance, &deviceCount, &physicalDevices[0]);
+    if (res != VK_SUCCESS) 
     {
-        GSLog::WriteLn("Failed to enumerate physical devices present: %d\n", result);
+        GSLog::WriteLn("Failed to enumerate physical devices present. (%s)", VkResultToString(res));
         return false;
     }
 
-     GSLog::WriteLn("Number of physical devices present: %d\n", deviceCount);
+     GSLog::WriteLn("Number of physical devices present: %d", deviceCount);
 
     for (uint32_t i = 0; i < deviceCount; i++) 
     {
@@ -191,10 +245,12 @@ void InitVulkan()
     
     GSLog::WriteLn("Initializing Vulkan! (Sort of.)");
 
-    ret = CheckValidationLayers();
+    nimoy.enableValidationLayers = CheckValidationLayers();
 
-    ret = CreateInstance(ret); // Create it with validation layers if they are there, otherwise don't use them.
+    ret = CreateInstance(); // Create it with validation layers if they are there, otherwise don't use them.
     
+    if (nimoy.enableValidationLayers) setupDebugCallback();
+
     if (ret) ret = CheckDevices();
 
     if (ret)
@@ -205,5 +261,10 @@ void InitVulkan()
 
 void DestroyVulkan()
 {
-    vkDestroyInstance(context.instance, NULL);
+    if (nimoy.enableValidationLayers) 
+    {
+        DestroyDebugUtilsMessengerEXT(nullptr);
+    }
+
+    vkDestroyInstance(nimoy.instance, NULL);
 }

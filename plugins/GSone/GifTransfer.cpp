@@ -24,22 +24,30 @@
 #include "GS.h"
 #include "GifTransfer.h"
 
-using namespace std;
-
 extern GSVars gs;
+
+//#define LOG_GIFTRANSFERS
+
+#ifdef LOG_GIFTRANSFERS
+#define GIFLOG GSLog::WriteLn
+#else
+#define GIFLOG(foo, ...)
+#endif
 
 PCSX2_ALIGNED16(u8 g_RealGSMem[0x2000]);
 
-template <int index>
-void _GSgifTransfer(const u32 *pMem, u32 size)
+template <int index> void _GSgifTransfer(const u32 *pMem, u32 size)
 {
     //	FUNCLOG
 
     pathInfo *path = &gs.path[index];
 
-    while (size > 0) {
-        //GSLog::Writeln(_T("Transfer(%08x, %d) START\n"), pMem, size);
-        if (path->nloop == 0) {
+    while (size > 0) 
+    {
+        GIFLOG("GIF transfer(%08x, %d) START", pMem, size);
+        if (path->nloop == 0) 
+        {
+            GIFLOG("nloop == 0");
             path->setTag(pMem);
             pMem += 4;
             size--;
@@ -54,15 +62,22 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                     GIFRegHandlerPRIM((u32 *)&tagprim);
                 }
             }
-        } else {
-            switch (path->mode) {
-                case GIF_FLG_PACKED: {
-                    // first try a shortcut for a very common case
+        } 
+        else 
+        {
+            switch (path->mode) 
+            {
+                case GIF_FLG_PACKED: 
+                {
+                    GIFLOG("Packed");
 
-                    if (path->adonly && size >= path->nloop) {
+                    // first try a shortcut for a very common case
+                    if (path->adonly && size >= path->nloop) 
+                    {
                         size -= path->nloop;
 
-                        do {
+                        do 
+                        {
                             GIFPackedRegHandlerA_D(pMem);
 
                             pMem += 4; //sizeof(GIFPackedReg)/4;
@@ -70,23 +85,24 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                         break;
                     }
 
-                    do {
+                    do 
+                    {
                         u32 reg = path->GetReg();
                         GIFPackedRegHandlers[reg](pMem);
 
                         pMem += 4; //sizeof(GIFPackedReg)/4;
                         size--;
                     } while (path->StepReg() && (size > 0));
-
                     break;
                 }
 
-                case GIF_FLG_REGLIST: {
-                    //GSLog::Writeln("%8.8x%8.8x %d L", ((u32*)&gs.regs)[1], *(u32*)&gs.regs, path->tag.nreg/4);
+                case GIF_FLG_REGLIST: 
+                {
+                    GIFLOG("GIF Flag RegList: %8.8x%8.8x ", ((u32*)&gs.regs)[1], *(u32*)&gs.regs/*, path->tag.nreg/4*/);
 
                     size *= 2;
-
-                    do {
+                    do 
+                    {
                         GIFRegHandlers[path->GetReg()](pMem);
 
                         pMem += 2;
@@ -102,10 +118,11 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                 case GIF_FLG_IMAGE:  // FROM_VFRAM
                 case GIF_FLG_IMAGE2: // Used in the DirectX version, so we'll use it here too.
                 {
-                    int len = min(size, path->nloop);
-                    //GSLog::Writeln("GIF_FLG_IMAGE(%d)=%d", gs.imageTransfer, len);
+                    int len = std::min(size, path->nloop);
+                    GIFLOG("Gif Flag Image (or Image 2) (%d)=%d", gs.imageTransfer, len);
 
-                    switch (gs.imageTransfer) {
+                    switch (gs.imageTransfer) 
+                    {
                         case 0:
                             //TransferHostLocal(pMem, len * 4);
                             break;
@@ -139,7 +156,7 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
                 }
 
                 default: // GIF_IMAGE
-                    GSLog::WriteLn("*** WARNING **** Unexpected GIFTag flag.");
+                    GIFLOG("*** WARNING **** Unexpected GIFTag flag.");
                     assert(0);
                     path->nloop = 0;
                     break;
@@ -151,32 +168,28 @@ void _GSgifTransfer(const u32 *pMem, u32 size)
 #define DO_GIF_TRANSFERS
 
 // Obsolete. Included because it's still in GSdef.
-EXPORT_C_(void)
-GSgifTransfer1(u32 *pMem, u32 addr)
+EXPORT_C_(void) GSgifTransfer1(u32 *pMem, u32 addr)
 {
 #ifdef DO_GIF_TRANSFERS
     _GSgifTransfer<0>((u32 *)((u8 *)pMem + addr), (0x4000 - addr) / 16);
 #endif
 }
 
-EXPORT_C_(void)
-GSgifTransfer(const u32 *pMem, u32 size)
+EXPORT_C_(void) GSgifTransfer(const u32 *pMem, u32 size)
 {
 #ifdef DO_GIF_TRANSFERS
     _GSgifTransfer<3>(const_cast<u32 *>(pMem), size);
 #endif
 }
 
-EXPORT_C_(void)
-GSgifTransfer2(u32 *pMem, u32 size)
+EXPORT_C_(void) GSgifTransfer2(u32 *pMem, u32 size)
 {
 #ifdef DO_GIF_TRANSFERS
     _GSgifTransfer<1>(const_cast<u32 *>(pMem), size);
 #endif
 }
 
-EXPORT_C_(void)
-GSgifTransfer3(u32 *pMem, u32 size)
+EXPORT_C_(void) GSgifTransfer3(u32 *pMem, u32 size)
 {
 #ifdef DO_GIF_TRANSFERS
     _GSgifTransfer<2>(const_cast<u32 *>(pMem), size);
