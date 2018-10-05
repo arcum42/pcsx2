@@ -142,8 +142,8 @@ class CRenderTargetMngr
 		__forceinline void Resolve(int start, int end);
 		__forceinline void ResolveAll()
 		{
-			for (MAPTARGETS::iterator it = mapTargets.begin(); it != mapTargets.end(); ++it)
-				it->second->Resolve();
+			for (auto& it : mapTargets)
+				it.second->Resolve();
 		}
 
 		void DestroyAllTargs(int start, int end, int fbw);

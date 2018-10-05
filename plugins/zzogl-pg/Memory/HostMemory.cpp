@@ -277,14 +277,15 @@ void TransferHostLocal(const void* pbyMem, u32 nQWordSize)
         list<CRenderTarget*> listTransmissionUpdateTargs;
         s_RTs.GetTargs(start, end, listTransmissionUpdateTargs);
  
-        for (list<CRenderTarget*>::iterator it = listTransmissionUpdateTargs.begin(); it != listTransmissionUpdateTargs.end(); ++it)
+        //for (list<CRenderTarget*>::iterator it = listTransmissionUpdateTargs.begin(); it != listTransmissionUpdateTargs.end(); ++it)
+        for (auto& it : listTransmissionUpdateTargs)
         {
-            CRenderTarget* ptarg = *it;
+           // CRenderTarget* ptarg = *it;
  
-            if ((ptarg->status & CRenderTarget::TS_Virtual)) continue;
+            if ((it->status & CRenderTarget::TS_Virtual)) continue;
  
             //ZZLog::Error_Log("Resolving to alpha channel.");
-            ptarg->Resolve();
+            it->Resolve();
         }
     }
  
@@ -579,13 +580,19 @@ void TransferLocalLocal()
  
     s_RTs.GetTargs(dststart, dstend, listTargs);
  
-    for (list<CRenderTarget*>::iterator it = listTargs.begin(); it != listTargs.end(); ++it)
+    //for (list<CRenderTarget*>::iterator it = listTargs.begin(); it != listTargs.end(); ++it)
+    for (auto& it : listTargs)
     {
-        if (!((*it)->status & CRenderTarget::TS_Virtual))
+        if (!(it->status & CRenderTarget::TS_Virtual))
+        {
+            it->Resolve();
+        }
+
+       /* if (!((*it)->status & CRenderTarget::TS_Virtual))
         {
             (*it)->Resolve();
             //(*it)->status |= CRenderTarget::TS_NeedUpdate;
-        }
+        }*/
     }
  
     if (PSMT_BITMODE(gs.srcbuf.psm) != 4)

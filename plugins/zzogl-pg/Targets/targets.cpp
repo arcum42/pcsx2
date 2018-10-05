@@ -63,9 +63,10 @@ void CBitwiseTextureMngr::Destroy()
 {
 	FUNCLOG
 
-	for (map<u32, u32>::iterator it = mapTextures.begin(); it != mapTextures.end(); ++it)
+	//for (map<u32, u32>::iterator it = mapTextures.begin(); it != mapTextures.end(); ++it)
+    for (auto& it : mapTextures)
 	{
-			glDeleteTextures(1, &it->second);
+			glDeleteTextures(1, &it.second);
 	}
 
 	mapTextures.clear();
@@ -328,14 +329,22 @@ void ResolveInRange(int start, int end)
 		/*		s_DepthRTs.GetTargs(start, end, listTargs_1);
 				s_RTs.GetTargs(start, end, listTargs_1);*/
 
-		for (list<CRenderTarget*>::iterator it = listTargs.begin(); it != listTargs.end(); ++it)
+		for (auto& it : listTargs)
+		{
+			// only resolve if not completely covered
+			if (it->created == 123)
+				it->Resolve();
+			else
+				ZZLog::Debug_Log("Resolving non-existing object! Destroy code %d.", it->created);
+		}
+		/*for (list<CRenderTarget*>::iterator it = listTargs.begin(); it != listTargs.end(); ++it)
 		{
 			// only resolve if not completely covered
 			if ((*it)->created == 123)
 				(*it)->Resolve();
 			else
 				ZZLog::Debug_Log("Resolving non-existing object! Destroy code %d.", (*it)->created);
-		}
+		}*/
 	}
 }
 
@@ -436,7 +445,28 @@ void FlushTransferRanges(const tex0Info* ptex)
 		GetRectMemAddressZero(texstart, texend, ptex->psm, ptex->tw, ptex->th, ptex->tbp0, ptex->tbw);
 	}
 
-	for (vector<CRangeManager::RANGE>::iterator itrange = s_RangeMngr.ranges.begin(); itrange != s_RangeMngr.ranges.end(); ++itrange)
+	//for (vector<CRangeManager::RANGE>::iterator itrange = s_RangeMngr.ranges.begin(); itrange != s_RangeMngr.ranges.end(); ++itrange)
+    for (auto& itrange : s_RangeMngr.ranges)
+	{
+
+		int start = itrange.start;
+		int end = itrange.end;
+
+		listTransmissionUpdateTargs.clear();
+		listTransmissionUpdateTargs = CreateTargetsList(start, end);
+
+		//for (list<CRenderTarget*>::iterator it = listTransmissionUpdateTargs.begin(); it != listTransmissionUpdateTargs.end(); ++it)
+        for (auto& it : listTransmissionUpdateTargs)
+		{
+			//CRenderTarget* ptarg = *it;
+
+			if ((it->status & CRenderTarget::TS_Virtual)) continue;
+			FlushTransferRange(it, start, end, texstart, texend);
+		}
+
+		g_MemTargs.ClearRange(start, end);
+	}
+	/*for (vector<CRangeManager::RANGE>::iterator itrange = s_RangeMngr.ranges.begin(); itrange != s_RangeMngr.ranges.end(); ++itrange)
 	{
 
 		int start = itrange->start;
@@ -454,7 +484,7 @@ void FlushTransferRanges(const tex0Info* ptex)
 		}
 
 		g_MemTargs.ClearRange(start, end);
-	}
+	}*/
 
 	s_RangeMngr.Clear();
 }

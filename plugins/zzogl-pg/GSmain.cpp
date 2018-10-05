@@ -790,6 +790,7 @@ EXPORT_C_(void) GSReplay(char* lpszCmdLine)
 		{
 			unsigned long start = timeGetTime();
 			unsigned long frame_number = 0;
+
 			for(list<Packet*>::iterator i = packets.begin(); i != packets.end(); i++)
 			{
 				Packet* p = *i;

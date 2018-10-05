@@ -197,8 +197,10 @@ public:
 
 	void set_internal_format()
 	{
-		for (vector<GSInputLayoutOGL>::iterator it = layout_store.begin(); it != layout_store.end(); it++)
-			set_internal_format(*it);
+		//for (vector<GSInputLayoutOGL>::iterator it = layout_store.begin(); it != layout_store.end(); it++)
+		//	set_internal_format(*it);
+		for (auto& it : layout_store)
+			set_internal_format(it);
 	}
 
 	void set_internal_format(GSInputLayoutOGL& layout) {

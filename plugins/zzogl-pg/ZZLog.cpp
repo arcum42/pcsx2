@@ -47,7 +47,7 @@ void ProcessMessages()
 
 			if ((int)(it->dwTimeStamp - timeGetTime()) < 0)
 				it = listMsgs.erase(it);
-			else ++it;
+			else std::advance(it, 1);
 		}
 	}
 }

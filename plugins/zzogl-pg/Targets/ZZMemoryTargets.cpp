@@ -136,34 +136,6 @@ int CMemoryTargetMngr::CompareTarget(list<CMemoryTarget>::iterator& it, const te
 	return 0;
 }
 
-void CMemoryTargetMngr::GetClutVariables(int& clutsize, const tex0Info& tex0)
-{
-	clutsize = 0;
-
-	if (PSMT_ISCLUT(tex0.psm))
-	{
-		int entries = PSMT_IS8CLUT(tex0.psm) ? 256 : 16;
-
-		if (PSMT_IS32BIT(tex0.cpsm))
-			clutsize = min(entries, 256 - tex0.csa * 16) * 4;
-		else
-			clutsize = min(entries, 512 - tex0.csa * 16) * 2;
-	}
-}
-
-void CMemoryTargetMngr::GetMemAddress(int& start, int& end,  const tex0Info& tex0)
-{
-	int nbStart, nbEnd;
-	GetRectMemAddressZero(nbStart, nbEnd, tex0.psm, tex0.tw, tex0.th, tex0.tbp0, tex0.tbw);
-	assert(nbStart < nbEnd);
-	nbEnd = min(nbEnd, MEMORY_END);
-
-	start = nbStart / (4 * GPU_TEXWIDTH);
-	end = (nbEnd + GPU_TEXWIDTH * 4 - 1) / (4 * GPU_TEXWIDTH);
-	assert(start < end);
-
-}
-
 CMemoryTarget* CMemoryTargetMngr::SearchExistForceTarget(int start, int end, int clutsize, const tex0Info& tex0)
 {
 	for (list<CMemoryTarget>::iterator it = listTargets.begin(); it != listTargets.end();)
@@ -289,6 +261,33 @@ CMemoryTarget* CMemoryTargetMngr::ClearedTargetsSearch(u32 fmt, int widthmult, i
 	return targ;
 }
 
+void CMemoryTargetMngr::GetClutVariables(int& clutsize, const tex0Info& tex0)
+{
+	clutsize = 0;
+
+	if (PSMT_ISCLUT(tex0.psm))
+	{
+		int entries = PSMT_IS8CLUT(tex0.psm) ? 256 : 16;
+
+		if (PSMT_IS32BIT(tex0.cpsm))
+			clutsize = min(entries, 256 - tex0.csa * 16) * 4;
+		else
+			clutsize = min(entries, 512 - tex0.csa * 16) * 2;
+	}
+}
+
+void CMemoryTargetMngr::GetMemAddress(int& start, int& end,  const tex0Info& tex0)
+{
+	int nbStart, nbEnd;
+	GetRectMemAddressZero(nbStart, nbEnd, tex0.psm, tex0.tw, tex0.th, tex0.tbp0, tex0.tbw);
+	assert(nbStart < nbEnd);
+	nbEnd = min(nbEnd, MEMORY_END);
+
+	start = nbStart / (4 * GPU_TEXWIDTH);
+	end = (nbEnd + GPU_TEXWIDTH * 4 - 1) / (4 * GPU_TEXWIDTH);
+	assert(start < end);
+
+}
 
 CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, bool forcevalidate)
 {
@@ -306,7 +305,7 @@ CMemoryTarget* CMemoryTargetMngr::GetMemoryTarget(const tex0Info& tex0, bool for
 
 	if (it != NULL) return it;
 
-	return CreateMemoryTarget(tex0, start, end, clutsize);
+	return CreateMemoryTarget(start, end, clutsize, tex0);
 }
 
 #if defined(ZEROGS_SSE2)
@@ -379,7 +378,7 @@ __forceinline void unpack16(u16* src, u16* dst, int height)
 	}
 }
 
-CMemoryTarget* CMemoryTargetMngr::CreateMemoryTarget(const tex0Info& tex0, int start, int end, int clutsize)
+CMemoryTarget* CMemoryTargetMngr::CreateMemoryTarget(int start, int end, int clutsize, const tex0Info& tex0)
 {
 	// couldn't find so create
 	CMemoryTarget* targ;
@@ -417,7 +416,9 @@ CMemoryTarget* CMemoryTargetMngr::CreateMemoryTarget(const tex0Info& tex0, int s
 		targ->psm = tex0.psm;
 		targ->cpsm = tex0.cpsm;
 		targ->height = end - start;
-	} else {
+	} 
+	else 
+	{
 		// not initialized yet
 		targ->fmt = fmt;
 		targ->realy = targ->starty = start;
@@ -587,7 +588,8 @@ void CMemoryTargetMngr::ClearRange(int nbStartY, int nbEndY)
 			}
 		}
 
-		++it;
+		//++it;
+		std::advance(it,1);
 	}
 }
 
@@ -603,7 +605,8 @@ void CMemoryTargetMngr::DestroyCleared()
 			continue;
 		}
 
-		++it;
+		//++it;
+		std::advance(it,1);
 	}
 
 	if ((curstamp % FORCE_TEXDESTROY_THRESH) == 0)
@@ -617,7 +620,8 @@ void CMemoryTargetMngr::DestroyCleared()
 				continue;
 			}
 
-			++it;
+			//++it;
+			std::advance(it,1);
 		}
 	}
 
@@ -637,7 +641,8 @@ void CMemoryTargetMngr::DestroyOldest()
 	while (it != listTargets.end())
 	{
 		if (it->usedstamp < itbest->usedstamp) itbest = it;
-		++it;
+		//++it;
+		std::advance(it,1);
 	}
 
 	listTargets.erase(itbest);

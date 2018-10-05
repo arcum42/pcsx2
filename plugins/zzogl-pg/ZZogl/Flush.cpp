@@ -326,14 +326,16 @@ inline void TargetLog(int& tbw, int& tbp0, int& tpsm, VB& curvb, bool miss)
 
 			typedef map<u32, CRenderTarget*> MAPTARGETS;
 
-			for (MAPTARGETS::iterator itnew = s_RTs.mapTargets.begin(); itnew != s_RTs.mapTargets.end(); ++itnew)
+			//for (MAPTARGETS::iterator itnew = s_RTs.mapTargets.begin(); itnew != s_RTs.mapTargets.end(); ++itnew)
+			for (auto& itnew : s_RTs.mapTargets)
 			{
-				ZZLog::Debug_Log("\tRender %x 0x%x %x", itnew->second->fbw, itnew->second->fbp, itnew->second->psm);
+				ZZLog::Debug_Log("\tRender %x 0x%x %x", itnew.second->fbw, itnew.second->fbp, itnew.second->psm);
 			}
 
-			for (MAPTARGETS::iterator itnew = s_DepthRTs.mapTargets.begin(); itnew != s_DepthRTs.mapTargets.end(); ++itnew)
+			//for (MAPTARGETS::iterator itnew = s_DepthRTs.mapTargets.begin(); itnew != s_DepthRTs.mapTargets.end(); ++itnew)
+			for (auto& itnew : s_DepthRTs.mapTargets)
 			{
-				ZZLog::Debug_Log("\tDepth %x 0x%x %x", itnew->second->fbw, itnew->second->fbp, itnew->second->psm);
+				ZZLog::Debug_Log("\tDepth %x 0x%x %x", itnew.second->fbw, itnew.second->fbp, itnew.second->psm);
 			}
 
 			ZZLog::Debug_Log("\tCurvb 0x%x 0x%x 0x%x %x", curvb.frame.fbp, curvb.prndr->end, curvb.prndr->fbp, curvb.prndr->fbw);

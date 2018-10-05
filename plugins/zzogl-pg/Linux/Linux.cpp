@@ -170,18 +170,19 @@ void CreateGameHackTable(GtkWidget *treeview, gameHacks hacks)
 	add_map_entry(GAME_NOLOGZ, "20000000", "No logarithmic Z - 20000000. Could decrease number of Z-artifacts.");
 	add_map_entry(GAME_AUTOSKIPDRAW, "40000000", "Remove blur effect on some games\nSlow games.");
 
-	for (map<string, confOptsStruct>::iterator it = mapConfOpts.begin(); it != mapConfOpts.end(); ++it)
+	//for (map<string, confOptsStruct>::iterator it = mapConfOpts.begin(); it != mapConfOpts.end(); ++it)
+	for (auto& it : mapConfOpts)
 	{
 		gtk_list_store_append(treestore, &treeiter);//new row
-		itval = (hacks._u32 & it->second.value) ? true : false;
+		itval = (hacks._u32 & it.second.value) ? true : false;
 		
-		if (conf.def_hacks._u32 & it->second.value)
+		if (conf.def_hacks._u32 & it.second.value)
 		{
-			snprintf(descbuf, 254, "*%s", it->second.desc);
+			snprintf(descbuf, 254, "*%s", it.second.desc);
 		}
 		else
 		{
-			snprintf(descbuf, 254, "%s", it->second.desc);
+			snprintf(descbuf, 254, "%s", it.second.desc);
 		}
 		
 		gtk_list_store_set(treestore, &treeiter, 0, itval, 1, descbuf, -1);
@@ -208,12 +209,13 @@ void SaveGameHackTable(GtkWidget *treeview, gameHacks& hacks)
 
 	hacks._u32 = 0;
 
-	for (map<string, confOptsStruct>::iterator it = mapConfOpts.begin(); it != mapConfOpts.end(); ++it)
+	//for (map<string, confOptsStruct>::iterator it = mapConfOpts.begin(); it != mapConfOpts.end(); ++it)
+	for (auto& it : mapConfOpts)
 	{
 		treeoptval = false;
 		gtk_tree_model_get(treemodel, &treeiter, 0, &treeoptval, -1);
 
-		if (treeoptval) hacks._u32 |= it->second.value;
+		if (treeoptval) hacks._u32 |= it.second.value;
 
 		gtk_tree_model_iter_next(treemodel, &treeiter);
 	}

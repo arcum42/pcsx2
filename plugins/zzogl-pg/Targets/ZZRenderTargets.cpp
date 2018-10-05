@@ -770,16 +770,16 @@ void CRenderTargetMngr::Destroy()
 {
 	FUNCLOG
 
-	for (MAPTARGETS::iterator it = mapTargets.begin(); it != mapTargets.end(); ++it)
+	for (auto& it : mapTargets)
 	{
-		delete it->second;
+		delete it.second;
 	}
 
 	mapTargets.clear();
 
-	for (MAPTARGETS::iterator it = mapDummyTargs.begin(); it != mapDummyTargs.end(); ++it)
+	for (auto& it : mapDummyTargs)
 	{
-		delete it->second;
+		delete it.second;
 	}
 
 	mapDummyTargs.clear();
@@ -800,6 +800,7 @@ void CRenderTargetMngr::DestroyAllTargs(int start, int end, int fbw)
 	FUNCLOG
 
 	for (MAPTARGETS::iterator it = mapTargets.begin(); it != mapTargets.end();)
+	
 	{
 		if (it->second->start < end && start < it->second->end)
 		{
