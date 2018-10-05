@@ -578,7 +578,7 @@ inline bool RenderLookForABetterTarget(int fbp, int tbp, list<CRenderTarget*>& l
 
 	return false;
 }
-
+inline void RenderCheckForMemory(tex0Info& texframe, list<CRenderTarget*>& listTargs, int circuit);
 // First try to draw frame from targets. 
 inline void RenderCheckForTargets(tex0Info& texframe, list<CRenderTarget*>& listTargs, int circuit)
 {
@@ -665,6 +665,9 @@ inline void RenderCheckForTargets(tex0Info& texframe, list<CRenderTarget*>& list
 
 		++it;
 	}
+		// if we could not draw image from target's, do it from memory.
+		// Test with Ape Escape: Pumped and Primed.
+		RenderCheckForMemory(texframe, listTargs, circuit);
 }
 
 
@@ -961,8 +964,6 @@ void RenderCRTC()
 		list<CRenderTarget*> listTargs;
 
 		RenderCheckForTargets(texframe, listTargs, i);
-		// if we could not draw image from target's, do it from memory
-		RenderCheckForMemory(texframe, listTargs, i);
 	}
 
 	GL_REPORT_ERRORD();
