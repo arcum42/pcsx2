@@ -327,4 +327,5 @@ Finish:
 #endif
 
     replay_mode = false;
+}
 #endif
