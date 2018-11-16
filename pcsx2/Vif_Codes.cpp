@@ -18,7 +18,7 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "Vif_Dma.h"
-#include "newVif.h"
+#include "newVif/newVif.h"
 #include "VUmicro.h"
 #include "MTVU.h"
 

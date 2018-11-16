@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Vif_Dma.h"
-#include "newVif.h"
+#include "newVif/newVif.h"
 
 //------------------------------------------------------------------
 // VifCode Transfer Interpreter (Vif0/Vif1)

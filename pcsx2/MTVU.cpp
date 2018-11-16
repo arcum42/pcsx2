@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "MTVU.h"
-#include "newVif.h"
+#include "newVif/newVif.h"
 #include "Gif_Unit.h"
 
 __aligned16 VU_Thread vu1Thread(CpuVU1, VU1);

@@ -515,7 +515,6 @@ set(pcsx2x86Sources
 	x86/iR3000Atables.cpp
 	x86/iR5900Misc.cpp
 	x86/ir5900tables.cpp
-	x86/iVU1micro.cpp
 	x86/ix86-32/iCore-32.cpp
 	x86/ix86-32/iR5900-32.cpp
 	x86/ix86-32/iR5900Arit.cpp
@@ -528,16 +527,16 @@ set(pcsx2x86Sources
 	x86/ix86-32/iR5900Shift.cpp
 	x86/ix86-32/iR5900Templates.cpp
 	x86/ix86-32/recVTLB.cpp
-	x86/newVif_Dynarec.cpp
-	x86/newVif_Unpack.cpp
-	x86/newVif_UnpackSSE.cpp
+	x86/newVif/newVif_Dynarec.cpp
+	x86/newVif/newVif_Unpack.cpp
+	x86/newVif/newVif_UnpackSSE.cpp
 	)
 if (NOT DISABLE_SVU)
     set(pcsx2x86Sources ${pcsx2x86Sources}
-	x86/sVU_Lower.cpp
-	x86/sVU_Micro.cpp
-	x86/sVU_Upper.cpp
-	x86/sVU_zerorec.cpp
+	x86/sVU/sVU_Lower.cpp
+	x86/sVU/sVU_Micro.cpp
+	x86/sVU/sVU_Upper.cpp
+	x86/sVU/sVU_zerorec.cpp
     )
 endif()
 
@@ -558,32 +557,32 @@ set(pcsx2x86Headers
 	x86/iR5900Move.h
 	x86/iR5900MultDiv.h
 	x86/iR5900Shift.h
-	x86/microVU_Alloc.inl
-	x86/microVU_Analyze.inl
-	x86/microVU_Branch.inl
-	x86/microVU_Clamp.inl
-	x86/microVU_Compile.inl
-	x86/microVU.cpp
-	x86/microVU_Execute.inl
-	x86/microVU_Flags.inl
-	x86/microVU.h
-	x86/microVU_IR.h
-	x86/microVU_Log.inl
-	x86/microVU_Lower.inl
-	x86/microVU_Macro.inl
-	x86/microVU_Misc.h
-	x86/microVU_Misc.inl
-	x86/microVU_Profiler.h
-	x86/microVU_Tables.inl
-	x86/microVU_Upper.inl
-	x86/newVif.h
-	x86/newVif_HashBucket.h
-	x86/newVif_UnpackSSE.h
+	x86/microVU/microVU_Alloc.inl
+	x86/microVU/microVU_Analyze.inl
+	x86/microVU/microVU_Branch.inl
+	x86/microVU/microVU_Clamp.inl
+	x86/microVU/microVU_Compile.inl
+	x86/microVU/microVU.cpp
+	x86/microVU/microVU_Execute.inl
+	x86/microVU/microVU_Flags.inl
+	x86/microVU/microVU.h
+	x86/microVU/microVU_IR.h
+	x86/microVU/microVU_Log.inl
+	x86/microVU/microVU_Lower.inl
+	x86/microVU/microVU_Macro.inl
+	x86/microVU/microVU_Misc.h
+	x86/microVU/microVU_Misc.inl
+	x86/microVU/microVU_Profiler.h
+	x86/microVU/microVU_Tables.inl
+	x86/microVU/microVU_Upper.inl
+	x86/newVif/newVif.h
+	x86/newVif/newVif_HashBucket.h
+	x86/newVif/newVif_UnpackSSE.h
 	x86/R5900_Profiler.h
-	x86/sVU_Compare.h
-	x86/sVU_Debug.h
-	x86/sVU_Micro.h
-	x86/sVU_zerorec.h
+	x86/sVU/sVU_Compare.h
+	x86/sVU/sVU_Debug.h
+	x86/sVU/sVU_Micro.h
+	x86/sVU/sVU_zerorec.h
 	)
 
 # collect .S files

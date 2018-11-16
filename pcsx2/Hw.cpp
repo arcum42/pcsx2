@@ -17,7 +17,7 @@
 #include "Common.h"
 
 #include "Hardware.h"
-#include "newVif.h"
+#include "newVif/newVif.h"
 #include "IPU/IPUdma.h"
 #include "Gif_Unit.h"
 

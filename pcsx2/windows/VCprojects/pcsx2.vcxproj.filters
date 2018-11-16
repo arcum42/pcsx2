@@ -159,43 +159,43 @@
     <None Include="..\..\x86\aVUzerorec.S">
       <Filter>System\Linux</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Alloc.inl">
+    <None Include="..\..\x86\microVU\microVU_Alloc.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Analyze.inl">
+    <None Include="..\..\x86\microVU\microVU_Analyze.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Branch.inl">
+    <None Include="..\..\x86\microVU\microVU_Branch.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Clamp.inl">
+    <None Include="..\..\x86\microVU\microVU_Clamp.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Compile.inl">
+    <None Include="..\..\x86\microVU\microVU_Compile.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Execute.inl">
+    <None Include="..\..\x86\microVU\microVU_Execute.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Flags.inl">
+    <None Include="..\..\x86\microVU\microVU_Flags.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Log.inl">
+    <None Include="..\..\x86\microVU\microVU_Log.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Lower.inl">
+    <None Include="..\..\x86\microVU\microVU_Lower.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Macro.inl">
+    <None Include="..\..\x86\microVU\microVU_Macro.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Misc.inl">
+    <None Include="..\..\x86\microVU\microVU_Misc.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Tables.inl">
+    <None Include="..\..\x86\microVU\microVU_Tables.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
-    <None Include="..\..\x86\microVU_Upper.inl">
+    <None Include="..\..\x86\microVU\microVU_Upper.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl">
@@ -287,22 +287,19 @@
     <ClCompile Include="..\..\VUmicroMem.cpp">
       <Filter>System\Ps2\EmotionEngine\VU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\iVU1micro.cpp">
-      <Filter>System\Ps2\EmotionEngine\VU\Dynarec</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\x86\microVU.cpp">
+    <ClCompile Include="..\..\x86\microVU\microVU.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp">
+    <ClCompile Include="..\..\x86\sVU\sVU_Lower.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp">
+    <ClCompile Include="..\..\x86\sVU\sVU_Micro.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp">
+    <ClCompile Include="..\..\x86\sVU\sVU_Upper.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp">
+    <ClCompile Include="..\..\x86\sVU\sVU_zerorec.cpp">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClCompile>
     <ClCompile Include="..\..\VU0.cpp">
@@ -356,13 +353,13 @@
     <ClCompile Include="..\..\Vif_Unpack.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\newVif_Unpack.cpp">
+    <ClCompile Include="..\..\x86\newVif\newVif_Unpack.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\newVif_Dynarec.cpp">
+    <ClCompile Include="..\..\x86\newVif\newVif_Dynarec.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\x86\newVif_UnpackSSE.cpp">
+    <ClCompile Include="..\..\x86\newVif\newVif_UnpackSSE.cpp">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SPR.cpp">
@@ -936,22 +933,22 @@
     <ClInclude Include="..\..\VUmicro.h">
       <Filter>System\Ps2\EmotionEngine\VU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\microVU.h">
+    <ClInclude Include="..\..\x86\microVU\microVU.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\microVU_IR.h">
+    <ClInclude Include="..\..\x86\microVU\microVU_IR.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\microVU_Misc.h">
+    <ClInclude Include="..\..\x86\microVU\microVU_Misc.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_Debug.h">
+    <ClInclude Include="..\..\x86\sVU\Debug.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_Micro.h">
+    <ClInclude Include="..\..\x86\sVU\sVU_Micro.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\sVU_zerorec.h">
+    <ClInclude Include="..\..\x86\sVU\sVU_zerorec.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\Super VU</Filter>
     </ClInclude>
     <ClInclude Include="..\..\VUflags.h">
@@ -975,13 +972,13 @@
     <ClInclude Include="..\..\Vif_Unpack.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\newVif.h">
+    <ClInclude Include="..\..\x86\newVif\newVif.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\newVif_HashBucket.h">
+    <ClInclude Include="..\..\x86\newVif\newVif_HashBucket.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\newVif_UnpackSSE.h">
+    <ClInclude Include="..\..\x86\newVif\newVif_UnpackSSE.h">
       <Filter>System\Ps2\EmotionEngine\DMAC\Vif\Unpack\newVif\Dynarec</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SPR.h">
@@ -1218,7 +1215,7 @@
     <ClInclude Include="..\..\Gif_Unit.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\x86\microVU_Profiler.h">
+    <ClInclude Include="..\..\x86\microVU\microVU_Profiler.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </ClInclude>
     <ClInclude Include="..\..\AsyncFileReader.h">

@@ -71,19 +71,19 @@
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
     <None Include="..\..\x86\aVUzerorec.S" />
-    <None Include="..\..\x86\microVU_Alloc.inl" />
-    <None Include="..\..\x86\microVU_Analyze.inl" />
-    <None Include="..\..\x86\microVU_Branch.inl" />
-    <None Include="..\..\x86\microVU_Clamp.inl" />
-    <None Include="..\..\x86\microVU_Compile.inl" />
-    <None Include="..\..\x86\microVU_Execute.inl" />
-    <None Include="..\..\x86\microVU_Flags.inl" />
-    <None Include="..\..\x86\microVU_Log.inl" />
-    <None Include="..\..\x86\microVU_Lower.inl" />
-    <None Include="..\..\x86\microVU_Macro.inl" />
-    <None Include="..\..\x86\microVU_Misc.inl" />
-    <None Include="..\..\x86\microVU_Tables.inl" />
-    <None Include="..\..\x86\microVU_Upper.inl" />
+    <None Include="..\..\x86\microVU\microVU_Alloc.inl" />
+    <None Include="..\..\x86\microVU\microVU_Analyze.inl" />
+    <None Include="..\..\x86\microVU\microVU_Branch.inl" />
+    <None Include="..\..\x86\microVU\microVU_Clamp.inl" />
+    <None Include="..\..\x86\microVU\microVU_Compile.inl" />
+    <None Include="..\..\x86\microVU\microVU_Execute.inl" />
+    <None Include="..\..\x86\microVU\microVU_Flags.inl" />
+    <None Include="..\..\x86\microVU\microVU_Log.inl" />
+    <None Include="..\..\x86\microVU\microVU_Lower.inl" />
+    <None Include="..\..\x86\microVU\microVU_Macro.inl" />
+    <None Include="..\..\x86\microVU\microVU_Misc.inl" />
+    <None Include="..\..\x86\microVU\microVU_Tables.inl" />
+    <None Include="..\..\x86\microVU\microVU_Upper.inl" />
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl" />
     <CustomBuild Include="..\..\gui\Resources\AppIcon16.png">
       <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
@@ -221,18 +221,17 @@
     <ClCompile Include="..\..\MTVU.cpp" />
     <ClCompile Include="..\..\VUmicro.cpp" />
     <ClCompile Include="..\..\VUmicroMem.cpp" />
-    <ClCompile Include="..\..\x86\iVU1micro.cpp" />
-    <ClCompile Include="..\..\x86\microVU.cpp" />
-    <ClCompile Include="..\..\x86\sVU_Lower.cpp">
+    <ClCompile Include="..\..\x86\microVU\microVU.cpp" />
+    <ClCompile Include="..\..\x86\sVU\sVU_Lower.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Micro.cpp">
+    <ClCompile Include="..\..\x86\sVU\sVU_Micro.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_Upper.cpp">
+    <ClCompile Include="..\..\x86\sVU\sVU_Upper.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\x86\sVU_zerorec.cpp">
+    <ClCompile Include="..\..\x86\sVU\sVU_zerorec.cpp">
       <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\VU0.cpp" />
@@ -252,9 +251,9 @@
     <ClCompile Include="..\..\Vif_Codes.cpp" />
     <ClCompile Include="..\..\Vif_Transfer.cpp" />
     <ClCompile Include="..\..\Vif_Unpack.cpp" />
-    <ClCompile Include="..\..\x86\newVif_Unpack.cpp" />
-    <ClCompile Include="..\..\x86\newVif_Dynarec.cpp" />
-    <ClCompile Include="..\..\x86\newVif_UnpackSSE.cpp" />
+    <ClCompile Include="..\..\x86\newVif\newVif_Unpack.cpp" />
+    <ClCompile Include="..\..\x86\newVif\newVif_Dynarec.cpp" />
+    <ClCompile Include="..\..\x86\newVif\newVif_UnpackSSE.cpp" />
     <ClCompile Include="..\..\SPR.cpp" />
     <ClCompile Include="..\..\Gif.cpp" />
     <ClCompile Include="..\..\R5900OpcodeTables.cpp" />
@@ -463,14 +462,14 @@
     <ClInclude Include="..\..\MTVU.h" />
     <ClInclude Include="..\..\VU.h" />
     <ClInclude Include="..\..\VUmicro.h" />
-    <ClInclude Include="..\..\x86\microVU.h" />
-    <ClInclude Include="..\..\x86\microVU_IR.h" />
-    <ClInclude Include="..\..\x86\microVU_Misc.h" />
-    <ClInclude Include="..\..\x86\microVU_Profiler.h" />
+    <ClInclude Include="..\..\x86\microVU\microVU.h" />
+    <ClInclude Include="..\..\x86\microVU\microVU_IR.h" />
+    <ClInclude Include="..\..\x86\microVU\microVU_Misc.h" />
+    <ClInclude Include="..\..\x86\microVU\microVU_Profiler.h" />
     <ClInclude Include="..\..\x86\R5900_Profiler.h" />
-    <ClInclude Include="..\..\x86\sVU_Debug.h" />
-    <ClInclude Include="..\..\x86\sVU_Micro.h" />
-    <ClInclude Include="..\..\x86\sVU_zerorec.h" />
+    <ClInclude Include="..\..\x86\sVU\sVU_Debug.h" />
+    <ClInclude Include="..\..\x86\sVU\sVU_Micro.h" />
+    <ClInclude Include="..\..\x86\sVU\sVU_zerorec.h" />
     <ClInclude Include="..\..\VUflags.h" />
     <ClInclude Include="..\..\VUops.h" />
     <ClInclude Include="..\..\Sif.h" />
@@ -478,9 +477,9 @@
     <ClInclude Include="..\..\Vif.h" />
     <ClInclude Include="..\..\Vif_Dma.h" />
     <ClInclude Include="..\..\Vif_Unpack.h" />
-    <ClInclude Include="..\..\x86\newVif.h" />
-    <ClInclude Include="..\..\x86\newVif_HashBucket.h" />
-    <ClInclude Include="..\..\x86\newVif_UnpackSSE.h" />
+    <ClInclude Include="..\..\x86\newVif\newVif.h" />
+    <ClInclude Include="..\..\x86\newVif\newVif_HashBucket.h" />
+    <ClInclude Include="..\..\x86\newVif\newVif_UnpackSSE.h" />
     <ClInclude Include="..\..\SPR.h" />
     <ClInclude Include="..\..\Gif.h" />
     <ClInclude Include="..\..\R5900.h" />

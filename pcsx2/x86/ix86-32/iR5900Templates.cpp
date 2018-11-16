@@ -26,8 +26,8 @@
 #include "VUmicro.h"
 
 #ifndef DISABLE_SVU
-#include "sVU_Micro.h"
-#include "sVU_zerorec.h"
+#include "sVU/sVU_Micro.h"
+#include "sVU/sVU_zerorec.h"
 #endif
 
 #include "vtlb.h"

@@ -19,7 +19,7 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "VUmicro.h"
-#include "newVif.h"
+#include "newVif/newVif.h"
 
 u32 g_vif1Cycles = 0;
 

@@ -17,7 +17,7 @@
 #include "Common.h"
 #include "IopCommon.h"
 #include "VUmicro.h"
-#include "newVif.h"
+#include "newVif/newVif.h"
 #include "MTVU.h"
 
 #include "Elfheader.h"
