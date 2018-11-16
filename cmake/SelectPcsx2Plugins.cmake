@@ -4,11 +4,9 @@
 set(msg_dep_common_libs "check these libraries -> wxWidgets (>=3.0), aio")
 set(msg_dep_pcsx2       "check these libraries -> wxWidgets (>=3.0), gtk2, zlib (>=1.2.4), pcsx2 common libs")
 set(msg_dep_cdvdgiga    "check these libraries -> gtk2, libudev")
-set(msg_dep_zerogs      "check these libraries -> glew, opengl, X11, nvidia-cg-toolkit (>=2.1)")
 set(msg_dep_gsdx        "check these libraries -> opengl, png (>=1.2), zlib (>=1.2.4), X11, liblzma")
 set(msg_dep_onepad      "check these libraries -> sdl2, X11, gtk2")
 set(msg_dep_spu2x       "check these libraries -> soundtouch (>=1.5), alsa, portaudio (>=1.9), sdl (>=1.2) pcsx2 common libs")
-set(msg_dep_zerospu2    "check these libraries -> soundtouch (>=1.5), alsa")
 if(GLSL_API)
 	set(msg_dep_zzogl       "check these libraries -> glew, jpeg (>=6.2), opengl, X11, pcsx2 common libs")
 else(GLSL_API)
@@ -161,24 +159,6 @@ endif()
 #---------------------------------------
 
 #---------------------------------------
-#			zerogs
-#---------------------------------------
-# requires:	-GLEW
-#			-OpenGL
-#			-X11
-#			-CG
-#---------------------------------------
-if(EXTRA_PLUGINS)
-    if(GLEW_FOUND AND OPENGL_FOUND AND X11_FOUND AND CG_FOUND)
-        set(zerogs TRUE)
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerogs")
-        set(zerogs FALSE)
-    else()
-        set(zerogs FALSE)
-        print_dep("Skip build of zerogs: miss some dependencies" "${msg_dep_zerogs}")
-    endif()
-endif()
-#---------------------------------------
 
 #---------------------------------------
 #			zzogl-pg
@@ -277,26 +257,6 @@ endif()
 #---------------------------------------
 
 #---------------------------------------
-#			zerospu2
-#---------------------------------------
-# requires: -SoundTouch
-#			-ALSA
-#			-PortAudio
-#---------------------------------------
-if(EXTRA_PLUGINS)
-    if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2" AND SOUNDTOUCH_FOUND AND ALSA_FOUND)
-        set(zerospu2 TRUE)
-        # Comment the next line, if you want to compile zerospu2
-        set(zerospu2 FALSE)
-        message(STATUS "Don't build zerospu2. It is super-seeded by spu2x")
-    elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/zerospu2")
-        set(zerospu2 FALSE)
-    else()
-        set(zerospu2 FALSE)
-        print_dep("Skip build of zerospu2: miss some dependencies" "${msg_dep_zerospu2}")
-    endif()
-endif()
-#---------------------------------------
 
 #---------------------------------------
 #			USBnull
@@ -305,13 +265,3 @@ if(GTKn_FOUND)
     set(USBnull TRUE)
 endif()
 #---------------------------------------
-
-#-------------------------------------------------------------------------------
-# Super-seeded by cdvdGigaherz
-set(CDVDpeops FALSE)
-
-# [TODO] Write CMakeLists.txt for these plugins. (or not ;) )
-set(PeopsSPU2 FALSE)
-set(SSSPSXPAD FALSE)
-set(xpad FALSE)
-#-------------------------------------------------------------------------------
