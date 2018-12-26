@@ -28,6 +28,7 @@
 #include "Renderers/OpenGL/GSDeviceOGL.h"
 #include "Renderers/OpenGL/GSRendererOGL.h"
 #include "Renderers/OpenCL/GSRendererCL.h"
+#include "Renderers/Vulkan/Device.h"
 #include "GSLzma.h"
 
 #ifdef _WIN32
@@ -371,6 +372,11 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 			s_renderer_name = " OGL";
 			renderer_fullname = "OpenGL";
 			break;
+		case GSRendererType::VK_SW:
+			dev = new Vulkan::Device();
+			s_renderer_name = " VK";
+			renderer_fullname = " Vulkan";
+			break;
 		}
 
 		printf("Current Renderer: %s %s\n", renderer_fullname, renderer_mode);
@@ -397,6 +403,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				break;
 			case GSRendererType::DX1011_SW:
 			case GSRendererType::OGL_SW:
+			case GSRendererType::VK_SW:
 				s_gs = new GSRendererSW(threads);
 				s_renderer_type = " SW";
 				break;

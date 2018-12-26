@@ -41,6 +41,7 @@
 #include <d3d11.h>
 #include <comutil.h>
 #include <atlcomcli.h>
+#include <vulkan/vulkan.hpp>
 
 #else
 
