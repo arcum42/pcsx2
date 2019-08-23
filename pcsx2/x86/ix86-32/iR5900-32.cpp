@@ -126,14 +126,14 @@ void _eeFlushAllUnused()
 
 		if( i < 32 && GPR_IS_CONST1(i) ) _flushConstReg(i);
 		else {
-			_deleteGPRtoXMMreg(i, 1);
+			XMM_Reg.deleteGPR(i, 1);
 		}
 	}
 
 	//TODO when used info is done for FPU and VU0
 	for(i = 0; i < iREGCNT_XMM; ++i) {
-		if( xmmregs[i].inuse && xmmregs[i].type != XMMTYPE_GPRREG )
-			_freeXMMreg(i);
+		if( XMM_Reg.xmmregs[i].inuse && XMM_Reg.xmmregs[i].type != XMMTYPE_GPRREG )
+			XMM_Reg.freeReg(i);
 	}
 }
 
@@ -161,7 +161,7 @@ void _eeMoveGPRtoR(const xRegisterLong& to, int fromgpr)
 	else {
 		int mmreg;
 
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (xmmregs[mmreg].mode&MODE_WRITE)) {
+		if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 && (XMM_Reg.xmmregs[mmreg].mode&MODE_WRITE)) {
 			xMOVD(to, xRegisterSSE(mmreg));
 		}
 		else {
@@ -177,7 +177,7 @@ void _eeMoveGPRtoM(uptr to, int fromgpr)
 	else {
 		int mmreg;
 
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
+		if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[(void*)(to)], xRegisterSSE(mmreg));
 		}
 		else {
@@ -194,7 +194,7 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 	else {
 		int mmreg;
 
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
+		if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, fromgpr, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[xAddressReg(to)], xRegisterSSE(mmreg));
 		}
 		else {
@@ -214,15 +214,17 @@ void eeSignExtendTo(int gpr, bool onlyupper)
 
 int _flushXMMunused()
 {
-	u32 i;
-	for (i=0; i<iREGCNT_XMM; i++) {
-		if (!xmmregs[i].inuse || xmmregs[i].needed || !(xmmregs[i].mode&MODE_WRITE) ) continue;
+	for (u32 i=0; i<iREGCNT_XMM; i++) 
+	{
+		if (!XMM_Reg.xmmregs[i].inuse || XMM_Reg.xmmregs[i].needed || !(XMM_Reg.xmmregs[i].mode&MODE_WRITE) ) continue;
 
-		if (xmmregs[i].type == XMMTYPE_GPRREG ) {
-			//if( !(g_pCurInstInfo->regs[xmmregs[i].reg]&EEINST_USED) ) {
-			if( !_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, xmmregs[i].reg) ) {
-				_freeXMMreg(i);
-				xmmregs[i].inuse = 1;
+		if (XMM_Reg.xmmregs[i].type == XMMTYPE_GPRREG) 
+		{
+			//if( !(g_pCurInstInfo->regs[XMM_Reg.xmmregs[i].reg]&EEINST_USED) ) {
+			if (!_recIsRegWritten(g_pCurInstInfo+1, (s_nEndBlock-pc)/4, XMMTYPE_GPRREG, XMM_Reg.xmmregs[i].reg)) 
+			{
+				XMM_Reg.freeReg(i);
+				XMM_Reg.xmmregs[i].inuse = 1;
 				return 1;
 			}
 		}
@@ -847,7 +849,7 @@ void SetBranchReg( u32 reg )
 //		else {
 //			int mmreg;
 //
-//			if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ)) >= 0 ) {
+//			if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, reg, MODE_READ)) >= 0 ) {
 //				xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
 //			}
 //			else {
@@ -907,7 +909,8 @@ void SaveBranchState()
 	s_saveFlushedConstReg = g_cpuFlushedConstReg;
 	s_psaveInstInfo = g_pCurInstInfo;
 
-	memcpy(s_saveXMMregs, xmmregs, sizeof(xmmregs));
+	//memcpy(XMM_Reg.s_saveXMMregs, XMM_Reg.xmmregs, sizeof(XMM_Reg.xmmregs));
+	XMM_Reg.backup();
 }
 
 void LoadBranchState()
@@ -919,7 +922,8 @@ void LoadBranchState()
 	g_cpuFlushedConstReg = s_saveFlushedConstReg;
 	g_pCurInstInfo = s_psaveInstInfo;
 
-	memcpy(xmmregs, s_saveXMMregs, sizeof(xmmregs));
+	//memcpy(XMM_Reg.xmmregs, XMM_Reg.s_saveXMMregs, sizeof(XMM_Reg.xmmregs));
+	XMM_Reg.restore();
 }
 
 void iFlushCall(int flushtype)
@@ -945,12 +949,12 @@ void iFlushCall(int flushtype)
 		g_maySignalException = true;
 	}
 
-	if( flushtype & FLUSH_FREE_XMM )
-		_freeXMMregs();
-	else if( flushtype & FLUSH_FLUSH_XMM)
-		_flushXMMregs();
+	if (flushtype & FLUSH_FREE_XMM)
+		XMM_Reg.freeRegs();
+	else if (flushtype & FLUSH_FLUSH_XMM)
+		XMM_Reg.flushRegs();
 
-	if( flushtype & FLUSH_CACHED_REGS )
+	if (flushtype & FLUSH_CACHED_REGS)
 		_flushConstRegs();
 }
 
@@ -1298,10 +1302,10 @@ void recompileNextInstruction(int delayslot)
 	g_pCurInstInfo++;
 
 	for(i = 0; i < iREGCNT_XMM; ++i) {
-		if( xmmregs[i].inuse ) {
-			count = _recIsRegWritten(g_pCurInstInfo, (s_nEndBlock-pc)/4 + 1, xmmregs[i].type, xmmregs[i].reg);
-			if( count > 0 ) xmmregs[i].counter = 1000-count;
-			else xmmregs[i].counter = 0;
+		if( XMM_Reg.xmmregs[i].inuse ) {
+			count = _recIsRegWritten(g_pCurInstInfo, (s_nEndBlock-pc)/4 + 1, XMM_Reg.xmmregs[i].type, XMM_Reg.xmmregs[i].reg);
+			if( count > 0 ) XMM_Reg.xmmregs[i].counter = 1000-count;
+			else XMM_Reg.xmmregs[i].counter = 0;
 		}
 	}
 
@@ -1329,7 +1333,7 @@ void recompileNextInstruction(int delayslot)
 		if (check_branch_delay) {
 			DevCon.Warning("Branch %x in delay slot!", cpuRegs.code);
 			_clearNeededX86regs();
-			_clearNeededXMMregs();
+			XMM_Reg.clearNeededRegs();
 			pc += 4;
 			g_cpuFlushedPC = false;
 			g_cpuFlushedCode = false;
@@ -1355,18 +1359,18 @@ void recompileNextInstruction(int delayslot)
 			recCall(opcode.interpret);
 #if 0
 			// TODO: Free register ?
-			//	_freeXMMregs();
+			//	XMM_Reg.freeRegs();
 #endif
 		}
 	}
 
-	if (!delayslot && (_getNumXMMwrite() > 2)) _flushXMMunused();
+	if (!delayslot && (XMM_Reg.getFlagCount(MODE_WRITE) > 2)) _flushXMMunused();
 
 	//CHECK_XMMCHANGED();
 	_clearNeededX86regs();
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 
-//	_freeXMMregs();
+//	XMM_Reg.freeRegs();
 //	_flushCachedRegs();
 //	g_cpuHasConstReg = 1;
 
@@ -1709,7 +1713,7 @@ static void __fastcall recRecompile( const u32 startpc )
 	pxAssert( g_cpuConstRegs[0].UD[0] == 0 );
 
 	_initX86regs();
-	_initXMMregs();
+	XMM_Reg.init();
 
 	if( EmuConfig.Cpu.Recompiler.PreBlockCheckEE )
 	{

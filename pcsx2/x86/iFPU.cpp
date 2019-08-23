@@ -156,7 +156,7 @@ void recCTC1()
 	}
 	else
 	{
-		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+		int mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
 		if( mmreg >= 0 )
 		{
@@ -165,7 +165,7 @@ void recCTC1()
 
 		else
 		{
-			_deleteGPRtoXMMreg(_Rt_, 1);
+			XMM_Reg.deleteGPR(_Rt_, 1);
 
 			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
 			xMOV(ptr[&fpuRegs.fprc[ _Fs_ ]], eax);
@@ -187,24 +187,24 @@ void recMFC1()
 
 	_eeOnWriteReg(_Rt_, 1);
 
-	regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+	regs = XMM_Reg.checkReg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
 	if( regs >= 0 )
 	{
-		_deleteGPRtoXMMreg(_Rt_, 2);
+		XMM_Reg.deleteGPR(_Rt_, 2);
 		_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs, 0);
 	}
 	else
 	{
-		regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+		regt = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
 		if( regt >= 0 )
 		{
-			if( xmmregs[regt].mode & MODE_WRITE )
+			if( XMM_Reg.xmmregs[regt].mode & MODE_WRITE )
 			{
 				xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rt_].UL[2]], xRegisterSSE(regt));
 			}
-			xmmregs[regt].inuse = 0;
+			XMM_Reg.xmmregs[regt].inuse = 0;
 		}
 
 		_deleteEEreg(_Rt_, 0);
@@ -227,21 +227,21 @@ void recMTC1()
 	EE::Profiler.EmitOp(eeOpcode::MTC1);
 	if( GPR_IS_CONST1(_Rt_) )
 	{
-		_deleteFPtoXMMreg(_Fs_, 0);
+		XMM_Reg.deleteFP(_Fs_, 0);
 		xMOV(ptr32[&fpuRegs.fpr[ _Fs_ ].UL], g_cpuConstRegs[_Rt_].UL[0]);
 	}
 	else
 	{
-		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
+		int mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
 		if( mmreg >= 0 )
 		{
 			if( g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE )
 			{
 				// transfer the reg directly
-				_deleteGPRtoXMMreg(_Rt_, 2);
-				_deleteFPtoXMMreg(_Fs_, 2);
-				_allocFPtoXMMreg(mmreg, _Fs_, MODE_WRITE);
+				XMM_Reg.deleteGPR(_Rt_, 2);
+				XMM_Reg.deleteFP(_Fs_, 2);
+				XMM_Reg.allocFP(mmreg, _Fs_, MODE_WRITE);
 			}
 			else
 			{
@@ -312,14 +312,14 @@ REC_FPUFUNC(RSQRT_S);
 
 static __aligned16 u64 FPU_FLOAT_TEMP[2];
 __fi void fpuFloat4(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
-	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	if (t1reg >= 0) {
 		xMOVSS(xRegisterSSE(t1reg), xRegisterSSE(regd));
 		xAND.PS(xRegisterSSE(t1reg), ptr[&s_neg[0]]);
 		xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]);
 		xMAX.SS(xRegisterSSE(regd), ptr[&g_minvals[0]]);
 		xOR.PS(xRegisterSSE(regd), xRegisterSSE(t1reg));
-		_freeXMMreg(t1reg);
+		XMM_Reg.freeReg(t1reg);
 	}
 	else {
 		Console.Error("fpuFloat2() allocation error");
@@ -401,7 +401,7 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 {
 	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
 	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
-	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
+	int xmmtemp = XMM_Reg.allocTemp(XMMT_FPS, -1); //temporary for anding with regd/regt
 
 	xMOVD(xRegister32(tempecx), xRegisterSSE(regd));
 	xMOVD(xRegister32(temp2), xRegisterSSE(regt));
@@ -478,7 +478,7 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 	x86SetJ8(j8Ptr[6]);
 	x86SetJ8(j8Ptr[7]);
 
-	_freeXMMreg(xmmtemp);
+	XMM_Reg.freeReg(xmmtemp);
 	_freeX86reg(temp2);
 	_freeX86reg(tempecx);
 }
@@ -547,7 +547,7 @@ static void (*recComOpXMM_to_XMM_REV[] )(x86SSERegType, x86SSERegType) = { //rev
 
 int recCommutativeOp(int info, int regd, int op)
 {
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -594,7 +594,7 @@ int recCommutativeOp(int info, int regd, int op)
 			break;
 	}
 
-	_freeXMMreg(t0reg);
+	XMM_Reg.freeReg(t0reg);
 	return regd;
 }
 //------------------------------------------------------------------
@@ -683,23 +683,23 @@ void recC_EQ_xmm(int info)
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			fpuFloat3(EEREC_S);
-			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(t0reg));
-				_freeXMMreg(t0reg);
+				XMM_Reg.freeReg(t0reg);
 			}
 			else xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
 			break;
 		case PROCESS_EE_T:
 			fpuFloat3(EEREC_T);
-			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
-				_freeXMMreg(t0reg);
+				XMM_Reg.freeReg(t0reg);
 			}
 			else xUCOMI.SS(xRegisterSSE(EEREC_T), ptr[&fpuRegs.fpr[_Fs_]]);
 			break;
@@ -754,23 +754,23 @@ void recC_LE_xmm(int info )
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			fpuFloat3(EEREC_S);
-			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(t0reg));
-				_freeXMMreg(t0reg);
+				XMM_Reg.freeReg(t0reg);
 			}
 			else xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
 			break;
 		case PROCESS_EE_T:
 			fpuFloat3(EEREC_T);
-			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
-				_freeXMMreg(t0reg);
+				XMM_Reg.freeReg(t0reg);
 			}
 			else {
 				xUCOMI.SS(xRegisterSSE(EEREC_T), ptr[&fpuRegs.fpr[_Fs_]]);
@@ -828,23 +828,23 @@ void recC_LT_xmm(int info)
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
 			fpuFloat3(EEREC_S);
-			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(t0reg));
-				_freeXMMreg(t0reg);
+				XMM_Reg.freeReg(t0reg);
 			}
 			else xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
 			break;
 		case PROCESS_EE_T:
 			fpuFloat3(EEREC_T);
-			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+			t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 			if (t0reg >= 0) {
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
-				_freeXMMreg(t0reg);
+				XMM_Reg.freeReg(t0reg);
 			}
 			else {
 				xUCOMI.SS(xRegisterSSE(EEREC_T), ptr[&fpuRegs.fpr[_Fs_]]);
@@ -922,7 +922,7 @@ void recCVT_W()
 	// as we also have an EmitOP() at recCVT_W() on iFPUd.cpp.  hence we have it below the possible return.
 	EE::Profiler.EmitOp(eeOpcode::CVTW);
 
-	int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+	int regs = XMM_Reg.checkReg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
 	if( regs >= 0 )
 	{
@@ -939,7 +939,7 @@ void recCVT_W()
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
-	_deleteFPtoXMMreg(_Fd_, 2);
+	XMM_Reg.deleteFP(_Fd_, 2);
 
 	xADD(edx, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
 
@@ -959,7 +959,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 {
 	u8 *pjmp1, *pjmp2;
 	u32 *ajmp32, *bjmp32;
-	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
@@ -999,7 +999,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	ClampValues(regd);
 	x86SetJ32(bjmp32);
 
-	_freeXMMreg(t1reg);
+	XMM_Reg.freeReg(t1reg);
 	_freeX86reg(tempReg);
 }
 
@@ -1016,7 +1016,7 @@ void recDIV_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::DIV_F);
 	bool roundmodeFlag = false;
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
     //Console.WriteLn("DIV");
 
 	if( CHECK_FPUNEGDIVHACK )
@@ -1091,7 +1091,7 @@ void recDIV_S_xmm(int info)
 			break;
 	}
 	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
-	_freeXMMreg(t0reg);
+	XMM_Reg.freeReg(t0reg);
 }
 
 FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -1105,7 +1105,7 @@ FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 void recMADDtemp(int info, int regd)
 {
 	int t1reg;
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -1233,14 +1233,14 @@ void recMADDtemp(int info, int regd)
 			break;
 		default:
 			if(regd == EEREC_ACC){
-				t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+				t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				xMOVSSZX(xRegisterSSE(t1reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(t0reg); fpuFloat2(t1reg); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_ADD(regd, t0reg);
-				_freeXMMreg(t1reg);
+				XMM_Reg.freeReg(t1reg);
 			}
 			else
 			{
@@ -1262,7 +1262,7 @@ void recMADDtemp(int info, int regd)
 	}
 
      ClampValues(regd);
-	 _freeXMMreg(t0reg);
+	 XMM_Reg.freeReg(t0reg);
 }
 
 void recMADD_S_xmm(int info)
@@ -1328,7 +1328,7 @@ FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED|XMMINFO_READS);
 void recMSUBtemp(int info, int regd)
 {
 int t1reg;
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -1428,14 +1428,14 @@ int t1reg;
 			break;
 		default:
 			if(regd == EEREC_ACC){
-				t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+				t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				xMOVSSZX(xRegisterSSE(t1reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(t0reg); fpuFloat2(t1reg); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(regd, t0reg);
-				_freeXMMreg(t1reg);
+				XMM_Reg.freeReg(t1reg);
 			}
 			else
 			{
@@ -1453,7 +1453,7 @@ int t1reg;
 	}
 
      ClampValues(regd);
-	 _freeXMMreg(t0reg);
+	 XMM_Reg.freeReg(t0reg);
 
 }
 
@@ -1528,7 +1528,7 @@ void recSUBhelper(int regd, int regt)
 
 void recSUBop(int info, int regd)
 {
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 
@@ -1572,7 +1572,7 @@ void recSUBop(int info, int regd)
 	}
 
 	ClampValues(regd);
-	_freeXMMreg(t0reg);
+	XMM_Reg.freeReg(t0reg);
 }
 
 void recSUB_S_xmm(int info)
@@ -1653,7 +1653,7 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 	u8 *pjmp1, *pjmp2;
 	u32 *pjmp32;
 	u8 *qjmp1, *qjmp2;
-	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
@@ -1701,7 +1701,7 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 	ClampValues(regd);
 	x86SetJ32(pjmp32);
 
-	_freeXMMreg(t1reg);
+	XMM_Reg.freeReg(t1reg);
 	_freeX86reg(tempReg);
 }
 
@@ -1723,7 +1723,7 @@ void recRSQRT_S_xmm(int info)
 	// iFPUd (Full mode) sets roundmode to nearest for rSQRT.
 	// Should this do the same, or should Full mode leave roundmode alone? --air
 
-	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t0reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	//Console.WriteLn("FPU: RSQRT");
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
@@ -1756,7 +1756,7 @@ void recRSQRT_S_xmm(int info)
 			else recRSQRThelper2(EEREC_D, t0reg);
 			break;
 	}
-	_freeXMMreg(t0reg);
+	XMM_Reg.freeReg(t0reg);
 }
 
 FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);

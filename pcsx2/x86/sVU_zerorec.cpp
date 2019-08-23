@@ -20,6 +20,10 @@
 #include <float.h>
 #include <list>
 #include <map>
+#include <array>
+
+// Needed in gcc for find.
+#include <algorithm>
 
 #include "Utilities/AsciiFile.h"
 
@@ -41,9 +45,6 @@
 #include "sVU_zerorec.h"
 #include "NakedAsm.h"
 #include "AppConfig.h"
-
-// Needed in gcc for find.
-#include <algorithm>
 
 using namespace x86Emitter;
 
@@ -248,7 +249,9 @@ class VuBaseBlock
 		u32 vuxyz; // corresponding bit is set if reg's xyz channels are used only
 		u32 vuxy; // corresponding bit is set if reg's xyz channels are used only
 
-		_xmmregs startregs[iREGCNT_XMM], endregs[iREGCNT_XMM];
+		//_xmmregs startregs[iREGCNT_XMM], endregs[iREGCNT_XMM];
+		std::array<_xmmregs, iREGCNT_XMM> startregs;
+		std::array<_xmmregs, iREGCNT_XMM> endregs;
 		int nStartx86, nEndx86; // indices into s_vecRegArray
 
 		int allocX86Regs;
@@ -2032,7 +2035,8 @@ void VuBaseBlock::AssignVFRegs()
 
 	// init the start regs
 	if (type & BLOCKTYPE_ANALYZED) return;  // nothing changed
-	memcpy(xmmregs, startregs, sizeof(xmmregs));
+	//memcpy(XMM_Reg.xmmregs, startregs, sizeof(XMM_Reg.xmmregs));
+	XMM_Reg.xmmregs = startregs;
 
 	if (type & BLOCKTYPE_ANALYZED)
 	{
@@ -2040,9 +2044,9 @@ void VuBaseBlock::AssignVFRegs()
 		// check if changed
 		for (i = 0; i < iREGCNT_XMM; ++i)
 		{
-			if (xmmregs[i].inuse != startregs[i].inuse)
+			if (XMM_Reg.xmmregs[i].inuse != startregs[i].inuse)
 				break;
-			if (xmmregs[i].inuse && (xmmregs[i].reg != startregs[i].reg || xmmregs[i].type != startregs[i].type))
+			if (XMM_Reg.xmmregs[i].inuse && (XMM_Reg.xmmregs[i].reg != startregs[i].reg || XMM_Reg.xmmregs[i].type != startregs[i].type))
 				break;
 		}
 
@@ -2067,16 +2071,16 @@ void VuBaseBlock::AssignVFRegs()
 			// redo the counters so that the proper regs are released
 			for (u32 j = 0; j < iREGCNT_XMM; ++j)
 			{
-				if (xmmregs[j].inuse)
+				if (XMM_Reg.xmmregs[j].inuse)
 				{
-					if (xmmregs[j].type == XMMTYPE_VFREG)
+					if (XMM_Reg.xmmregs[j].type == XMMTYPE_VFREG)
 					{
 						int count = 0;
 						itinst2 = itinst;
 
 						if (i)
 						{
-							if (itinst2->regs[0].VFread0 == xmmregs[j].reg || itinst2->regs[0].VFread1 == xmmregs[j].reg || itinst2->regs[0].VFwrite == xmmregs[j].reg)
+							if (itinst2->regs[0].VFread0 == XMM_Reg.xmmregs[j].reg || itinst2->regs[0].VFread1 == XMM_Reg.xmmregs[j].reg || itinst2->regs[0].VFwrite == XMM_Reg.xmmregs[j].reg)
 							{
 								itinst2 = insts.end();
 								break;
@@ -2090,18 +2094,18 @@ void VuBaseBlock::AssignVFRegs()
 
 						while (itinst2 != insts.end())
 						{
-							if (itinst2->regs[0].VFread0 == xmmregs[j].reg || itinst2->regs[0].VFread1 == xmmregs[j].reg || itinst2->regs[0].VFwrite == xmmregs[j].reg ||
-							        itinst2->regs[1].VFread0 == xmmregs[j].reg || itinst2->regs[1].VFread1 == xmmregs[j].reg || itinst2->regs[1].VFwrite == xmmregs[j].reg)
+							if (itinst2->regs[0].VFread0 == XMM_Reg.xmmregs[j].reg || itinst2->regs[0].VFread1 == XMM_Reg.xmmregs[j].reg || itinst2->regs[0].VFwrite == XMM_Reg.xmmregs[j].reg ||
+							        itinst2->regs[1].VFread0 == XMM_Reg.xmmregs[j].reg || itinst2->regs[1].VFread1 == XMM_Reg.xmmregs[j].reg || itinst2->regs[1].VFwrite == XMM_Reg.xmmregs[j].reg)
 								break;
 
 							++count;
 							++itinst2;
 						}
-						xmmregs[j].counter = 1000 - count;
+						XMM_Reg.xmmregs[j].counter = 1000 - count;
 					}
 					else
 					{
-						pxAssert(xmmregs[j].type == XMMTYPE_ACC);
+						pxAssert(XMM_Reg.xmmregs[j].type == XMMTYPE_ACC);
 
 						int count = 0;
 						itinst2 = itinst;
@@ -2119,32 +2123,32 @@ void VuBaseBlock::AssignVFRegs()
 							++itinst2;
 						}
 
-						xmmregs[j].counter = 1000 - count;
+						XMM_Reg.xmmregs[j].counter = 1000 - count;
 					}
 				}
 			}
 
-			if (regs->VFread0) _addNeededVFtoXMMreg(regs->VFread0);
-			if (regs->VFread1) _addNeededVFtoXMMreg(regs->VFread1);
-			if (regs->VFwrite) _addNeededVFtoXMMreg(regs->VFwrite);
-			if (regs->VIread & (1 << REG_ACC_FLAG)) _addNeededACCtoXMMreg();
-			if (regs->VIread & (1 << REG_VF0_FLAG)) _addNeededVFtoXMMreg(0);
+			if (regs->VFread0) XMM_Reg.addNeededVF(regs->VFread0);
+			if (regs->VFread1) XMM_Reg.addNeededVF(regs->VFread1);
+			if (regs->VFwrite) XMM_Reg.addNeededVF(regs->VFwrite);
+			if (regs->VIread & (1 << REG_ACC_FLAG)) XMM_Reg.addNeededACC();
+			if (regs->VIread & (1 << REG_VF0_FLAG)) XMM_Reg.addNeededVF(0);
 
 			// alloc
 			itinst->vfread0[i] = itinst->vfread1[i] = itinst->vfwrite[i] = itinst->vfacc[i] = -1;
 			itinst->vfflush[i] = -1;
 
 			if (regs->VFread0)
-				itinst->vfread0[i] = _allocVFtoXMMreg(VU, -1, regs->VFread0, 0);
+				itinst->vfread0[i] = XMM_Reg.allocVF(VU, -1, regs->VFread0, 0);
 			else if (regs->VIread & (1 << REG_VF0_FLAG))
-				itinst->vfread0[i] = _allocVFtoXMMreg(VU, -1, 0, 0);
+				itinst->vfread0[i] = XMM_Reg.allocVF(VU, -1, 0, 0);
 
 			if (regs->VFread1)
-				itinst->vfread1[i] = _allocVFtoXMMreg(VU, -1, regs->VFread1, 0);
+				itinst->vfread1[i] = XMM_Reg.allocVF(VU, -1, regs->VFread1, 0);
 			else if ((regs->VIread & (1 << REG_VF0_FLAG)) && regs->VFr1xyzw != 0xff)
-				itinst->vfread1[i] = _allocVFtoXMMreg(VU, -1, 0, 0);
+				itinst->vfread1[i] = XMM_Reg.allocVF(VU, -1, 0, 0);
 
-			if (regs->VIread & (1 << REG_ACC_FLAG)) itinst->vfacc[i] = _allocACCtoXMMreg(VU, -1, 0);
+			if (regs->VIread & (1 << REG_ACC_FLAG)) itinst->vfacc[i] = XMM_Reg.allocACC(VU, -1, 0);
 
 			int reusereg = -1; // 0 - VFwrite, 1 - VFAcc
 
@@ -2154,12 +2158,12 @@ void VuBaseBlock::AssignVFRegs()
 
 				if (regs->VFwxyzw == 0xf)
 				{
-					itinst->vfwrite[i] = _checkXMMreg(XMMTYPE_VFREG, regs->VFwrite, 0);
+					itinst->vfwrite[i] = XMM_Reg.checkReg(XMMTYPE_VFREG, regs->VFwrite, 0);
 					if (itinst->vfwrite[i] < 0) reusereg = 0;
 				}
 				else
 				{
-					itinst->vfwrite[i] = _allocVFtoXMMreg(VU, -1, regs->VFwrite, 0);
+					itinst->vfwrite[i] = XMM_Reg.allocVF(VU, -1, regs->VFwrite, 0);
 				}
 			}
 			else if (regs->VIwrite & (1 << REG_ACC_FLAG))
@@ -2167,12 +2171,12 @@ void VuBaseBlock::AssignVFRegs()
 
 				if (regs->VFwxyzw == 0xf)
 				{
-					itinst->vfacc[i] = _checkXMMreg(XMMTYPE_ACC, 0, 0);
+					itinst->vfacc[i] = XMM_Reg.checkReg(XMMTYPE_ACC, 0, 0);
 					if (itinst->vfacc[i] < 0) reusereg = 1;
 				}
 				else
 				{
-					itinst->vfacc[i] = _allocACCtoXMMreg(VU, -1, 0);
+					itinst->vfacc[i] = XMM_Reg.allocACC(VU, -1, 0);
 				}
 			}
 
@@ -2190,23 +2194,23 @@ void VuBaseBlock::AssignVFRegs()
 				{
 
 					pxAssert(reusereg == 0);
-					if (itnext == insts.end() || (itnext->livevars[0]&(1 << REG_ACC_FLAG))) _freeXMMreg(itinst->vfacc[i]);
-					xmmregs[itinst->vfacc[i]].inuse = 1;
-					xmmregs[itinst->vfacc[i]].reg = reg;
-					xmmregs[itinst->vfacc[i]].type = type;
-					xmmregs[itinst->vfacc[i]].mode = 0;
+					if (itnext == insts.end() || (itnext->livevars[0]&(1 << REG_ACC_FLAG))) XMM_Reg.freeReg(itinst->vfacc[i]);
+					XMM_Reg.xmmregs[itinst->vfacc[i]].inuse = 1;
+					XMM_Reg.xmmregs[itinst->vfacc[i]].reg = reg;
+					XMM_Reg.xmmregs[itinst->vfacc[i]].type = type;
+					XMM_Reg.xmmregs[itinst->vfacc[i]].mode = 0;
 					itinst->vfwrite[i] = itinst->vfacc[i];
 				}
 				else if (itinst->vfread0[i] >= 0 && lastwrite != itinst->vfread0[i] &&
 				         (itnext == insts.end() || (regs->VFread0 > 0 && (!(itnext->usedvars[1]&(1 << regs->VFread0)) || !(itnext->livevars[1]&(1 << regs->VFread0))))))
 				{
 
-					if (itnext == insts.end() || (itnext->livevars[1]&regs->VFread0)) _freeXMMreg(itinst->vfread0[i]);
+					if (itnext == insts.end() || (itnext->livevars[1]&regs->VFread0)) XMM_Reg.freeReg(itinst->vfread0[i]);
 
-					xmmregs[itinst->vfread0[i]].inuse = 1;
-					xmmregs[itinst->vfread0[i]].reg = reg;
-					xmmregs[itinst->vfread0[i]].type = type;
-					xmmregs[itinst->vfread0[i]].mode = 0;
+					XMM_Reg.xmmregs[itinst->vfread0[i]].inuse = 1;
+					XMM_Reg.xmmregs[itinst->vfread0[i]].reg = reg;
+					XMM_Reg.xmmregs[itinst->vfread0[i]].type = type;
+					XMM_Reg.xmmregs[itinst->vfread0[i]].mode = 0;
 
 					if (reusereg)
 						itinst->vfacc[i] = itinst->vfread0[i];
@@ -2217,12 +2221,12 @@ void VuBaseBlock::AssignVFRegs()
 				         (itnext == insts.end() || (regs->VFread1 > 0 && (!(itnext->usedvars[1]&(1 << regs->VFread1)) || !(itnext->livevars[1]&(1 << regs->VFread1))))))
 				{
 
-					if (itnext == insts.end() || (itnext->livevars[1]&regs->VFread1)) _freeXMMreg(itinst->vfread1[i]);
+					if (itnext == insts.end() || (itnext->livevars[1]&regs->VFread1)) XMM_Reg.freeReg(itinst->vfread1[i]);
 
-					xmmregs[itinst->vfread1[i]].inuse = 1;
-					xmmregs[itinst->vfread1[i]].reg = reg;
-					xmmregs[itinst->vfread1[i]].type = type;
-					xmmregs[itinst->vfread1[i]].mode = 0;
+					XMM_Reg.xmmregs[itinst->vfread1[i]].inuse = 1;
+					XMM_Reg.xmmregs[itinst->vfread1[i]].reg = reg;
+					XMM_Reg.xmmregs[itinst->vfread1[i]].type = type;
+					XMM_Reg.xmmregs[itinst->vfread1[i]].mode = 0;
 					if (reusereg)
 						itinst->vfacc[i] = itinst->vfread1[i];
 					else
@@ -2231,9 +2235,9 @@ void VuBaseBlock::AssignVFRegs()
 				else
 				{
 					if (reusereg)
-						itinst->vfacc[i] = _allocACCtoXMMreg(VU, -1, 0);
+						itinst->vfacc[i] = XMM_Reg.allocACC(VU, -1, 0);
 					else
-						itinst->vfwrite[i] = _allocVFtoXMMreg(VU, -1, regs->VFwrite, 0);
+						itinst->vfwrite[i] = XMM_Reg.allocVF(VU, -1, regs->VFwrite, 0);
 				}
 			}
 
@@ -2242,39 +2246,39 @@ void VuBaseBlock::AssignVFRegs()
 
 			// always alloc at least 1 temp reg
 			int free0 = (i || regs->VFwrite || regs->VFread0 || regs->VFread1 || (regs->VIwrite & (1 << REG_ACC_FLAG)) || (regs->VIread & (1 << REG_VF0_FLAG)))
-			            ? _allocTempXMMreg(XMMT_FPS, -1) : -1;
+			            ? XMM_Reg.allocTemp(XMMT_FPS, -1) : -1;
 			int free1 = 0, free2 = 0;
 
 			if (i == 0 && itinst->vfwrite[1] >= 0 && (itinst->vfread0[0] == itinst->vfwrite[1] || itinst->vfread1[0] == itinst->vfwrite[1]))
 			{
-				itinst->vfflush[i] = _allocTempXMMreg(XMMT_FPS, -1);
+				itinst->vfflush[i] = XMM_Reg.allocTemp(XMMT_FPS, -1);
 			}
 
 			if (i == 1 && (regs->VIwrite & (1 << REG_CLIP_FLAG)))
 			{
 				// CLIP inst, need two extra regs
-				if (free0 < 0) free0 = _allocTempXMMreg(XMMT_FPS, -1);
+				if (free0 < 0) free0 = XMM_Reg.allocTemp(XMMT_FPS, -1);
 
-				free1 = _allocTempXMMreg(XMMT_FPS, -1);
-				free2 = _allocTempXMMreg(XMMT_FPS, -1);
-				_freeXMMreg(free1);
-				_freeXMMreg(free2);
+				free1 = XMM_Reg.allocTemp(XMMT_FPS, -1);
+				free2 = XMM_Reg.allocTemp(XMMT_FPS, -1);
+				XMM_Reg.freeReg(free1);
+				XMM_Reg.freeReg(free2);
 			}
 			else if (regs->VIwrite & (1 << REG_P))
 			{
 				// EFU inst, need extra reg
-				free1 = _allocTempXMMreg(XMMT_FPS, -1);
+				free1 = XMM_Reg.allocTemp(XMMT_FPS, -1);
 				if (free0 == -1) free0 = free1;
-				_freeXMMreg(free1);
+				XMM_Reg.freeReg(free1);
 			}
 
-			if (itinst->vfflush[i] >= 0) _freeXMMreg(itinst->vfflush[i]);
-			if (free0 >= 0) _freeXMMreg(free0);
+			if (itinst->vfflush[i] >= 0) XMM_Reg.freeReg(itinst->vfflush[i]);
+			if (free0 >= 0) XMM_Reg.freeReg(free0);
 
 			itinst->vffree[i] = (free0 & 0xf) | (free1 << 8) | (free2 << 16);
 			if (free0 == -1) itinst->vffree[i] |= VFFREE_INVALID0;
 
-			_clearNeededXMMregs();
+			XMM_Reg.clearNeededRegs();
 		}
 	}
 
@@ -2548,7 +2552,7 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
 
 	// Could clear allocation info to prevent possibly bad data being used in other parts of pcsx2;
 	// not doing this because it's slow and not needed (rama)
-	// _initXMMregs();
+	// XMM_Reg.init();
 	// _initX86regs();
 }
 
@@ -2681,7 +2685,7 @@ static void SuperVURecompile()
 	// save cpu state
 	recVUStackPtr[s_vu] = recVUStack[s_vu];
 
-	_initXMMregs();
+	XMM_Reg.init();
 
 	std::list<VuBaseBlock*>::iterator itblock;
 
@@ -2799,29 +2803,29 @@ void SuperVUFreeXMMregs(u32* livevars)
 {
 	for (u32 i = 0; i < iREGCNT_XMM; ++i)
 	{
-		if (xmmregs[i].inuse)
+		if (XMM_Reg.xmmregs[i].inuse)
 		{
 			// same reg
-			if ((xmmregs[i].mode & MODE_WRITE))
+			if ((XMM_Reg.xmmregs[i].mode & MODE_WRITE))
 			{
 
 #ifdef SUPERVU_INTERCACHING
-				if (xmmregs[i].type == XMMTYPE_VFREG)
+				if (XMM_Reg.xmmregs[i].type == XMMTYPE_VFREG)
 				{
-					if (!(livevars[1] & (1 << xmmregs[i].reg))) continue;
+					if (!(livevars[1] & (1 << XMM_Reg.xmmregs[i].reg))) continue;
 				}
-				else if (xmmregs[i].type == XMMTYPE_ACC)
+				else if (XMM_Reg.xmmregs[i].type == XMMTYPE_ACC)
 				{
 					if (!(livevars[0] & (1 << REG_ACC_FLAG))) continue;
 				}
 #endif
 
-				if (xmmregs[i].mode & MODE_VUXYZ)
+				if (XMM_Reg.xmmregs[i].mode & MODE_VUXYZ)
 				{
 					// ALWAYS update
-					u32 addr = xmmregs[i].type == XMMTYPE_VFREG ? (uptr) & VU->VF[xmmregs[i].reg] : (uptr) & VU->ACC;
+					u32 addr = XMM_Reg.xmmregs[i].type == XMMTYPE_VFREG ? (uptr) & VU->VF[XMM_Reg.xmmregs[i].reg] : (uptr) & VU->ACC;
 
-					if (xmmregs[i].mode & MODE_VUZ)
+					if (XMM_Reg.xmmregs[i].mode & MODE_VUZ)
 					{
 						xMOVH.PS(ptr[(void*)(addr)], xRegisterSSE((x86SSERegType)i));
 						xSHUF.PS(xRegisterSSE((x86SSERegType)i), ptr[(void*)(addr)], 0xc4);
@@ -2831,15 +2835,15 @@ void SuperVUFreeXMMregs(u32* livevars)
 						xMOVH.PS(xRegisterSSE((x86SSERegType)i), ptr[(void*)(addr + 8)]);
 					}
 
-					xmmregs[i].mode &= ~MODE_VUXYZ;
+					XMM_Reg.xmmregs[i].mode &= ~MODE_VUXYZ;
 				}
 
-				_freeXMMreg(i);
+				XMM_Reg.freeReg(i);
 			}
 		}
 	}
 
-	//_freeXMMregs();
+	//XMM_Reg.freeRegs();
 }
 
 static u32 runCycles = 0; // Cycles to Compare to for early exit
@@ -2912,7 +2916,8 @@ void VuBaseBlock::Recompile()
 	s_JumpX86 = 0;
 	s_UnconditionalDelay = 0;
 
-	memcpy(xmmregs, startregs, sizeof(xmmregs));
+	//memcpy(XMM_Reg.xmmregs, startregs, sizeof(XMM_Reg.xmmregs));
+	XMM_Reg.xmmregs = startregs;
 #ifdef SUPERVU_X86CACHING
 	if (nStartx86 >= 0)
 		memcpy(x86regs, &s_vecRegArray[nStartx86], sizeof(x86regs));
@@ -2991,7 +2996,7 @@ void VuBaseBlock::Recompile()
 	if (type & BLOCKTYPE_HASEOP)
 	{
 		// end
-		_freeXMMregs();
+		XMM_Reg.freeRegs();
 		_freeX86regs();
 		xAND(ptr32[&VU0.VI[ REG_VPU_STAT ].UL], s_vu ? ~0x100 : ~0x001); // E flag
 		//xAND(ptr32[(&VU->GetVifRegs().stat)], ~VIF1_STAT_VEW);
@@ -3127,7 +3132,7 @@ void VuBaseBlock::Recompile()
 
 			case 0x10: // jump, esi has new vupc
 				{
-					_freeXMMregs();
+					XMM_Reg.freeRegs();
 					_freeX86regs();
 
 					SuperVUTestVU0Condition(8);
@@ -3177,29 +3182,29 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 	if (vfread0[upper] >= 0)
 	{
 		SuperVUFreeXMMreg(vfread0[upper], XMMTYPE_VFREG, regs[upper].VFread0);
-		_allocVFtoXMMreg(VU, vfread0[upper], regs[upper].VFread0, MODE_READ | GET_VUXYZMODE(regs[upper].VFread0));
+		XMM_Reg.allocVF(VU, vfread0[upper], regs[upper].VFread0, MODE_READ | GET_VUXYZMODE(regs[upper].VFread0));
 	}
 	if (vfread1[upper] >= 0)
 	{
 		SuperVUFreeXMMreg(vfread1[upper], XMMTYPE_VFREG, regs[upper].VFread1);
-		_allocVFtoXMMreg(VU, vfread1[upper], regs[upper].VFread1, MODE_READ | GET_VUXYZMODE(regs[upper].VFread1));
+		XMM_Reg.allocVF(VU, vfread1[upper], regs[upper].VFread1, MODE_READ | GET_VUXYZMODE(regs[upper].VFread1));
 	}
 	if (vfacc[upper] >= 0 && (regs[upper].VIread&(1 << REG_ACC_FLAG)))
 	{
 		SuperVUFreeXMMreg(vfacc[upper], XMMTYPE_ACC, 0);
-		_allocACCtoXMMreg(VU, vfacc[upper], MODE_READ);
+		XMM_Reg.allocACC(VU, vfacc[upper], MODE_READ);
 	}
 	if (vfwrite[upper] >= 0)
 	{
 		pxAssert(regs[upper].VFwrite > 0);
 		SuperVUFreeXMMreg(vfwrite[upper], XMMTYPE_VFREG, regs[upper].VFwrite);
-		_allocVFtoXMMreg(VU, vfwrite[upper], regs[upper].VFwrite,
+		XMM_Reg.allocVF(VU, vfwrite[upper], regs[upper].VFwrite,
 		                 MODE_WRITE | (regs[upper].VFwxyzw != 0xf ? MODE_READ : 0) | GET_VUXYZMODE(regs[upper].VFwrite));
 	}
 	if (vfacc[upper] >= 0 && (regs[upper].VIwrite&(1 << REG_ACC_FLAG)))
 	{
 		SuperVUFreeXMMreg(vfacc[upper], XMMTYPE_ACC, 0);
-		_allocACCtoXMMreg(VU, vfacc[upper], MODE_WRITE | (regs[upper].VFwxyzw != 0xf ? MODE_READ : 0));
+		XMM_Reg.allocACC(VU, vfacc[upper], MODE_WRITE | (regs[upper].VFwxyzw != 0xf ? MODE_READ : 0));
 	}
 
 	int info = PROCESS_VU_SUPER;
@@ -3222,14 +3227,14 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 	if (!(vffree[upper]&VFFREE_INVALID0))
 	{
 		SuperVUFreeXMMreg(vffree[upper]&0xf, XMMTYPE_TEMP, 0);
-		_allocTempXMMreg(XMMT_FPS, vffree[upper]&0xf);
+		XMM_Reg.allocTemp(XMMT_FPS, vffree[upper]&0xf);
 	}
 	info |= PROCESS_VU_SET_TEMP(vffree[upper] & 0xf);
 
 	if (vfflush[upper] >= 0)
 	{
 		SuperVUFreeXMMreg(vfflush[upper], XMMTYPE_TEMP, 0);
-		_allocTempXMMreg(XMMT_FPS, vfflush[upper]);
+		XMM_Reg.allocTemp(XMMT_FPS, vfflush[upper]);
 	}
 
 	if (upper && (regs[upper].VIwrite & (1 << REG_CLIP_FLAG)))
@@ -3237,27 +3242,27 @@ int VuInstruction::SetCachedRegs(int upper, u32 vuxyz)
 		// CLIP inst, need two extra temp registers, put it EEREC_D and EEREC_ACC
 		pxAssert(vfwrite[upper] == -1);
 		SuperVUFreeXMMreg((vffree[upper] >> 8)&0xf, XMMTYPE_TEMP, 0);
-		_allocTempXMMreg(XMMT_FPS, (vffree[upper] >> 8)&0xf);
+		XMM_Reg.allocTemp(XMMT_FPS, (vffree[upper] >> 8)&0xf);
 		info |= PROCESS_EE_SET_D((vffree[upper] >> 8) & 0xf);
 
 		SuperVUFreeXMMreg((vffree[upper] >> 16)&0xf, XMMTYPE_TEMP, 0);
-		_allocTempXMMreg(XMMT_FPS, (vffree[upper] >> 16)&0xf);
+		XMM_Reg.allocTemp(XMMT_FPS, (vffree[upper] >> 16)&0xf);
 		info |= PROCESS_EE_SET_ACC((vffree[upper] >> 16) & 0xf);
 
-		_freeXMMreg((vffree[upper] >> 8)&0xf); // don't need anymore
-		_freeXMMreg((vffree[upper] >> 16)&0xf); // don't need anymore
+		XMM_Reg.freeReg((vffree[upper] >> 8)&0xf); // don't need anymore
+		XMM_Reg.freeReg((vffree[upper] >> 16)&0xf); // don't need anymore
 	}
 	else if (regs[upper].VIwrite & (1 << REG_P))
 	{
 		SuperVUFreeXMMreg((vffree[upper] >> 8)&0xf, XMMTYPE_TEMP, 0);
-		_allocTempXMMreg(XMMT_FPS, (vffree[upper] >> 8)&0xf);
+		XMM_Reg.allocTemp(XMMT_FPS, (vffree[upper] >> 8)&0xf);
 		info |= PROCESS_EE_SET_D((vffree[upper] >> 8) & 0xf);
-		_freeXMMreg((vffree[upper] >> 8)&0xf); // don't need anymore
+		XMM_Reg.freeReg((vffree[upper] >> 8)&0xf); // don't need anymore
 	}
 
-	if (vfflush[upper] >= 0) _freeXMMreg(vfflush[upper]);
+	if (vfflush[upper] >= 0) XMM_Reg.freeReg(vfflush[upper]);
 	if (!(vffree[upper]&VFFREE_INVALID0))
-		_freeXMMreg(vffree[upper]&0xf); // don't need anymore
+		XMM_Reg.freeReg(vffree[upper]&0xf); // don't need anymore
 
 	if ((regs[0].VIwrite | regs[1].VIwrite) & ((1 << REG_STATUS_FLAG) | (1 << REG_MAC_FLAG)))
 		info |= PROCESS_VU_UPDATEFLAGS;
@@ -3630,7 +3635,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		recVU_UPPER_OPCODE[ VU->code & 0x3f ](VU, s_vuInfo);
 
 		s_PrevIWrite = (uptr)code_ptr;
-		_clearNeededXMMregs();
+		XMM_Reg.clearNeededRegs();
 		_clearNeededX86regs();
 	}
 	else
@@ -3773,8 +3778,8 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 #endif
 
 		u32 modewrite = 0;
-		if (vfwrite[1] >= 0 && xmmregs[vfwrite[1]].inuse && xmmregs[vfwrite[1]].type == XMMTYPE_VFREG && xmmregs[vfwrite[1]].reg == regs[1].VFwrite)
-			modewrite = xmmregs[vfwrite[1]].mode & MODE_WRITE;
+		if (vfwrite[1] >= 0 && XMM_Reg.xmmregs[vfwrite[1]].inuse && XMM_Reg.xmmregs[vfwrite[1]].type == XMMTYPE_VFREG && XMM_Reg.xmmregs[vfwrite[1]].reg == regs[1].VFwrite)
+			modewrite = XMM_Reg.xmmregs[vfwrite[1]].mode & MODE_WRITE;
 
 		VU->code = code_ptr[1];
 		s_vuInfo = SetCachedRegs(1, vuxyz);
@@ -3804,7 +3809,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		if (s_ScheduleXGKICK && s_XGKICKReg > 0) x86regs[s_XGKICKReg].needed = 1;
 
 		recVU_UPPER_OPCODE[ VU->code & 0x3f ](VU, s_vuInfo);
-		_clearNeededXMMregs();
+		XMM_Reg.clearNeededRegs();
 		_clearNeededX86regs();
 
 		// necessary because status can be set by both upper and lower
@@ -3822,7 +3827,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 			// load
 			xMOVAPS(xRegisterSSE(vfflush[0]), ptr[(&VU->VF[regs[1].VFwrite])]);
 
-			pxAssert(xmmregs[vfwrite[1]].mode & MODE_WRITE);
+			pxAssert(XMM_Reg.xmmregs[vfwrite[1]].mode & MODE_WRITE);
 
 			// replace with vfflush
 			if (_Fs_ == regs[1].VFwrite)
@@ -3836,7 +3841,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 				s_vuInfo |= PROCESS_EE_SET_T(vfflush[0]);
 			}
 
-			xmmregs[vfflush[0]].mode |= MODE_NOFLUSH | MODE_WRITE; // so that lower inst doesn't flush
+			XMM_Reg.xmmregs[vfflush[0]].mode |= MODE_NOFLUSH | MODE_WRITE; // so that lower inst doesn't flush
 		}
 
 		// notify vuinsts that upper inst is a fmac
@@ -3893,7 +3898,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 //			x86regs[oldreg].type = X86TYPE_VI|(s_vu?X86TYPE_VU1:0);
 //		}
 
-		_clearNeededXMMregs();
+		XMM_Reg.clearNeededRegs();
 		_clearNeededX86regs();
 	}
 
@@ -4312,7 +4317,7 @@ void recVUMI_XGKICK_(VURegs *VU)
 
 	x86regs[s_XGKICKReg].inuse = 0; // so free doesn't flush
 	_freeX86regs();
-	_freeXMMregs();
+	XMM_Reg.freeRegs();
 
 	xMOV(ecx, xRegister32(s_XGKICKReg));
 	xCALL((void*)VU1XGKICK_MTGSTransfer);

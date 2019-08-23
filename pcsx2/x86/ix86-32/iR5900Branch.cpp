@@ -63,12 +63,12 @@ void recSetBranchEQ(int info, int bne, int process)
 
 		if( process & PROCESS_CONSTS ) {
 			if( (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_) ) {
-				_deleteGPRtoXMMreg(_Rt_, 1);
-				xmmregs[EEREC_T].inuse = 0;
+				XMM_Reg.deleteGPR(_Rt_, 1);
+				XMM_Reg.xmmregs[EEREC_T].inuse = 0;
 				t0reg = EEREC_T;
 			}
 			else {
-				t0reg = _allocTempXMMreg(XMMT_INT, -1);
+				t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
 				xMOVQZX(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			}
 
@@ -76,45 +76,45 @@ void recSetBranchEQ(int info, int bne, int process)
 			xPCMP.EQD(xRegisterSSE(t0reg), ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
 
-			if( t0reg != EEREC_T ) _freeXMMreg(t0reg);
+			if( t0reg != EEREC_T ) XMM_Reg.freeReg(t0reg);
 		}
 		else if( process & PROCESS_CONSTT ) {
 			if( (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_) ) {
-				_deleteGPRtoXMMreg(_Rs_, 1);
-				xmmregs[EEREC_S].inuse = 0;
+				XMM_Reg.deleteGPR(_Rs_, 1);
+				XMM_Reg.xmmregs[EEREC_S].inuse = 0;
 				t0reg = EEREC_S;
 			}
 			else {
-				t0reg = _allocTempXMMreg(XMMT_INT, -1);
+				t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
 				xMOVQZX(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			}
 
 			_flushConstReg(_Rt_);
 			xPCMP.EQD(xRegisterSSE(t0reg), ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 
-			if( t0reg != EEREC_S ) _freeXMMreg(t0reg);
+			if( t0reg != EEREC_S ) XMM_Reg.freeReg(t0reg);
 		}
 		else {
 
 			if( (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_) ) {
-				_deleteGPRtoXMMreg(_Rs_, 1);
-				xmmregs[EEREC_S].inuse = 0;
+				XMM_Reg.deleteGPR(_Rs_, 1);
+				XMM_Reg.xmmregs[EEREC_S].inuse = 0;
 				t0reg = EEREC_S;
 				xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			}
 			else if( (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_) ) {
-				_deleteGPRtoXMMreg(_Rt_, 1);
-				xmmregs[EEREC_T].inuse = 0;
+				XMM_Reg.deleteGPR(_Rt_, 1);
+				XMM_Reg.xmmregs[EEREC_T].inuse = 0;
 				t0reg = EEREC_T;
 				xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			}
 			else {
-				t0reg = _allocTempXMMreg(XMMT_INT, -1);
+				t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
 				xMOVQZX(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 				xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			}
 
-			if( t0reg != EEREC_S && t0reg != EEREC_T ) _freeXMMreg(t0reg);
+			if( t0reg != EEREC_S && t0reg != EEREC_T ) XMM_Reg.freeReg(t0reg);
 		}
 
 		xMOVMSKPS(eax, xRegisterSSE(t0reg));
@@ -186,12 +186,12 @@ void recSetBranchEQ(int info, int bne, int process)
 		}
 	}
 
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 }
 
 void recSetBranchL(int ltz)
 {
-	int regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
+	int regs = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
 
 	if( regs >= 0 ) {
 		xMOVMSKPS(eax, xRegisterSSE(regs));
@@ -210,7 +210,7 @@ void recSetBranchL(int ltz)
 	if( ltz ) j32Ptr[ 0 ] = JGE32( 0 );
 	else j32Ptr[ 0 ] = JL32( 0 );
 
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 }
 
 //// BEQ
@@ -584,7 +584,7 @@ void recBLEZ()
 
 	x86SetJ8( j8Ptr[ 0 ] );
 
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 
 	SaveBranchState();
 	recompileNextInstruction(1);
@@ -631,7 +631,7 @@ void recBGTZ()
 
 	x86SetJ8( j8Ptr[ 0 ] );
 
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 
 	SaveBranchState();
 	recompileNextInstruction(1);
@@ -803,7 +803,7 @@ void recBLEZL()
 		if( !(g_cpuConstRegs[_Rs_].SD[0] <= 0) )
 			SetBranchImm( pc + 4);
 		else {
-			_clearNeededXMMregs();
+			XMM_Reg.clearNeededRegs();
 			recompileNextInstruction(1);
 			SetBranchImm( branchTo );
 		}
@@ -821,7 +821,7 @@ void recBLEZL()
 
 	x86SetJ32( j32Ptr[ 0 ] );
 
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 
 	SaveBranchState();
 	recompileNextInstruction(1);
@@ -847,7 +847,7 @@ void recBGTZL()
 		if( !(g_cpuConstRegs[_Rs_].SD[0] > 0) )
 			SetBranchImm( pc + 4);
 		else {
-			_clearNeededXMMregs();
+			XMM_Reg.clearNeededRegs();
 			recompileNextInstruction(1);
 			SetBranchImm( branchTo );
 		}
@@ -865,7 +865,7 @@ void recBGTZL()
 
 	x86SetJ32( j32Ptr[ 0 ] );
 
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 
 	SaveBranchState();
 	recompileNextInstruction(1);

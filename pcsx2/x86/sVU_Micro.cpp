@@ -622,28 +622,28 @@ int eeVURecompileCode(VURegs *VU, _VURegsNum* regs)
 
 	assert( regs != NULL );
 
-	if( regs->VFread0 ) _addNeededVFtoXMMreg(regs->VFread0);
-	if( regs->VFread1 ) _addNeededVFtoXMMreg(regs->VFread1);
-	if( regs->VFwrite ) _addNeededVFtoXMMreg(regs->VFwrite);
-	if( regs->VIread & (1<<REG_ACC_FLAG) ) _addNeededACCtoXMMreg();
-	if( regs->VIread & (1<<REG_VF0_FLAG) ) _addNeededVFtoXMMreg(0);
+	if( regs->VFread0 ) XMM_Reg.addNeededVF(regs->VFread0);
+	if( regs->VFread1 ) XMM_Reg.addNeededVF(regs->VFread1);
+	if( regs->VFwrite ) XMM_Reg.addNeededVF(regs->VFwrite);
+	if( regs->VIread & (1<<REG_ACC_FLAG) ) XMM_Reg.addNeededACC();
+	if( regs->VIread & (1<<REG_VF0_FLAG) ) XMM_Reg.addNeededVF(0);
 
 	// alloc
-	if( regs->VFread0 ) vfread0 = _allocVFtoXMMreg(VU, -1, regs->VFread0, MODE_READ);
-	else if( regs->VIread & (1<<REG_VF0_FLAG) ) vfread0 = _allocVFtoXMMreg(VU, -1, 0, MODE_READ);
-	if( regs->VFread1 ) vfread1 = _allocVFtoXMMreg(VU, -1, regs->VFread1, MODE_READ);
-	else if( (regs->VIread & (1<<REG_VF0_FLAG)) && regs->VFr1xyzw != 0xff) vfread1 = _allocVFtoXMMreg(VU, -1, 0, MODE_READ);
+	if( regs->VFread0 ) vfread0 = XMM_Reg.allocVF(VU, -1, regs->VFread0, MODE_READ);
+	else if( regs->VIread & (1<<REG_VF0_FLAG) ) vfread0 = XMM_Reg.allocVF(VU, -1, 0, MODE_READ);
+	if( regs->VFread1 ) vfread1 = XMM_Reg.allocVF(VU, -1, regs->VFread1, MODE_READ);
+	else if( (regs->VIread & (1<<REG_VF0_FLAG)) && regs->VFr1xyzw != 0xff) vfread1 = XMM_Reg.allocVF(VU, -1, 0, MODE_READ);
 
 	if( regs->VIread & (1<<REG_ACC_FLAG )) {
-		vfacc = _allocACCtoXMMreg(VU, -1, ((regs->VIwrite&(1<<REG_ACC_FLAG))?MODE_WRITE:0)|MODE_READ);
+		vfacc = XMM_Reg.allocACC(VU, -1, ((regs->VIwrite&(1<<REG_ACC_FLAG))?MODE_WRITE:0)|MODE_READ);
 	}
 	else if( regs->VIwrite & (1<<REG_ACC_FLAG) ) {
-		vfacc = _allocACCtoXMMreg(VU, -1, MODE_WRITE|(regs->VFwxyzw != 0xf?MODE_READ:0));
+		vfacc = XMM_Reg.allocACC(VU, -1, MODE_WRITE|(regs->VFwxyzw != 0xf?MODE_READ:0));
 	}
 
 	if( regs->VFwrite ) {
 		assert( !(regs->VIwrite&(1<<REG_ACC_FLAG)) );
-		vfwrite = _allocVFtoXMMreg(VU, -1, regs->VFwrite, MODE_WRITE|(regs->VFwxyzw != 0xf?MODE_READ:0));
+		vfwrite = XMM_Reg.allocVF(VU, -1, regs->VFwrite, MODE_WRITE|(regs->VFwxyzw != 0xf?MODE_READ:0));
 	}
 
 	if( vfacc>= 0 ) info |= PROCESS_EE_SET_ACC(vfacc);
@@ -660,27 +660,27 @@ int eeVURecompileCode(VURegs *VU, _VURegsNum* regs)
 	if( vfread0 >= 0 ) info |= PROCESS_EE_SET_S(vfread0);
 	if( vfread1 >= 0 ) info |= PROCESS_EE_SET_T(vfread1);
 
-	vftemp = _allocTempXMMreg(XMMT_FPS, -1);
+	vftemp = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	info |= PROCESS_VU_SET_TEMP(vftemp);
 
 	if( regs->VIwrite & (1 << REG_CLIP_FLAG) ) {
 		// CLIP inst, need two extra temp registers, put it EEREC_D and EEREC_ACC
-		int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-		int t2reg = _allocTempXMMreg(XMMT_FPS, -1);
+		int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
+		int t2reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 
 		info |= PROCESS_EE_SET_D(t1reg);
 		info |= PROCESS_EE_SET_ACC(t2reg);
 
-		_freeXMMreg(t1reg); // don't need
-		_freeXMMreg(t2reg); // don't need
+		XMM_Reg.freeReg(t1reg); // don't need
+		XMM_Reg.freeReg(t2reg); // don't need
 	}
 	else if( regs->VIwrite & (1<<REG_P) ) {
-		int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+		int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 		info |= PROCESS_EE_SET_D(t1reg);
-		_freeXMMreg(t1reg); // don't need
+		XMM_Reg.freeReg(t1reg); // don't need
 	}
 
-	_freeXMMreg(vftemp); // don't need it
+	XMM_Reg.freeReg(vftemp); // don't need it
 
 	return info;
 }
@@ -712,17 +712,17 @@ int _vuGetTempXMMreg(int info)
 {
 	int t1reg = -1;
 
-	if( _hasFreeXMMreg() ) {
-		t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	if (XMM_Reg.hasFreeReg()) {
+		t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 
 		if( t1reg == EEREC_TEMP ) {
-			if( _hasFreeXMMreg() ) {
-				int t = _allocTempXMMreg(XMMT_FPS, -1);
-				_freeXMMreg(t1reg);
+			if (XMM_Reg.hasFreeReg()) {
+				int t = XMM_Reg.allocTemp(XMMT_FPS, -1);
+				XMM_Reg.freeReg(t1reg);
 				t1reg = t;
 			}
 			else {
-				_freeXMMreg(t1reg);
+				XMM_Reg.freeReg(t1reg);
 				t1reg = -1;
 			}
 		}
@@ -1631,7 +1631,7 @@ void vuFloat( int info, int regd, int XYZW) {
 			int t1reg = _vuGetTempXMMreg(info);
 			if (t1reg >= 0) {
 				vuFloat2( regd, t1reg, XYZW );
-				_freeXMMreg( t1reg );
+				XMM_Reg.freeReg( t1reg );
 				return;
 			}
 		}*/

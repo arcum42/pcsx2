@@ -159,7 +159,7 @@ int _getFreeX86reg(int mode)
 void _flushCachedRegs()
 {
 	_flushConstRegs();
-	_flushXMMregs();
+	XMM_Reg.flushRegs();
 }
 
 void _flushConstReg(int reg)
@@ -334,11 +334,11 @@ int _allocX86reg(xRegisterLong x86reg, int type, int reg, int mode)
 				}
 				else {
 					_flushConstReg(reg);
-					_deleteGPRtoXMMreg(reg, 1);
+					XMM_Reg.deleteGPR(reg, 1);
 
 					_eeMoveGPRtoR(x86reg, reg);
 
-					_deleteGPRtoXMMreg(reg, 0);
+					XMM_Reg.deleteGPR(reg, 0);
 				}
 			}
 			else {

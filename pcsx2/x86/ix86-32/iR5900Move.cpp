@@ -64,11 +64,11 @@ void recLUI()
 
 	_eeOnWriteReg(_Rt_, 1);
 
-	if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_WRITE)) >= 0 ) {
-		if( xmmregs[mmreg].mode & MODE_WRITE ) {
+	if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rt_, MODE_WRITE)) >= 0 ) {
+		if( XMM_Reg.xmmregs[mmreg].mode & MODE_WRITE ) {
 			xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rt_].UL[2]], xRegisterSSE(mmreg));
 		}
-		xmmregs[mmreg].inuse = 0;
+		XMM_Reg.xmmregs[mmreg].inuse = 0;
 	}
 
 	_deleteEEreg(_Rt_, 0);
@@ -97,21 +97,21 @@ void recMFHILO(int hi)
 		return;
 
 	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
-	reghi = _checkXMMreg(XMMTYPE_GPRREG, xmmhilo, MODE_READ);
+	reghi = XMM_Reg.checkReg(XMMTYPE_GPRREG, xmmhilo, MODE_READ);
 
 	_eeOnWriteReg(_Rd_, 0);
 
-	regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_READ|MODE_WRITE);
+	regd = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rd_, MODE_READ|MODE_WRITE);
 
 	if( reghi >= 0 ) {
 		if( regd >= 0 ) {
 			pxAssert( regd != reghi );
 
-			xmmregs[regd].inuse = 0;
+			XMM_Reg.xmmregs[regd].inuse = 0;
 
 			xMOVQ(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], xRegisterSSE(reghi));
 
-			if( xmmregs[regd].mode & MODE_WRITE ) {
+			if( XMM_Reg.xmmregs[regd].mode & MODE_WRITE ) {
 				xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rd_].UL[2]], xRegisterSSE(regd));
 			}
 		}
@@ -143,27 +143,27 @@ void recMTHILO(int hi)
 	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
 	addrhilo = hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0];
 
-	regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
-	reghi = _checkXMMreg(XMMTYPE_GPRREG, xmmhilo, MODE_READ|MODE_WRITE);
+	regs = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
+	reghi = XMM_Reg.checkReg(XMMTYPE_GPRREG, xmmhilo, MODE_READ|MODE_WRITE);
 
 	if( reghi >= 0 ) {
 		if( regs >= 0 ) {
 			pxAssert( reghi != regs );
 
-			_deleteGPRtoXMMreg(_Rs_, 0);
+			XMM_Reg.deleteGPR(_Rs_, 0);
 			xPUNPCK.HQDQ(xRegisterSSE(reghi), xRegisterSSE(reghi));
 			xPUNPCK.LQDQ(xRegisterSSE(regs), xRegisterSSE(reghi));
 
 			// swap regs
-			xmmregs[regs] = xmmregs[reghi];
-			xmmregs[reghi].inuse = 0;
-			xmmregs[regs].mode |= MODE_WRITE;
+			XMM_Reg.xmmregs[regs] = XMM_Reg.xmmregs[reghi];
+			XMM_Reg.xmmregs[reghi].inuse = 0;
+			XMM_Reg.xmmregs[regs].mode |= MODE_WRITE;
 
 		}
 		else {
 			_flushConstReg(_Rs_);
 			xMOVL.PS(xRegisterSSE(reghi), ptr[&cpuRegs.GPR.r[ _Rs_ ].UD[ 0 ]]);
-			xmmregs[reghi].mode |= MODE_WRITE;
+			XMM_Reg.xmmregs[reghi].mode |= MODE_WRITE;
 		}
 	}
 	else {
@@ -219,16 +219,16 @@ void recMFHILO1(int hi)
 		return;
 
 	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
-	reghi = _checkXMMreg(XMMTYPE_GPRREG, xmmhilo, MODE_READ);
+	reghi = XMM_Reg.checkReg(XMMTYPE_GPRREG, xmmhilo, MODE_READ);
 
 	_eeOnWriteReg(_Rd_, 0);
 
-	regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_READ|MODE_WRITE);
+	regd = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rd_, MODE_READ|MODE_WRITE);
 
 	if( reghi >= 0 ) {
 		if( regd >= 0 ) {
 			xMOVHL.PS(xRegisterSSE(regd), xRegisterSSE(reghi));
-			xmmregs[regd].mode |= MODE_WRITE;
+			XMM_Reg.xmmregs[regd].mode |= MODE_WRITE;
 		}
 		else {
 			_deleteEEreg(_Rd_, 0);
@@ -245,7 +245,7 @@ void recMFHILO1(int hi)
 				xMOVQZX(xRegisterSSE(regd), ptr[(void*)(hi ? (uptr)&cpuRegs.HI.UD[ 1 ] : (uptr)&cpuRegs.LO.UD[ 1 ])]);
 			}
 
-			xmmregs[regd].mode |= MODE_WRITE;
+			XMM_Reg.xmmregs[regd].mode |= MODE_WRITE;
 		}
 		else {
 			_deleteEEreg(_Rd_, 0);
@@ -265,7 +265,7 @@ void recMTHILO1(int hi)
 	xmmhilo = hi ? XMMGPR_HI : XMMGPR_LO;
 	addrhilo = hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0];
 
-	regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
+	regs = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
 	reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, xmmhilo, MODE_WRITE|MODE_READ);
 
 	if( reghi >= 0 ) {

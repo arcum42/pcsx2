@@ -285,19 +285,19 @@ void SetMaxValue(int regd)
 	if( info & PROCESS_EE_S ) xMOVSS(xRegisterSSE(sreg), xRegisterSSE(EEREC_S)); \
 	else xMOVSSZX(xRegisterSSE(sreg), ptr[&fpuRegs.fpr[_Fs_]]); }
 
-#define ALLOC_S(sreg) { (sreg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_S(sreg); }
+#define ALLOC_S(sreg) { (sreg) = XMM_Reg.allocTemp(XMMT_FPS, -1);  GET_S(sreg); }
 
 #define GET_T(treg) { \
 	if( info & PROCESS_EE_T ) xMOVSS(xRegisterSSE(treg), xRegisterSSE(EEREC_T)); \
 	else xMOVSSZX(xRegisterSSE(treg), ptr[&fpuRegs.fpr[_Ft_]]); }
 
-#define ALLOC_T(treg) { (treg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_T(treg); }
+#define ALLOC_T(treg) { (treg) = XMM_Reg.allocTemp(XMMT_FPS, -1);  GET_T(treg); }
 
 #define GET_ACC(areg) { \
 	if( info & PROCESS_EE_ACC ) xMOVSS(xRegisterSSE(areg), xRegisterSSE(EEREC_ACC)); \
 	else xMOVSSZX(xRegisterSSE(areg), ptr[&fpuRegs.ACC]); }
 
-#define ALLOC_ACC(areg) { (areg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_ACC(areg); }
+#define ALLOC_ACC(areg) { (areg) = XMM_Reg.allocTemp(XMMT_FPS, -1);  GET_ACC(areg); }
 
 #define CLEAR_OU_FLAGS { xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO | FPUflagU)); }
 
@@ -333,7 +333,7 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 {
 	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
 	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
-	int xmmtemp = _allocTempXMMreg(XMMT_FPS, -1); //temporary for anding with regd/regt
+	int xmmtemp = XMM_Reg.allocTemp(XMMT_FPS, -1); //temporary for anding with regd/regt
 
 	xMOVD(xRegister32(tempecx), xRegisterSSE(tempd));
 	xMOVD(xRegister32(temp2), xRegisterSSE(tempt));
@@ -389,7 +389,7 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	x86SetJ8(j8Ptr[6]);
 	x86SetJ8(j8Ptr[7]);
 
-	_freeXMMreg(xmmtemp);
+	XMM_Reg.freeReg(xmmtemp);
 	_freeX86reg(temp2);
 	_freeX86reg(tempecx);
 }
@@ -441,7 +441,7 @@ void recFPUOp(int info, int regd, int op, bool acc)
 	ToPS2FPU(sreg, true, treg, acc, true);
 	xMOVSS(xRegisterSSE(regd), xRegisterSSE(sreg));
 
-	_freeXMMreg(sreg); _freeXMMreg(treg);
+	XMM_Reg.freeReg(sreg); XMM_Reg.freeReg(treg);
 }
 //------------------------------------------------------------------
 
@@ -474,7 +474,7 @@ void recCMP(int info)
 
 	xUCOMI.SD(xRegisterSSE(sreg), xRegisterSSE(treg));
 
-	_freeXMMreg(sreg); _freeXMMreg(treg);
+	XMM_Reg.freeReg(sreg); XMM_Reg.freeReg(treg);
 }
 
 //------------------------------------------------------------------
@@ -546,7 +546,7 @@ FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED|XMMINFO_READS);
 void recCVT_W() //called from iFPU.cpp's recCVT_W
 {
 	EE::Profiler.EmitOp(eeOpcode::CVTW);
-	int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
+	int regs = XMM_Reg.checkReg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
 	if( regs >= 0 )
 	{
@@ -562,7 +562,7 @@ void recCVT_W() //called from iFPU.cpp's recCVT_W
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
-	_deleteFPtoXMMreg(_Fd_, 2);
+	XMM_Reg.deleteFP(_Fd_, 2);
 
 	xADD(edx, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
 
@@ -582,7 +582,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 {
 	u8 *pjmp1, *pjmp2;
 	u32 *ajmp32, *bjmp32;
-	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
@@ -622,7 +622,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 
 	x86SetJ32(bjmp32);
 
-	_freeXMMreg(t1reg);
+	XMM_Reg.freeReg(t1reg);
 	_freeX86reg(tempReg);
 }
 
@@ -682,7 +682,7 @@ void recDIV_S_xmm(int info)
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
 	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
-	_freeXMMreg(sreg); _freeXMMreg(treg);
+	XMM_Reg.freeReg(sreg); XMM_Reg.freeReg(treg);
 }
 
 FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -749,7 +749,7 @@ void recMaddsub(int info, int regd, int op, bool acc)
 
 	xMOVSS(xRegisterSSE(regd), xRegisterSSE(treg));
 
-	_freeXMMreg(sreg); _freeXMMreg(treg);
+	XMM_Reg.freeReg(sreg); XMM_Reg.freeReg(treg);
 }
 
 void recMADD_S_xmm(int info)
@@ -800,7 +800,7 @@ void recMINMAX(int info, bool ismin)
 
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
-	_freeXMMreg(sreg); _freeXMMreg(treg);
+	XMM_Reg.freeReg(sreg); XMM_Reg.freeReg(treg);
 }
 
 void recMAX_S_xmm(int info)
@@ -865,7 +865,7 @@ void recMUL_S_xmm(int info)
 	ALLOC_S(sreg); ALLOC_T(treg);
 
 	FPU_MUL(info, EEREC_D, sreg, treg, false);
-	_freeXMMreg(sreg); _freeXMMreg(treg);
+	XMM_Reg.freeReg(sreg); XMM_Reg.freeReg(treg);
 }
 
 FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
@@ -877,7 +877,7 @@ void recMULA_S_xmm(int info)
 	ALLOC_S(sreg); ALLOC_T(treg);
 
 	FPU_MUL(info, EEREC_ACC, sreg, treg, true);
-	_freeXMMreg(sreg); _freeXMMreg(treg);
+	XMM_Reg.freeReg(sreg); XMM_Reg.freeReg(treg);
 }
 
 FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
@@ -933,7 +933,7 @@ void recSQRT_S_xmm(int info)
 	u8 *pjmp;
 	int roundmodeFlag = 0;
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
-	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	//Console.WriteLn("FPU: SQRT");
 
 	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
@@ -976,7 +976,7 @@ void recSQRT_S_xmm(int info)
 	}
 
 	_freeX86reg(tempReg);
-	_freeXMMreg(t1reg);
+	XMM_Reg.freeReg(t1reg);
 }
 
 FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);
@@ -991,7 +991,7 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	u8 *pjmp1, *pjmp2;
 	u8 *qjmp1, *qjmp2;
 	u32 *pjmp32;
-	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
+	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
@@ -1035,7 +1035,7 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	ToPS2FPU(regd, false, regt, false);
 	x86SetJ32(pjmp32);
 
-	_freeXMMreg(t1reg);
+	XMM_Reg.freeReg(t1reg);
 	_freeX86reg(tempReg);
 }
 
@@ -1080,7 +1080,7 @@ void recRSQRT_S_xmm(int info)
 
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
-	_freeXMMreg(treg); _freeXMMreg(sreg);
+	XMM_Reg.freeReg(treg); XMM_Reg.freeReg(sreg);
 
 	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
 }

@@ -16,6 +16,7 @@
 #ifndef _PCSX2_CORE_RECOMPILER_
 #define _PCSX2_CORE_RECOMPILER_
 
+#include <array>
 #include "x86emitter/x86emitter.h"
 #include "VUmicro.h"
 
@@ -162,34 +163,63 @@ struct _xmmregs
     u16 counter;
 };
 
-void _initXMMregs();
-int _getFreeXMMreg();
-int _allocTempXMMreg(XMMSSEType type, int xmmreg);
-int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode);
-int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode);
-int _allocFPACCtoXMMreg(int xmmreg, int mode);
-int _checkXMMreg(int type, int reg, int mode);
-void _addNeededFPtoXMMreg(int fpreg);
-void _addNeededFPACCtoXMMreg();
-void _addNeededGPRtoXMMreg(int gprreg);
-void _clearNeededXMMregs();
-//void _deleteACCtoXMMreg(int vu, int flush);
-void _deleteGPRtoXMMreg(int reg, int flush);
-void _deleteFPtoXMMreg(int reg, int flush);
-void _freeXMMreg(u32 xmmreg);
-//void _moveXMMreg(int xmmreg); // instead of freeing, moves it to a diff location
-void _flushXMMregs();
-u8 _hasFreeXMMreg();
-void _freeXMMregs();
-int _getNumXMMwrite();
+class XMM_Regs
+{
+	private:
+		u16 g_xmmAllocCounter = 0;
+		int s_xmmchecknext = 0;
+
+	public:
+		std::array<_xmmregs, iREGCNT_XMM> xmmregs;
+		std::array<_xmmregs, iREGCNT_XMM> s_saveXMMregs;
+
+		__forceinline void backup() { s_saveXMMregs = xmmregs; }
+		__forceinline void restore() { xmmregs = s_saveXMMregs; }
+		//_xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
+
+		void init();
+
+		// Is there a free reg?
+		u8 hasFreeReg();
+		// Get a free reg's index.
+		int getFreeReg();
+		// Free a reg.
+		void freeReg(u32 xmmreg);
+		// Free all of them.
+		void freeRegs();
+
+		int allocTemp(XMMSSEType type, int xmmreg);
+
+		int checkReg(int type, int reg, int mode);
+		int getFlagCount(u8 flag);
+		void flushRegs();
+		void clearNeededRegs();
+
+		int allocFP(int xmmreg, int fpreg, int mode);
+		void addNeededFP(int fpreg);
+		void deleteFP(int reg, int flush);
+
+		int allocFPACC(int xmmreg, int mode);
+		void addNeededFPACC();
+
+		int allocGPR(int xmmreg, int gprreg, int mode);
+		void addNeededGPR(int gprreg);
+		void deleteGPR(int reg, int flush);
 
 #ifndef DISABLE_SVU
-int _allocVFtoXMMreg(VURegs *VU, int xmmreg, int vfreg, int mode);
-int _allocACCtoXMMreg(VURegs *VU, int xmmreg, int mode);
-void _addNeededVFtoXMMreg(int vfreg);
-void _addNeededACCtoXMMreg();
-void _deleteVFtoXMMreg(int reg, int vu, int flush);
+		int allocVF(VURegs *VU, int xmmreg, int vfreg, int mode);
+		void addNeededVF(int vfreg);
+		void deleteVF(int reg, int vu, int flush);
+
+		int allocACC(VURegs *VU, int xmmreg, int mode);
+		void addNeededACC();
 #endif
+};
+
+extern XMM_Regs XMM_Reg;
+
+//void _deleteACCtoXMMreg(int vu, int flush);
+//void _moveXMMreg(int xmmreg); // instead of freeing, moves it to a diff location
 
 void _signExtendSFtoM(uptr mem);
 
@@ -256,13 +286,12 @@ static __fi bool FPUINST_LASTUSE(u32 reg) { return !!(g_pCurInstInfo->fpuregs[re
 
 extern u32 g_recWriteback; // used for jumps (VUrec mess!)
 
-extern _xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
+//extern _xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
 
 extern __tls_emit u8 *j8Ptr[32];   // depreciated item.  use local u8* vars instead.
 extern __tls_emit u32 *j32Ptr[32]; // depreciated item.  use local u32* vars instead.
 
 extern u16 g_x86AllocCounter;
-extern u16 g_xmmAllocCounter;
 
 // allocates only if later insts use XMM, otherwise checks
 int _allocCheckGPRtoXMM(EEINST *pinst, int gprreg, int mode);

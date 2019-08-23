@@ -310,7 +310,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 
 	if		(t1regBoolean == 2) xSHUF.PS(xRegisterSSE(reg), xRegisterSSE(reg), 0x1B); // Flip back reg to wzyx (have to do this because reg != EEREC_TEMP)
 	else if (t1regBoolean == 1) xMOVAPS(xRegisterSSE(t1reg), ptr[TEMPXMMData ]); // Restore data from temo address
-	else	_freeXMMreg(t1reg); // Free temp reg
+	else	XMM_Reg.freeReg(t1reg); // Free temp reg
 
 	xMOV(ptr[(void*)(macaddr)], xRegister16(x86macflag));
 	xMOV(ptr[(void*)(stataddr)], xRegister16(x86statflag));
@@ -1049,7 +1049,7 @@ void recVUMI_SUB_iq(VURegs *VU, uptr addr, int info)
 				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_D, t1reg);
-				_freeXMMreg(t1reg);
+				XMM_Reg.freeReg(t1reg);
 			}
 			else {
 				// negate
@@ -1115,7 +1115,7 @@ void recVUMI_SUB_xyzw(VURegs *VU, int xyzw, int info)
 				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_D, t1reg);
-				_freeXMMreg(t1reg);
+				XMM_Reg.freeReg(t1reg);
 			}
 			else {
 				// negate
@@ -1238,7 +1238,7 @@ void recVUMI_SUBA_iq(VURegs *VU, uptr addr, int info)
 				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_ACC, t1reg);
-				_freeXMMreg(t1reg);
+				XMM_Reg.freeReg(t1reg);
 			}
 			else {
 				// negate
@@ -1285,7 +1285,7 @@ void recVUMI_SUBA_xyzw(VURegs *VU, int xyzw, int info)
 				xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 				VU_MERGE_REGS(EEREC_ACC, t1reg);
-				_freeXMMreg(t1reg);
+				XMM_Reg.freeReg(t1reg);
 			}
 			else {
 				// negate
@@ -1940,7 +1940,7 @@ void recVUMI_MSUB_toD(VURegs *VU, int regd, int info)
 			xSUB.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 
 			VU_MERGE_REGS(regd, t1reg);
-			_freeXMMreg(t1reg);
+			XMM_Reg.freeReg(t1reg);
 		}
 		else {
 			xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
@@ -1997,7 +1997,7 @@ void recVUMI_MSUB_temp_toD(VURegs *VU, int regd, int info)
 			if ( regd != EEREC_TEMP ) { VU_MERGE_REGS(regd, t1reg); }
 			else xMOVAPS(xRegisterSSE(regd), xRegisterSSE(t1reg));
 
-			_freeXMMreg(t1reg);
+			XMM_Reg.freeReg(t1reg);
 		}
 		else {
 			xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[&const_clip[4]]);
@@ -2256,11 +2256,11 @@ void MINMAXlogical(VURegs *VU, int info, int min, int mode, uptr addr = 0, int x
 	}
 
 	if (t1regbool == 0)
-		_freeXMMreg(t1reg);
+		XMM_Reg.freeReg(t1reg);
 	else if (t1regbool == 1)
 		xMOVAPS(xRegisterSSE(t1reg), ptr[temp_loc]); // Restore t1reg XMM reg
 	if (t2regbool == 0)
-		_freeXMMreg(t2reg);
+		XMM_Reg.freeReg(t2reg);
 	else if (t2regbool == 1)
 		xMOVAPS(xRegisterSSE(t2reg), ptr[temp_loc2]); // Restore t2reg XMM reg
 }
@@ -2760,7 +2760,7 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
 			xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
-			_freeXMMreg(t1reg); // Free temp reg
+			XMM_Reg.freeReg(t1reg); // Free temp reg
 		}
 		else { // No temp reg available
 			for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
@@ -2789,7 +2789,7 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 
 			if( t1reg >= 0 ) { // If theres a temp XMM reg available
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
-				_freeXMMreg(t1reg); // Free temp reg
+				XMM_Reg.freeReg(t1reg); // Free temp reg
 			}
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
@@ -2816,7 +2816,7 @@ void recVUMI_FTOI0(VURegs *VU, int info)
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
 				xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
-				_freeXMMreg(t1reg); // Free temp reg
+				XMM_Reg.freeReg(t1reg); // Free temp reg
 			}
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
@@ -2861,7 +2861,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 			recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
 			xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
-			_freeXMMreg(t1reg); // Free temp reg
+			XMM_Reg.freeReg(t1reg); // Free temp reg
 		}
 		else { // No temp reg available
 			for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
@@ -2891,7 +2891,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 
 			if( t1reg >= 0 ) { // If theres a temp XMM reg available
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_T, EEREC_TEMP, t1reg); // Saturate if Float->Int conversion returned illegal result
-				_freeXMMreg(t1reg); // Free temp reg
+				XMM_Reg.freeReg(t1reg); // Free temp reg
 			}
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
@@ -2919,7 +2919,7 @@ void recVUMI_FTOIX(VURegs *VU, int addr, int info)
 				recVUMI_FTOI_Saturate(EEREC_S, EEREC_TEMP, t1reg, t2reg); // Saturate if Float->Int conversion returned illegal result
 
 				xMOVAPS(xRegisterSSE(t2reg), ptr[FTIO_Temp1]); // Restore XMM reg
-				_freeXMMreg(t1reg); // Free temp reg
+				XMM_Reg.freeReg(t1reg); // Free temp reg
 			}
 			else { // No temp reg available
 				for (t1reg = 0; ( (t1reg == EEREC_S) || (t1reg == EEREC_T) || (t1reg == EEREC_TEMP) ); t1reg++)
@@ -2959,7 +2959,7 @@ void recVUMI_ITOF0( VURegs *VU, int info )
 		xCVTDQ2PS(xRegisterSSE(EEREC_TEMP), xRegisterSSE(EEREC_S));
 		vuFloat_useEAX( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
-		xmmregs[EEREC_T].mode |= MODE_WRITE;
+		XMM_Reg.xmmregs[EEREC_T].mode |= MODE_WRITE;
 	}
 	else {
 		xCVTDQ2PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_S));
@@ -2977,7 +2977,7 @@ void recVUMI_ITOFX(VURegs *VU, int addr, int info)
 		xMUL.PS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(addr)]);
 		vuFloat_useEAX( info, EEREC_TEMP, 15); // Clamp infinities
 		VU_MERGE_REGS(EEREC_T, EEREC_TEMP);
-		xmmregs[EEREC_T].mode |= MODE_WRITE;
+		XMM_Reg.xmmregs[EEREC_T].mode |= MODE_WRITE;
 	}
 	else {
 		xCVTDQ2PS(xRegisterSSE(EEREC_T), xRegisterSSE(EEREC_S));
@@ -3024,8 +3024,8 @@ void recVUMI_CLIP(VURegs *VU, int info)
 
 	//if ( (x86temp1 == 0) || (x86temp2 == 0) ) Console.Error("VU CLIP Allocation Error: EAX being allocated!");
 
-	_freeXMMreg(t1reg); // These should have been freed at allocation in eeVURecompileCode()
-	_freeXMMreg(t2reg); // but if they've been used since then, then free them. (just doing this incase :p (cottonvibes))
+	XMM_Reg.freeReg(t1reg); // These should have been freed at allocation in eeVURecompileCode()
+	XMM_Reg.freeReg(t2reg); // but if they've been used since then, then free them. (just doing this incase :p (cottonvibes))
 
 	if( _Ft_ == 0 ) {
 		xMOVAPS(xRegisterSSE(EEREC_TEMP), ptr[&s_fones[0]]); // all 1s

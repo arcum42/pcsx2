@@ -75,17 +75,17 @@ void _eeOnLoadWrite(u32 reg)
 	if( !reg ) return;
 
 	_eeOnWriteReg(reg, 1);
-	regt = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ);
+	regt = XMM_Reg.checkReg(XMMTYPE_GPRREG, reg, MODE_READ);
 
 	if( regt >= 0 ) {
-		if( xmmregs[regt].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[regt].mode & MODE_WRITE ) {
 			if( reg != _Rs_ ) {
 				xPUNPCK.HQDQ(xRegisterSSE(regt), xRegisterSSE(regt));
 				xMOVQ(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 			}
 			else xMOVH.PS(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 		}
-		xmmregs[regt].inuse = 0;
+		XMM_Reg.xmmregs[regt].inuse = 0;
 	}
 }
 
@@ -503,7 +503,7 @@ void recLWC1()
 #ifndef FPU_RECOMPILE
 	recCall(::R5900::Interpreter::OpcodeImpl::LWC1);
 #else
-	_deleteFPtoXMMreg(_Rt_, 2);
+	XMM_Reg.deleteFP(_Rt_, 2);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
@@ -534,7 +534,7 @@ void recSWC1()
 #ifndef FPU_RECOMPILE
 	recCall(::R5900::Interpreter::OpcodeImpl::SWC1);
 #else
-	_deleteFPtoXMMreg(_Rt_, 1);
+	XMM_Reg.deleteFP(_Rt_, 1);
 
 	xMOV(edx, ptr32[&fpuRegs.fpr[_Rt_].UL] );
 
@@ -574,7 +574,7 @@ void recSWC1()
 void recLQC2()
 {
 #ifndef DISABLE_SVU
-	_deleteVFtoXMMreg(_Ft_, 0, 2);
+	XMM_Reg.deleteVF(_Ft_, 0, 2);
 #endif
 
 	if (_Rt_)
@@ -607,7 +607,7 @@ void recLQC2()
 void recSQC2()
 {
 #ifndef DISABLE_SVU
-	_deleteVFtoXMMreg(_Ft_, 0, 1); //Want to flush it but not clear it
+	XMM_Reg.deleteVF(_Ft_, 0, 1); //Want to flush it but not clear it
 #endif
 
 	xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);

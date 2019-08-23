@@ -94,7 +94,7 @@ void recMFSA()
 	int mmreg;
 	if (!_Rd_) return;
 
-	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
+	mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
 	if( mmreg >= 0 ) {
 		xMOVL.PS(xRegisterSSE(mmreg), ptr[&cpuRegs.sa]);
 	}
@@ -115,7 +115,7 @@ void recMTSA()
 	else {
 		int mmreg;
 
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
+		if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
 			xMOVSS(ptr[&cpuRegs.sa], xRegisterSSE(mmreg));
 		}
 		else {

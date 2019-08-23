@@ -118,7 +118,7 @@ void recJALR()
 //	else {
 //		int mmreg;
 //
-//		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
+//		if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
 //			xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
 //		}
 //		else {
@@ -144,7 +144,7 @@ void recJALR()
 		}
 	}
 
-	_clearNeededXMMregs();
+	XMM_Reg.clearNeededRegs();
 	recompileNextInstruction(1);
 
 	if( x86regs[esi.GetId()].inuse ) {

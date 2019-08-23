@@ -247,7 +247,7 @@ void recVUMI_RSQRT(VURegs *VU, int info)
 	x86SetJ8(bjmp8);
 
 	if (t1boolean) xMOVAPS(xRegisterSSE(t1reg), ptr[&RSQRT_TEMP_XMM[0] ]); // restore t1reg data
-	else _freeXMMreg(t1reg); // free t1reg
+	else XMM_Reg.freeReg(t1reg); // free t1reg
 }
 //------------------------------------------------------------------
 
@@ -1126,7 +1126,7 @@ void recVUMI_ISWR( VURegs *VU, int info )
 void recVUMI_RINIT(VURegs *VU, int info)
 {
 	//Console.WriteLn("recVUMI_RINIT()");
-	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode & MODE_NOFLUSH) ) {
+	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode & MODE_NOFLUSH) ) {
 		_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 2);
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 
@@ -1137,9 +1137,9 @@ void recVUMI_RINIT(VURegs *VU, int info)
 	else {
 		int rreg = ALLOCVI(REG_R, MODE_WRITE);
 
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			xMOVAPS(ptr[(&VU->VF[_Fs_])], xRegisterSSE(EEREC_S));
-			xmmregs[EEREC_S].mode &= ~MODE_WRITE;
+			XMM_Reg.xmmregs[EEREC_S].mode &= ~MODE_WRITE;
 		}
 
 		xMOV(xRegister32(rreg), ptr[(void*)(VU_VFx_ADDR( _Fs_ ) + 4 * _Fsf_ )]);
@@ -1223,7 +1223,7 @@ void recVUMI_RNEXT( VURegs *VU, int info )
 void recVUMI_RXOR( VURegs *VU, int info )
 {
 	//Console.WriteLn("recVUMI_RXOR()");
-	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode & MODE_NOFLUSH) ) {
+	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode & MODE_NOFLUSH) ) {
 		_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 
@@ -1235,9 +1235,9 @@ void recVUMI_RXOR( VURegs *VU, int info )
 	else {
 		int rreg = ALLOCVI(REG_R, MODE_WRITE|MODE_READ);
 
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			xMOVAPS(ptr[(&VU->VF[_Fs_])], xRegisterSSE(EEREC_S));
-			xmmregs[EEREC_S].mode &= ~MODE_WRITE;
+			XMM_Reg.xmmregs[EEREC_S].mode &= ~MODE_WRITE;
 		}
 
 		xXOR(xRegister32(rreg), ptr[(void*)(VU_VFx_ADDR( _Fs_ ) + 4 * _Fsf_ )]);
@@ -1669,15 +1669,15 @@ void recVUMI_EATANxy( VURegs *VU, int info )
 {
 	pxAssert( VU == &VU1 );
 	//Console.WriteLn("recVUMI_EATANxy");
-	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
+	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		xMOVL.PS(ptr[s_tempmem], xRegisterSSE(EEREC_S));
 		FLD32((uptr)&s_tempmem[0]);
 		FLD32((uptr)&s_tempmem[1]);
 	}
 	else {
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			xMOVAPS(ptr[(&VU->VF[_Fs_])], xRegisterSSE(EEREC_S));
-			xmmregs[EEREC_S].mode &= ~MODE_WRITE;
+			XMM_Reg.xmmregs[EEREC_S].mode &= ~MODE_WRITE;
 		}
 
 		FLD32((uptr)&VU->VF[_Fs_].UL[0]);
@@ -1697,15 +1697,15 @@ void recVUMI_EATANxz( VURegs *VU, int info )
 {
 	pxAssert( VU == &VU1 );
 	//Console.WriteLn("recVUMI_EATANxz");
-	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
+	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		xMOVL.PS(ptr[s_tempmem], xRegisterSSE(EEREC_S));
 		FLD32((uptr)&s_tempmem[0]);
 		FLD32((uptr)&s_tempmem[2]);
 	}
 	else {
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			xMOVAPS(ptr[(&VU->VF[_Fs_])], xRegisterSSE(EEREC_S));
-			xmmregs[EEREC_S].mode &= ~MODE_WRITE;
+			XMM_Reg.xmmregs[EEREC_S].mode &= ~MODE_WRITE;
 		}
 
 		FLD32((uptr)&VU->VF[_Fs_].UL[0]);
@@ -1828,7 +1828,7 @@ void recVUMI_ERSQRT( VURegs *VU, int info )
 		xDIV.SS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_TEMP));
 		vuFloat_useEAX(info, t1reg, 8);
 		xMOVSS(ptr[(void*)(VU_VI_ADDR(REG_P, 0))], xRegisterSSE(t1reg));
-		_freeXMMreg(t1reg);
+		XMM_Reg.freeReg(t1reg);
 	}
 	else
 	{
@@ -1850,7 +1850,7 @@ void recVUMI_ESIN( VURegs *VU, int info )
 	pxAssert( VU == &VU1 );
 
 	//Console.WriteLn("recVUMI_ESIN");
-	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
+	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
 			case 0: xMOVSS(ptr[s_tempmem], xRegisterSSE(EEREC_S)); break;
 			case 1: xMOVL.PS(ptr[s_tempmem], xRegisterSSE(EEREC_S)); break;
@@ -1859,9 +1859,9 @@ void recVUMI_ESIN( VURegs *VU, int info )
 		FLD32((uptr)&s_tempmem[_Fsf_]);
 	}
 	else {
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			xMOVAPS(ptr[(&VU->VF[_Fs_])], xRegisterSSE(EEREC_S));
-			xmmregs[EEREC_S].mode &= ~MODE_WRITE;
+			XMM_Reg.xmmregs[EEREC_S].mode &= ~MODE_WRITE;
 		}
 
 		FLD32((uptr)&VU->VF[_Fs_].UL[_Fsf_]);
@@ -1881,7 +1881,7 @@ void recVUMI_EATAN( VURegs *VU, int info )
 	pxAssert( VU == &VU1 );
 
 	//Console.WriteLn("recVUMI_EATAN");
-	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
+	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
 			case 0: xMOVSS(ptr[s_tempmem], xRegisterSSE(EEREC_S)); break;
 			case 1: xMOVL.PS(ptr[s_tempmem], xRegisterSSE(EEREC_S));  break;
@@ -1890,9 +1890,9 @@ void recVUMI_EATAN( VURegs *VU, int info )
 		FLD32((uptr)&s_tempmem[_Fsf_]);
 	}
 	else {
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			xMOVAPS(ptr[(&VU->VF[_Fs_])], xRegisterSSE(EEREC_S));
-			xmmregs[EEREC_S].mode &= ~MODE_WRITE;
+			XMM_Reg.xmmregs[EEREC_S].mode &= ~MODE_WRITE;
 		}
 	}
 
@@ -1913,7 +1913,7 @@ void recVUMI_EEXP( VURegs *VU, int info )
 	//Console.WriteLn("recVUMI_EEXP");
 	FLDL2E();
 
-	if( (xmmregs[EEREC_S].mode & MODE_WRITE) && (xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
+	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode&MODE_NOFLUSH) ) {
 		switch(_Fsf_) {
 		case 0: xMOVSS(ptr[s_tempmem], xRegisterSSE(EEREC_S)); break;
 			case 1: xMOVL.PS(ptr[s_tempmem], xRegisterSSE(EEREC_S)); break;
@@ -1922,9 +1922,9 @@ void recVUMI_EEXP( VURegs *VU, int info )
 		FMUL32((uptr)&s_tempmem[_Fsf_]);
 	}
 	else {
-		if( xmmregs[EEREC_S].mode & MODE_WRITE ) {
+		if( XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE ) {
 			xMOVAPS(ptr[(&VU->VF[_Fs_])], xRegisterSSE(EEREC_S));
-			xmmregs[EEREC_S].mode &= ~MODE_WRITE;
+			XMM_Reg.xmmregs[EEREC_S].mode &= ~MODE_WRITE;
 		}
 
 		FMUL32((uptr)&VU->VF[_Fs_].UL[_Fsf_]);

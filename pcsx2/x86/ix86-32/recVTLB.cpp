@@ -39,10 +39,10 @@ protected:
 public:
 	iAllocRegSSE() :
 		m_reg( xmm0 ),
-		m_free( !!_hasFreeXMMreg() )
+		m_free(!!XMM_Reg.hasFreeReg())
 	{
 		if( m_free )
-			m_reg = xRegisterSSE( _allocTempXMMreg( XMMT_INT, -1 ) );
+			m_reg = xRegisterSSE( XMM_Reg.allocTemp( XMMT_INT, -1 ) );
 		else
 			xStoreReg( m_reg );
 	}
@@ -50,7 +50,7 @@ public:
 	~iAllocRegSSE()
 	{
 		if( m_free )
-			_freeXMMreg( m_reg.Id );
+			XMM_Reg.freeReg( m_reg.Id );
 		else
 			xRestoreReg( m_reg );
 	}
@@ -73,13 +73,13 @@ static void iMOV128_SSE( const xIndirectVoid& destRm, const xIndirectVoid& srcRm
 //
 static void iMOV64_Smart( const xIndirectVoid& destRm, const xIndirectVoid& srcRm )
 {
-	if( _hasFreeXMMreg() )
+	if (XMM_Reg.hasFreeReg())
 	{
 		// Move things using MOVLPS:
-		xRegisterSSE reg( _allocTempXMMreg( XMMT_INT, -1 ) );
+		xRegisterSSE reg( XMM_Reg.allocTemp( XMMT_INT, -1 ) );
 		xMOVL.PS( reg, srcRm );
 		xMOVL.PS( destRm, reg );
-		_freeXMMreg( reg.Id );
+		XMM_Reg.freeReg( reg.Id );
 		return;
 	}
 
