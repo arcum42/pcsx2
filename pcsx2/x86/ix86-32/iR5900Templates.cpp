@@ -115,7 +115,7 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 //				mmreg1 = XMM_Reg.allocGPR(-1, vreg, MODE_READ);
 //				XMM_Reg.addNeededGPR(vreg);
 //			}
-			mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, vreg, MODE_READ);
+			mmreg1 = XMM_Reg.allocCheckGPR(vreg, MODE_READ);
 
 			if( mmreg1 >= 0 ) {
 				int info = PROCESS_EE_XMM;
@@ -160,8 +160,8 @@ void eeRecompileCode0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNP
 		}
 		else {
 			// no const regs
-			mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
-			mmreg2 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
+			mmreg1 = XMM_Reg.allocCheckGPR(_Rs_, MODE_READ);
+			mmreg2 = XMM_Reg.allocCheckGPR(_Rt_, MODE_READ);
 
 			if( mmreg1 >= 0 || mmreg2 >= 0 ) {
 				int info = PROCESS_EE_XMM;
@@ -267,7 +267,7 @@ void eeRecompileCode1(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 		pxAssert(0);
 
 		// no const regs
-		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rs_, MODE_READ);
+		mmreg1 = XMM_Reg.allocCheckGPR(_Rs_, MODE_READ);
 
 		if( mmreg1 >= 0 ) {
 			int info = PROCESS_EE_XMM|PROCESS_EE_SETMODES(mmreg1);
@@ -323,7 +323,7 @@ void eeRecompileCode2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode)
 		pxAssert(0);
 
 		// no const regs
-		mmreg1 = _allocCheckGPRtoXMM(g_pCurInstInfo, _Rt_, MODE_READ);
+		mmreg1 = XMM_Reg.allocCheckGPR(_Rt_, MODE_READ);
 
 		if( mmreg1 >= 0 ) {
 			int info = PROCESS_EE_XMM|PROCESS_EE_SETMODET(mmreg1);

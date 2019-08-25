@@ -245,7 +245,7 @@ void recMTC1()
 			}
 			else
 			{
-				int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
+				int mmreg2 = XMM_Reg.allocCheckFPU(_Fs_, MODE_WRITE);
 
 				if( mmreg2 >= 0 )
 					xMOVSS(xRegisterSSE(mmreg2), xRegisterSSE(mmreg));
@@ -255,7 +255,7 @@ void recMTC1()
 		}
 		else
 		{
-			int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
+			int mmreg2 = XMM_Reg.allocCheckFPU(_Fs_, MODE_WRITE);
 
 			if( mmreg2 >= 0 )
 			{

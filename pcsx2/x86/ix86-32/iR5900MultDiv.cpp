@@ -129,7 +129,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
 
 	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
-		reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE|MODE_READ);
+		reglo = XMM_Reg.allocCheckGPR(XMMGPR_LO, MODE_WRITE|MODE_READ);
 
 		if( reglo >= 0 ) {
 			u32* mem_ptr = recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res);
@@ -144,7 +144,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 
 	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
 
-		reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE|MODE_READ);
+		reghi = XMM_Reg.allocCheckGPR(XMMGPR_HI, MODE_WRITE|MODE_READ);
 
 		if( reghi >= 0 ) {
 			u32* mem_ptr = recGetImm64((res >> 63) ? -1 : 0, res >> 32);

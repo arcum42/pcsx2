@@ -169,13 +169,14 @@ class XMM_Regs
 		u16 g_xmmAllocCounter = 0;
 		int s_xmmchecknext = 0;
 
+		__fi void *GetAddr(_xmmregs &r);
+
 	public:
 		std::array<_xmmregs, iREGCNT_XMM> xmmregs;
 		std::array<_xmmregs, iREGCNT_XMM> s_saveXMMregs;
 
 		__forceinline void backup() { s_saveXMMregs = xmmregs; }
 		__forceinline void restore() { xmmregs = s_saveXMMregs; }
-		//_xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
 
 		void init();
 
@@ -205,6 +206,10 @@ class XMM_Regs
 		int allocGPR(int xmmreg, int gprreg, int mode);
 		void addNeededGPR(int gprreg);
 		void deleteGPR(int reg, int flush);
+
+		// allocates only if later insts use XMM, otherwise checks.
+		int allocCheckGPR(int gprreg, int mode);
+		int allocCheckFPU(int fpureg, int mode);
 
 #ifndef DISABLE_SVU
 		int allocVF(VURegs *VU, int xmmreg, int vfreg, int mode);
@@ -273,6 +278,7 @@ extern void _recClearInst(EEINST *pinst);
 
 // returns the number of insts + 1 until written (0 if not written)
 extern u32 _recIsRegWritten(EEINST *pinst, int size, u8 xmmtype, u8 reg);
+
 // returns the number of insts + 1 until used (0 if not used)
 //extern u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 extern void _recFillRegister(EEINST &pinst, int type, int reg, int write);
@@ -292,10 +298,6 @@ extern __tls_emit u8 *j8Ptr[32];   // depreciated item.  use local u8* vars inst
 extern __tls_emit u32 *j32Ptr[32]; // depreciated item.  use local u32* vars instead.
 
 extern u16 g_x86AllocCounter;
-
-// allocates only if later insts use XMM, otherwise checks
-int _allocCheckGPRtoXMM(EEINST *pinst, int gprreg, int mode);
-int _allocCheckFPUtoXMM(EEINST *pinst, int fpureg, int mode);
 
 // allocates only if later insts use this register
 int _allocCheckGPRtoX86(EEINST *pinst, int gprreg, int mode);

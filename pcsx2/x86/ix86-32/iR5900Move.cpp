@@ -266,7 +266,7 @@ void recMTHILO1(int hi)
 	addrhilo = hi ? (uptr)&cpuRegs.HI.UD[0] : (uptr)&cpuRegs.LO.UD[0];
 
 	regs = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
-	reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, xmmhilo, MODE_WRITE|MODE_READ);
+	reghi = XMM_Reg.allocCheckGPR(xmmhilo, MODE_WRITE|MODE_READ);
 
 	if( reghi >= 0 ) {
 		if( regs >= 0 ) {
