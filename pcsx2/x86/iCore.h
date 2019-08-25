@@ -178,6 +178,23 @@ class XMM_Regs
 		__forceinline void backup() { s_saveXMMregs = xmmregs; }
 		__forceinline void restore() { xmmregs = s_saveXMMregs; }
 
+		__forceinline void reg_reuse(_xmmregs &r, u8 the_mode)
+		{
+			r.mode |= the_mode;
+			r.needed = 1;
+			r.counter = g_xmmAllocCounter++; // update counter
+		}
+
+		__forceinline void reg_use(_xmmregs &r, u8 the_type, u8 the_reg, u8 the_mode)
+		{
+			r.inuse = 1;
+			r.type = the_type;
+			r.reg = the_reg;
+			r.mode = the_mode;
+			r.needed = 1;
+			r.counter = g_xmmAllocCounter++;
+		}
+
 		void init();
 
 		// Is there a free reg?

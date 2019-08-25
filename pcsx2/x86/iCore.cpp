@@ -48,7 +48,6 @@ XMM_Regs XMM_Reg;
 // Clear allocation counter
 void XMM_Regs::init()
 {
-    //memzero(xmmregs);
 	xmmregs.fill({0});
     g_xmmAllocCounter = 0;
     s_xmmchecknext = 0;
@@ -246,9 +245,7 @@ int XMM_Regs::allocFP(int xmmreg, int fpreg, int mode)
         }
 
         g_xmmtypes[i] = XMMT_FPS;
-        r.counter = g_xmmAllocCounter++; // update counter
-        r.needed = 1;
-        r.mode |= mode;
+        reg_reuse(r, mode);
         return i;
     }
 
@@ -256,12 +253,7 @@ int XMM_Regs::allocFP(int xmmreg, int fpreg, int mode)
     _xmmregs& r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
-    r.inuse = 1;
-    r.type = XMMTYPE_FPREG;
-    r.reg = fpreg;
-    r.mode = mode;
-    r.needed = 1;
-    r.counter = g_xmmAllocCounter++;
+    reg_use(r,XMMTYPE_FPREG, fpreg, mode);
 
     if (mode & MODE_READ)
         xMOVSSZX(xRegisterSSE(xmmreg), ptr[&fpuRegs.fpr[fpreg].f]);
@@ -280,8 +272,6 @@ int XMM_Regs::allocGPR(int xmmreg, int gprreg, int mode)
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_GPRREG) continue;
         if (r.reg != gprreg) continue;
-
-        g_xmmtypes[i] = XMMT_INT;
 
         if (!(r.mode & MODE_READ) && (mode & MODE_READ))
 		{
@@ -304,9 +294,8 @@ int XMM_Regs::allocGPR(int xmmreg, int gprreg, int mode)
             //pxAssert( !(g_cpuHasConstReg & (1<<gprreg)) );
         }
 
-        r.counter = g_xmmAllocCounter++; // update counter
-        r.needed = 1;
-        r.mode |= mode;
+        g_xmmtypes[i] = XMMT_INT;
+        reg_reuse(r, mode);
         return i;
     }
 
@@ -322,12 +311,7 @@ int XMM_Regs::allocGPR(int xmmreg, int gprreg, int mode)
     _xmmregs& r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_INT;
-    r.inuse = 1;
-    r.type = XMMTYPE_GPRREG;
-    r.reg = gprreg;
-    r.mode = mode;
-    r.needed = 1;
-    r.counter = g_xmmAllocCounter++;
+    reg_use(r,XMMTYPE_GPRREG, gprreg, mode);
 
     if (mode & MODE_READ) 
 	{
@@ -365,9 +349,7 @@ int XMM_Regs::allocFPACC(int xmmreg, int mode)
         }
 
         g_xmmtypes[i] = XMMT_FPS;
-        r.counter = g_xmmAllocCounter++; // update counter
-        r.needed = 1;
-        r.mode |= mode;
+        reg_reuse(r, mode);
         return i;
     }
 
@@ -375,12 +357,7 @@ int XMM_Regs::allocFPACC(int xmmreg, int mode)
     _xmmregs& r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
-    r.inuse = 1;
-    r.type = XMMTYPE_FPACC;
-    r.mode = mode;
-    r.needed = 1;
-    r.reg = 0;
-    r.counter = g_xmmAllocCounter++;
+    reg_use(r,XMMTYPE_FPACC, 0, mode);
 
     if (mode & MODE_READ) 
 	{
@@ -923,9 +900,7 @@ int XMM_Regs::allocACC(VURegs *VU, int xmmreg, int mode)
         }
 
         g_xmmtypes[i] = XMMT_FPS;
-        r.counter = g_xmmAllocCounter++; // update counter
-        r.needed = 1;
-        r.mode |= mode;
+        reg_reuse(r, mode);
         return i;
     }
 
@@ -936,13 +911,8 @@ int XMM_Regs::allocACC(VURegs *VU, int xmmreg, int mode)
     _xmmregs& r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
-    r.inuse = 1;
-    r.type = XMMTYPE_ACC;
-    r.mode = mode;
-    r.needed = 1;
     r.VU = XMM_CONV_VU(VU);
-    r.counter = g_xmmAllocCounter++;
-    r.reg = 0;
+    reg_use(r, XMMTYPE_ACC, 0, mode);
 
     if (mode & MODE_READ) 
 	{
@@ -1086,8 +1056,7 @@ int XMM_Regs::allocVF(VURegs *VU, int xmmreg, int vfreg, int mode)
         }
 
         g_xmmtypes[i] = XMMT_FPS;
-        r.counter = g_xmmAllocCounter++; // update counter
-        r.mode |= mode;
+        reg_reuse(r, mode);
         return i;
     }
 
@@ -1098,13 +1067,8 @@ int XMM_Regs::allocVF(VURegs *VU, int xmmreg, int vfreg, int mode)
     _xmmregs& r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
-    r.inuse = 1;
-    r.type = XMMTYPE_VFREG;
-    r.reg = vfreg;
-    r.mode = mode;
-    r.needed = 1;
     r.VU = XMM_CONV_VU(VU);
-    r.counter = g_xmmAllocCounter++;
+    reg_use(r, XMMTYPE_VFREG, vfreg, mode);
 
     if (mode & MODE_READ) 
 	{
