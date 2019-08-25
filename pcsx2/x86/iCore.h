@@ -124,11 +124,12 @@ class X86_Regs
 		uptr getAddr(int type, int reg);
 		// X86 caching
 		int g_x86checknext;
+		std::array<_x86regs, iREGCNT_GPR> s_saveX86regs;
 
 	public:
-		_x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
-		__forceinline void backup() { memcpy(s_saveX86regs, x86regs, sizeof(x86regs)); }
-		__forceinline void restore() { memcpy(x86regs, s_saveX86regs, sizeof(x86regs)); }
+		std::array<_x86regs, iREGCNT_GPR> x86regs;
+		__forceinline void backup() { s_saveX86regs = x86regs; }
+		__forceinline void restore() { x86regs = s_saveX86regs; }
 
 		void init();
 		int getFreeReg(int mode);
@@ -180,12 +181,12 @@ class XMM_Regs
 	private:
 		u16 g_xmmAllocCounter = 0;
 		int s_xmmchecknext = 0;
+		std::array<_xmmregs, iREGCNT_XMM> s_saveXMMregs;
 
 		__fi void *GetAddr(_xmmregs &r);
 
 	public:
 		std::array<_xmmregs, iREGCNT_XMM> xmmregs;
-		std::array<_xmmregs, iREGCNT_XMM> s_saveXMMregs;
 
 		__forceinline void backup() { s_saveXMMregs = xmmregs; }
 		__forceinline void restore() { xmmregs = s_saveXMMregs; }
