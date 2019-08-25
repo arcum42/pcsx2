@@ -195,6 +195,7 @@ class XMM_Regs
 		int getFlagCount(u8 flag);
 		void flushRegs();
 		void clearNeededRegs();
+		int getAvailableReg();
 
 		int allocFP(int xmmreg, int fpreg, int mode);
 		void addNeededFP(int fpreg);
