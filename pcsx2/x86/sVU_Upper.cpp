@@ -273,7 +273,7 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 			xOR(xRegister32(x86macflag), xRegister32(x86temp));
 		x86SetJ8(pjmp);
 
-		_freeX86reg(x86temp);
+		X86_Reg.freeReg(x86temp);
 	}
 	else { // Only Checks for Sign and Zero Flags
 
@@ -315,8 +315,8 @@ void recUpdateFlags(VURegs * VU, int reg, int info)
 	xMOV(ptr[(void*)(macaddr)], xRegister16(x86macflag));
 	xMOV(ptr[(void*)(stataddr)], xRegister16(x86statflag));
 
-	_freeX86reg(x86macflag);
-	_freeX86reg(x86statflag);
+	X86_Reg.freeReg(x86macflag);
+	X86_Reg.freeReg(x86statflag);
 }
 //------------------------------------------------------------------
 
@@ -343,7 +343,7 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 	if (temp2 == ecx.GetId())
 	{
 		temp2 = ALLOCTEMPX86(0);
-		_freeX86reg(ecx);
+		X86_Reg.freeReg(ecx);
 	}
 
 	xMOVAPS(ptr[&VU_addsub_reg[0][0]], xRegisterSSE(regd));
@@ -420,7 +420,7 @@ void VU_ADD_SUB(u32 regd, u32 regt, int is_sub, int info)
 
 	xMOVAPS(xRegisterSSE(regt), ptr[&VU_addsub_reg[1][0]]);
 
-	_freeX86reg(temp2);
+	X86_Reg.freeReg(temp2);
 
 	xMOV(ecx, ptr[&tempECX]);
 }
@@ -438,7 +438,7 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 	if (temp2 == ecx.GetId())
 	{
 		temp2 = ALLOCTEMPX86(0);
-		_freeX86reg(ecx);
+		X86_Reg.freeReg(ecx);
 	}
 
 	xMOVAPS(ptr[&VU_addsub_reg[0][0]], xRegisterSSE(regd));
@@ -552,7 +552,7 @@ void VU_ADD_SUB_SS(u32 regd, u32 regt, int is_sub, int is_mem, int info)
 		xMOVAPS(xRegisterSSE(regt), ptr[&VU_addsub_reg[1][0]]);
 	}
 
-	_freeX86reg(temp2);
+	X86_Reg.freeReg(temp2);
 
 	xMOV(ecx, ptr[&tempECX]);
 }
@@ -3063,6 +3063,6 @@ void recVUMI_CLIP(VURegs *VU, int info)
 	if (( !(info & (PROCESS_VU_SUPER|PROCESS_VU_COP2)) ) )  //Instantly update the flag if its called from elsewhere (unlikely, but ok)
 		xMOV(ptr[(&VU->VI[REG_CLIP_FLAG])], eax);
 
-	_freeX86reg(x86temp1);
-	_freeX86reg(x86temp2);
+	X86_Reg.freeReg(x86temp1);
+	X86_Reg.freeReg(x86temp2);
 }

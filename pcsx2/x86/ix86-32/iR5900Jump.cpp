@@ -103,7 +103,7 @@ void recJALR()
 	EE::Profiler.EmitOp(eeOpcode::JALR);
 
 	int newpc = pc + 4;
-	_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	X86_Reg.allocReg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 	_eeMoveGPRtoR(esi, _Rs_);
 
 	if (EmuConfig.Gamefixes.GoemonTlbHack) {
@@ -147,10 +147,10 @@ void recJALR()
 	XMM_Reg.clearNeededRegs();
 	recompileNextInstruction(1);
 
-	if( x86regs[esi.GetId()].inuse ) {
-		pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
+	if( X86_Reg.x86regs[esi.GetId()].inuse ) {
+		pxAssert( X86_Reg.x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
 		xMOV(ptr[&cpuRegs.pc], esi);
-		x86regs[esi.GetId()].inuse = 0;
+		X86_Reg.x86regs[esi.GetId()].inuse = 0;
 	}
 	else {
 		xMOV(eax, ptr[&g_recWriteback]);

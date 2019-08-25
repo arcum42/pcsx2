@@ -335,14 +335,14 @@ void recVUMI_IADD( VURegs *VU, int info )
 
 	if ( _Is_ == 0 )
 	{
-		if( (itreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, MODE_READ)) >= 0 ) {
+		if( (itreg = X86_Reg.checkReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, MODE_READ)) >= 0 ) {
 			if( idreg != itreg ) xMOV(xRegister32(idreg), xRegister32(itreg));
 		}
 		else xMOVZX(xRegister32(idreg), ptr16[(u16*)(VU_VI_ADDR(_It_, 1))]);
 	}
 	else if ( _It_ == 0 )
 	{
-		if( (isreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, MODE_READ)) >= 0 ) {
+		if( (isreg = X86_Reg.checkReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, MODE_READ)) >= 0 ) {
 			if( idreg != isreg ) xMOV(xRegister32(idreg), xRegister32(isreg));
 		}
 		else xMOVZX(xRegister32(idreg), ptr16[(u16*)(VU_VI_ADDR(_Is_, 1))]);
@@ -412,14 +412,14 @@ void recVUMI_IOR( VURegs *VU, int info )
 
 	if ( _Is_ == 0 )
 	{
-		if( (itreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, MODE_READ)) >= 0 ) {
+		if( (itreg = X86_Reg.checkReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, MODE_READ)) >= 0 ) {
 			if( idreg != itreg ) xMOV(xRegister32(idreg), xRegister32(itreg));
 		}
 		else xMOVZX(xRegister32(idreg), ptr16[(u16*)(VU_VI_ADDR(_It_, 1))]);
 	}
 	else if ( _It_ == 0 )
 	{
-		if( (isreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, MODE_READ)) >= 0 ) {
+		if( (isreg = X86_Reg.checkReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, MODE_READ)) >= 0 ) {
 			if( idreg != isreg ) xMOV(xRegister32(idreg), xRegister32(isreg));
 		}
 		else xMOVZX(xRegister32(idreg), ptr16[(u16*)(VU_VI_ADDR(_Is_, 1))]);
@@ -460,7 +460,7 @@ void recVUMI_ISUB( VURegs *VU, int info )
 
 	if ( _Is_ == 0 )
 	{
-		if( (itreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, MODE_READ)) >= 0 ) {
+		if( (itreg = X86_Reg.checkReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, MODE_READ)) >= 0 ) {
 			if( idreg != itreg ) xMOV(xRegister32(idreg), xRegister32(itreg));
 		}
 		else xMOVZX(xRegister32(idreg), ptr16[(u16*)(VU_VI_ADDR(_It_, 1))]);
@@ -468,7 +468,7 @@ void recVUMI_ISUB( VURegs *VU, int info )
 	}
 	else if ( _It_ == 0 )
 	{
-		if( (isreg = _checkX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, MODE_READ)) >= 0 ) {
+		if( (isreg = X86_Reg.checkReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, MODE_READ)) >= 0 ) {
 			if( idreg != isreg ) xMOV(xRegister32(idreg), xRegister32(isreg));
 		}
 		else xMOVZX(xRegister32(idreg), ptr16[(u16*)(VU_VI_ADDR(_Is_, 1))]);
@@ -531,7 +531,7 @@ void recVUMI_MFIR( VURegs *VU, int info )
 {
 	if ( (_Ft_ == 0)  || (_X_Y_Z_W == 0) ) return;
 	//Console.WriteLn("recVUMI_MFIR");
-	_deleteX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, 1);
+	X86_Reg.deleteReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _Is_, 1);
 
 	if( _XYZW_SS ) {
 		xMOVDZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(VU_VI_ADDR(_Is_, 1)-2)]);
@@ -565,7 +565,7 @@ void recVUMI_MTIR( VURegs *VU, int info )
 {
 	if ( _It_ == 0 ) return;
 	//Console.WriteLn("recVUMI_MTIR");
-	_deleteX86reg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, 2);
+	X86_Reg.deleteReg(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0), _It_, 2);
 
 	if( _Fsf_ == 0 ) {
 		xMOVSS(ptr[(void*)(VU_VI_ADDR(_It_, 0))], xRegisterSSE(EEREC_S));
@@ -766,7 +766,7 @@ void recVUMI_LQI(VURegs *VU, int info)
 	//Console.WriteLn("recVUMI_LQI");
 	if ( _Ft_ == 0 ) {
 		if( _Is_ != 0 ) {
-			if( (isreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Is_, MODE_WRITE|MODE_READ)) >= 0 ) {
+			if( (isreg = X86_Reg.checkReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Is_, MODE_WRITE|MODE_READ)) >= 0 ) {
 				xADD(xRegister16(isreg), 1);
 			}
 			else {
@@ -1127,7 +1127,7 @@ void recVUMI_RINIT(VURegs *VU, int info)
 {
 	//Console.WriteLn("recVUMI_RINIT()");
 	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode & MODE_NOFLUSH) ) {
-		_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 2);
+		X86_Reg.deleteReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 2);
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 
 		xAND.PS(xRegisterSSE(EEREC_TEMP), ptr[s_mask]);
@@ -1146,7 +1146,7 @@ void recVUMI_RINIT(VURegs *VU, int info)
 		xAND(xRegister32(rreg), 0x7fffff );
 		xOR(xRegister32(rreg), 0x7f << 23 );
 
-		_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
+		X86_Reg.deleteReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
 	}
 }
 //------------------------------------------------------------------
@@ -1160,7 +1160,7 @@ void recVUMI_RGET(VURegs *VU, int info)
 	//Console.WriteLn("recVUMI_RGET()");
 	if ( (_Ft_ == 0) || (_X_Y_Z_W == 0)  ) return;
 
-	_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
+	X86_Reg.deleteReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
 
 	if (_X_Y_Z_W != 0xf) {
 		xMOVSSZX(xRegisterSSE(EEREC_TEMP), ptr[(void*)(VU_REGR_ADDR)]);
@@ -1204,11 +1204,11 @@ void recVUMI_RNEXT( VURegs *VU, int info )
 	xAND(xRegister32(rreg), 0x7fffff);
 	xOR(xRegister32(rreg), 0x3f800000);
 
-	_freeX86reg(x86temp0);
-	_freeX86reg(x86temp1);
+	X86_Reg.freeReg(x86temp0);
+	X86_Reg.freeReg(x86temp1);
 
 	if ( (_Ft_ == 0) || (_X_Y_Z_W == 0)  ) {
-		_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
+		X86_Reg.deleteReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
 		return;
 	}
 
@@ -1224,7 +1224,7 @@ void recVUMI_RXOR( VURegs *VU, int info )
 {
 	//Console.WriteLn("recVUMI_RXOR()");
 	if( (XMM_Reg.xmmregs[EEREC_S].mode & MODE_WRITE) && (XMM_Reg.xmmregs[EEREC_S].mode & MODE_NOFLUSH) ) {
-		_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
+		X86_Reg.deleteReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
 		_unpackVFSS_xyzw(EEREC_TEMP, EEREC_S, _Fsf_);
 
 		xXOR.PS(xRegisterSSE(EEREC_TEMP), ptr[(void*)(VU_REGR_ADDR)]);
@@ -1244,7 +1244,7 @@ void recVUMI_RXOR( VURegs *VU, int info )
 		xAND(xRegister32(rreg), 0x7fffff );
 		xOR(xRegister32(rreg), 0x3f800000 );
 
-		_deleteX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
+		X86_Reg.deleteReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), REG_R, 1);
 	}
 }
 //------------------------------------------------------------------
@@ -1356,7 +1356,7 @@ void recVUMI_FMAND( VURegs *VU, int info )
 	int isreg, itreg;
 	if ( _It_ == 0 ) return;
 	//Console.WriteLn("recVUMI_FMAND");
-	isreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Is_, MODE_READ);
+	isreg = X86_Reg.checkReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Is_, MODE_READ);
 	itreg = ALLOCVI(_It_, MODE_WRITE);//|MODE_8BITREG);
 
 	if( isreg >= 0 ) {
@@ -1415,7 +1415,7 @@ void recVUMI_FMOR( VURegs *VU, int info )
 		xOR(xRegister16(itreg), ptr[(void*)(VU_VI_ADDR(REG_MAC_FLAG, 1))]);
 	}
 	else {
-		isreg = _checkX86reg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0), _Is_, MODE_READ);
 		itreg = ALLOCVI(_It_, MODE_WRITE);
 
 		xMOVZX(xRegister32(itreg), ptr16[(u16*)(VU_VI_ADDR(REG_MAC_FLAG, 1))]);

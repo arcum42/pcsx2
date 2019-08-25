@@ -83,7 +83,7 @@ void endMacroOp(int mode) {
 #define INTERPRETATE_COP2_FUNC(f)							\
 	void recV##f() {										\
 		recCall(V##f);										\
-		_freeX86regs();										\
+		X86_Reg.freeRegs();										\
 	}
 
 //------------------------------------------------------------------

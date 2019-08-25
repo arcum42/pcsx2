@@ -331,8 +331,8 @@ FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they are floats
 {
-	int tempecx = _allocX86reg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
-	int temp2 = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
+	int tempecx = X86_Reg.allocReg(ecx, X86TYPE_TEMP, 0, 0); //receives regd
+	int temp2 = X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, 0); //receives regt
 	int xmmtemp = XMM_Reg.allocTemp(XMMT_FPS, -1); //temporary for anding with regd/regt
 
 	xMOVD(xRegister32(tempecx), xRegisterSSE(tempd));
@@ -390,8 +390,8 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 	x86SetJ8(j8Ptr[7]);
 
 	XMM_Reg.freeReg(xmmtemp);
-	_freeX86reg(temp2);
-	_freeX86reg(tempecx);
+	X86_Reg.freeReg(temp2);
+	X86_Reg.freeReg(tempecx);
 }
 
 void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
@@ -583,7 +583,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	u8 *pjmp1, *pjmp2;
 	u32 *ajmp32, *bjmp32;
 	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
-	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
+	int tempReg = X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -623,7 +623,7 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	x86SetJ32(bjmp32);
 
 	XMM_Reg.freeReg(t1reg);
-	_freeX86reg(tempReg);
+	X86_Reg.freeReg(tempReg);
 }
 
 void recDIVhelper2(int regd, int regt) // Doesn't sets flags
@@ -932,7 +932,7 @@ void recSQRT_S_xmm(int info)
 	EE::Profiler.EmitOp(eeOpcode::SQRT_F);
 	u8 *pjmp;
 	int roundmodeFlag = 0;
-	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
+	int tempReg = X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
 	//Console.WriteLn("FPU: SQRT");
 
@@ -975,7 +975,7 @@ void recSQRT_S_xmm(int info)
 		xLDMXCSR (g_sseMXCSR);
 	}
 
-	_freeX86reg(tempReg);
+	X86_Reg.freeReg(tempReg);
 	XMM_Reg.freeReg(t1reg);
 }
 
@@ -992,7 +992,7 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	u8 *qjmp1, *qjmp2;
 	u32 *pjmp32;
 	int t1reg = XMM_Reg.allocTemp(XMMT_FPS, -1);
-	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
+	int tempReg = X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
 
@@ -1036,7 +1036,7 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	x86SetJ32(pjmp32);
 
 	XMM_Reg.freeReg(t1reg);
-	_freeX86reg(tempReg);
+	X86_Reg.freeReg(tempReg);
 }
 
 void recRSQRThelper2(int regd, int regt) // Preforms the RSQRT function when regd <- Fs and regt <- Ft (Doesn't set flags)

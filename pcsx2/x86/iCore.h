@@ -118,19 +118,31 @@ struct _x86regs
     u32 extra; // extra info assoc with the reg
 };
 
-extern _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
+class X86_Regs
+{
+	private:
+		uptr getAddr(int type, int reg);
+		// X86 caching
+		int g_x86checknext;
 
-uptr _x86GetAddr(int type, int reg);
-void _initX86regs();
-int _getFreeX86reg(int mode);
-int _allocX86reg(x86Emitter::xRegisterLong x86reg, int type, int reg, int mode);
-void _deleteX86reg(int type, int reg, int flush);
-int _checkX86reg(int type, int reg, int mode);
-void _addNeededX86reg(int type, int reg);
-void _clearNeededX86regs();
-void _freeX86reg(const x86Emitter::xRegisterLong &x86reg);
-void _freeX86reg(int x86reg);
-void _freeX86regs();
+	public:
+		_x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
+		__forceinline void backup() { memcpy(s_saveX86regs, x86regs, sizeof(x86regs)); }
+		__forceinline void restore() { memcpy(x86regs, s_saveX86regs, sizeof(x86regs)); }
+
+		void init();
+		int getFreeReg(int mode);
+		int allocReg(x86Emitter::xRegisterLong x86reg, int type, int reg, int mode);
+		void deleteReg(int type, int reg, int flush);
+		int checkReg(int type, int reg, int mode);
+		void addNeededReg(int type, int reg);
+		void clearNeededRegs();
+		void freeReg(const x86Emitter::xRegisterLong &x86reg);
+		void freeReg(int x86reg);
+		void freeRegs();
+};
+extern X86_Regs X86_Reg;
+
 void _flushCachedRegs();
 void _flushConstRegs();
 void _flushConstReg(int reg);

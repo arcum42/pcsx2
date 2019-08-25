@@ -324,7 +324,7 @@ void _psxFlushAllUnused()
 
 		if( i < 32 && PSX_IS_CONST1(i) ) _psxFlushConstReg(i);
 		else {
-			_deleteX86reg(X86TYPE_PSX, i, 1);
+			X86_Reg.deleteReg(X86TYPE_PSX, i, 1);
 		}
 	}
 }
@@ -388,7 +388,7 @@ void _psxDeleteReg(int reg, int flush)
 		return;
 	}
 	PSX_DEL_CONST(reg);
-	_deleteX86reg(X86TYPE_PSX, reg, flush ? 0 : 2);
+	X86_Reg.deleteReg(X86TYPE_PSX, reg, flush ? 0 : 2);
 }
 
 void _psxMoveGPRtoR(const xRegisterLong& to, int fromgpr)
@@ -430,9 +430,9 @@ void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr)
 void _psxFlushCall(int flushtype)
 {
 	// x86-32 ABI : These registers are not preserved across calls:
-	_freeX86reg( eax );
-	_freeX86reg( ecx );
-	_freeX86reg( edx );
+	X86_Reg.freeReg( eax );
+	X86_Reg.freeReg( ecx );
+	X86_Reg.freeReg( edx );
 
 	if( flushtype & FLUSH_CACHED_REGS )
 		_psxFlushConstRegs();
@@ -447,7 +447,7 @@ void psxSaveBranchState()
 	s_psaveInstInfo = g_pCurInstInfo;
 
 	// save all regs
-	memcpy(s_saveX86regs, x86regs, sizeof(x86regs));
+	X86_Reg.backup();
 }
 
 void psxLoadBranchState()
@@ -460,7 +460,7 @@ void psxLoadBranchState()
 	g_pCurInstInfo = s_psaveInstInfo;
 
 	// restore all regs
-	memcpy(x86regs, s_saveX86regs, sizeof(x86regs));
+	X86_Reg.restore();
 }
 
 ////////////////////
@@ -479,9 +479,9 @@ void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, 
 
 	// for now, don't support xmm
 
-	_deleteX86reg(X86TYPE_PSX, _Rs_, 1);
-	_deleteX86reg(X86TYPE_PSX, _Rt_, 1);
-	_deleteX86reg(X86TYPE_PSX, _Rd_, 0);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rs_, 1);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rt_, 1);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rd_, 0);
 
 	if( PSX_IS_CONST2(_Rs_, _Rt_) ) {
 		PSX_SET_CONST(_Rd_);
@@ -557,8 +557,8 @@ void psxRecompileCodeConst1(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 
 	// for now, don't support xmm
 
-	_deleteX86reg(X86TYPE_PSX, _Rs_, 1);
-	_deleteX86reg(X86TYPE_PSX, _Rt_, 0);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rs_, 1);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rt_, 0);
 
 	if( PSX_IS_CONST1(_Rs_) ) {
 		PSX_SET_CONST(_Rt_);
@@ -577,8 +577,8 @@ void psxRecompileCodeConst2(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 
 	// for now, don't support xmm
 
-	_deleteX86reg(X86TYPE_PSX, _Rt_, 1);
-	_deleteX86reg(X86TYPE_PSX, _Rd_, 0);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rt_, 1);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rd_, 0);
 
 	if( PSX_IS_CONST1(_Rt_) ) {
 		PSX_SET_CONST(_Rd_);
@@ -593,12 +593,12 @@ void psxRecompileCodeConst2(R3000AFNPTR constcode, R3000AFNPTR_INFO noconstcode)
 // rd = rt MULT rs  (SPECIAL)
 void psxRecompileCodeConst3(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, R3000AFNPTR_INFO consttcode, R3000AFNPTR_INFO noconstcode, int LOHI)
 {
-	_deleteX86reg(X86TYPE_PSX, _Rs_, 1);
-	_deleteX86reg(X86TYPE_PSX, _Rt_, 1);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rs_, 1);
+	X86_Reg.deleteReg(X86TYPE_PSX, _Rt_, 1);
 
 	if( LOHI ) {
-		_deleteX86reg(X86TYPE_PSX, PSX_HI, 1);
-		_deleteX86reg(X86TYPE_PSX, PSX_LO, 1);
+		X86_Reg.deleteReg(X86TYPE_PSX, PSX_HI, 1);
+		X86_Reg.deleteReg(X86TYPE_PSX, PSX_LO, 1);
 	}
 
 	if( PSX_IS_CONST2(_Rs_, _Rt_) ) {
@@ -854,15 +854,15 @@ void psxSetBranchReg(u32 reg)
 	psxbranch = 1;
 
 	if( reg != 0xffffffff ) {
-		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		X86_Reg.allocReg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 		_psxMoveGPRtoR(esi, reg);
 
 		psxRecompileNextInstruction(1);
 
-		if( x86regs[esi.GetId()].inuse ) {
-			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
+		if( X86_Reg.x86regs[esi.GetId()].inuse ) {
+			pxAssert( X86_Reg.x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
 			xMOV(ptr[&psxRegs.pc], esi);
-			x86regs[esi.GetId()].inuse = 0;
+			X86_Reg.x86regs[esi.GetId()].inuse = 0;
 			#ifdef PCSX2_DEBUG
 			xOR( esi, esi );
 			#endif
@@ -1041,7 +1041,7 @@ void psxRecompileNextInstruction(int delayslot)
 	rpsxBSC[ psxRegs.code >> 26 ]();
 	s_psxBlockCycles += g_iopCyclePenalty;
 
-	_clearNeededX86regs();
+	X86_Reg.clearNeededRegs();
 }
 
 static void __fastcall  PreBlockCheck( u32 blockpc )
@@ -1118,7 +1118,7 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 	psxpc = startpc;
 	g_psxHasConstReg = g_psxFlushedConstReg = 1;
 
-	_initX86regs();
+	X86_Reg.init();
 
 	if ((psxHu32(HW_ICFG) & 8) && (HWADDR(startpc) == 0xa0 || HWADDR(startpc) == 0xb0 || HWADDR(startpc) == 0xc0)) {
 		xFastCall((void*)psxBiosCall);

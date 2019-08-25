@@ -857,7 +857,7 @@ void SetBranchReg( u32 reg )
 //				xMOV(ptr[&cpuRegs.pc], eax);
 //			}
 //		}
-		_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+		X86_Reg.allocReg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 		_eeMoveGPRtoR(esi, reg);
 
 		if (EmuConfig.Gamefixes.GoemonTlbHack) {
@@ -868,10 +868,10 @@ void SetBranchReg( u32 reg )
 
 		recompileNextInstruction(1);
 
-		if( x86regs[esi.GetId()].inuse ) {
-			pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
+		if( X86_Reg.x86regs[esi.GetId()].inuse ) {
+			pxAssert( X86_Reg.x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
 			xMOV(ptr[&cpuRegs.pc], esi);
-			x86regs[esi.GetId()].inuse = 0;
+			X86_Reg.x86regs[esi.GetId()].inuse = 0;
 		}
 		else {
 			xMOV(eax, ptr[&g_recWriteback]);
@@ -929,9 +929,9 @@ void LoadBranchState()
 void iFlushCall(int flushtype)
 {
 	// Free registers that are not saved across function calls (x86-32 ABI):
-	_freeX86reg(eax);
-	_freeX86reg(ecx);
-	_freeX86reg(edx);
+	X86_Reg.freeReg(eax);
+	X86_Reg.freeReg(ecx);
+	X86_Reg.freeReg(edx);
 
 	if ((flushtype & FLUSH_PC) && !g_cpuFlushedPC) {
 		xMOV(ptr32[&cpuRegs.pc], pc);
@@ -1332,7 +1332,7 @@ void recompileNextInstruction(int delayslot)
 		// Original PR and discussion at https://github.com/PCSX2/pcsx2/pull/1783 so we don't forget this information.
 		if (check_branch_delay) {
 			DevCon.Warning("Branch %x in delay slot!", cpuRegs.code);
-			_clearNeededX86regs();
+			X86_Reg.clearNeededRegs();
 			XMM_Reg.clearNeededRegs();
 			pc += 4;
 			g_cpuFlushedPC = false;
@@ -1367,7 +1367,7 @@ void recompileNextInstruction(int delayslot)
 	if (!delayslot && (XMM_Reg.getFlagCount(MODE_WRITE) > 2)) _flushXMMunused();
 
 	//CHECK_XMMCHANGED();
-	_clearNeededX86regs();
+	X86_Reg.clearNeededRegs();
 	XMM_Reg.clearNeededRegs();
 
 //	XMM_Reg.freeRegs();
@@ -1712,7 +1712,7 @@ static void __fastcall recRecompile( const u32 startpc )
 	g_cpuHasConstReg = g_cpuFlushedConstReg = 1;
 	pxAssert( g_cpuConstRegs[0].UD[0] == 0 );
 
-	_initX86regs();
+	X86_Reg.init();
 	XMM_Reg.init();
 
 	if( EmuConfig.Cpu.Recompiler.PreBlockCheckEE )

@@ -35,9 +35,6 @@ EEINST *g_pCurInstInfo = NULL;
 // use FreezeXMMRegs
 u32 g_recWriteback = 0;
 
-// X86 caching
-_x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
-
 // XMM Caching
 #define VU_VFx_ADDR(x) (uptr) & VU->VF[x].UL[0]
 #define VU_ACCx_ADDR (uptr) & VU->ACC.UL[0]
@@ -806,9 +803,9 @@ int XMM_Regs::allocCheckFPU(int fpureg, int mode)
 int _allocCheckGPRtoX86(EEINST *pinst, int gprreg, int mode)
 {
     if (pinst->regs[gprreg] & EEINST_USED)
-        return _allocX86reg(xEmptyReg, X86TYPE_GPR, gprreg, mode);
+        return X86_Reg.allocReg(xEmptyReg, X86TYPE_GPR, gprreg, mode);
 
-    return _checkX86reg(X86TYPE_GPR, gprreg, mode);
+    return X86_Reg.checkReg(X86TYPE_GPR, gprreg, mode);
 }
 
 void _recClearInst(EEINST *pinst)

@@ -2553,7 +2553,7 @@ void SuperVUCleanupProgram(u32 startpc, int vuindex)
 	// Could clear allocation info to prevent possibly bad data being used in other parts of pcsx2;
 	// not doing this because it's slow and not needed (rama)
 	// XMM_Reg.init();
-	// _initX86regs();
+	// X86_Reg.init();
 }
 
 #if defined(_MSC_VER)
@@ -2920,11 +2920,11 @@ void VuBaseBlock::Recompile()
 	XMM_Reg.xmmregs = startregs;
 #ifdef SUPERVU_X86CACHING
 	if (nStartx86 >= 0)
-		memcpy(x86regs, &s_vecRegArray[nStartx86], sizeof(x86regs));
+		memcpy(X86_Reg.x86regs, &s_vecRegArray[nStartx86], sizeof(X86_Reg.x86regs));
 	else
-		_initX86regs();
+		X86_Reg.init();
 #else
-	_initX86regs();
+	X86_Reg.init();
 #endif
 
 	std::list<VuInstruction>::iterator itinst;
@@ -2933,18 +2933,18 @@ void VuBaseBlock::Recompile()
 		s_pCurInst = &(*itinst);
 		if (s_JumpX86 > 0)
 		{
-			if (!x86regs[s_JumpX86].inuse)
+			if (!X86_Reg.x86regs[s_JumpX86].inuse)
 			{
 				// load
-				s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_READ);
+				s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_READ);
 			}
-			x86regs[s_JumpX86].needed = 1;
+			X86_Reg.x86regs[s_JumpX86].needed = 1;
 		}
 
 		if (s_ScheduleXGKICK && s_XGKICKReg > 0)
 		{
-			pxAssert(x86regs[s_XGKICKReg].inuse);
-			x86regs[s_XGKICKReg].needed = 1;
+			pxAssert(X86_Reg.x86regs[s_XGKICKReg].inuse);
+			X86_Reg.x86regs[s_XGKICKReg].needed = 1;
 		}
 		itinst->Recompile(itinst, vuxyz);
 
@@ -2997,7 +2997,7 @@ void VuBaseBlock::Recompile()
 	{
 		// end
 		XMM_Reg.freeRegs();
-		_freeX86regs();
+		X86_Reg.freeRegs();
 		xAND(ptr32[&VU0.VI[ REG_VPU_STAT ].UL], s_vu ? ~0x100 : ~0x001); // E flag
 		//xAND(ptr32[(&VU->GetVifRegs().stat)], ~VIF1_STAT_VEW);
 
@@ -3039,14 +3039,14 @@ void VuBaseBlock::Recompile()
 
 		SuperVUFreeXMMregs(livevars);
 
-		// get rid of any writes, otherwise _freeX86regs will write
-		x86regs[s_JumpX86].mode &= ~MODE_WRITE;
+		// get rid of any writes, otherwise freeRegs will write
+		X86_Reg.x86regs[s_JumpX86].mode &= ~MODE_WRITE;
 
 		if (g_branch == 1)
 		{
-			if (!x86regs[s_JumpX86].inuse)
+			if (!X86_Reg.x86regs[s_JumpX86].inuse)
 			{
-				pxAssert(x86regs[s_JumpX86].type == X86TYPE_VUJUMP);
+				pxAssert(X86_Reg.x86regs[s_JumpX86].type == X86TYPE_VUJUMP);
 				s_JumpX86 = -1; // notify to jump from g_recWriteback
 			}
 		}
@@ -3063,52 +3063,52 @@ void VuBaseBlock::Recompile()
 				if (endx86[i].inuse)
 				{
 
-					if (s_JumpX86 == i && x86regs[s_JumpX86].inuse)
+					if (s_JumpX86 == i && X86_Reg.x86regs[s_JumpX86].inuse)
 					{
-						x86regs[s_JumpX86].inuse = 0;
-						x86regs[eax.GetId()].inuse = 1;
+						X86_Reg.x86regs[s_JumpX86].inuse = 0;
+						X86_Reg.x86regs[eax.GetId()].inuse = 1;
 						xMOV(eax, xRegister32(s_JumpX86));
 						s_JumpX86 = eax.GetId();
 					}
 
-					if (x86regs[i].inuse)
+					if (X86_Reg.x86regs[i].inuse)
 					{
-						if (x86regs[i].type == endx86[i].type && x86regs[i].reg == endx86[i].reg)
+						if (X86_Reg.x86regs[i].type == endx86[i].type && X86_Reg.x86regs[i].reg == endx86[i].reg)
 						{
-							_freeX86reg(i);
+							X86_Reg.freeReg(i);
 							// will continue to use it
 							continue;
 						}
 
 #ifdef SUPERVU_INTERCACHING
-						if (x86regs[i].type == (X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)))
+						if (X86_Reg.x86regs[i].type == (X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)))
 						{
-							if (livevars[0] & (1 << x86regs[i].reg))
-								_freeX86reg(i);
+							if (livevars[0] & (1 << X86_Reg.x86regs[i].reg))
+								X86_Reg.freeReg(i);
 							else
-								x86regs[i].inuse = 0;
+								X86_Reg.x86regs[i].inuse = 0;
 						}
 						else
 #endif
 						{
-							_freeX86reg(i);
+							X86_Reg.freeReg(i);
 						}
 					}
 
 					// realloc
-					_allocX86reg(i, endx86[i].type, endx86[i].reg, MODE_READ);
-					if (x86regs[i].mode & MODE_WRITE)
+					X86_Reg.allocReg(i, endx86[i].type, endx86[i].reg, MODE_READ);
+					if (X86_Reg.x86regs[i].mode & MODE_WRITE)
 					{
-						_freeX86reg(i);
-						x86regs[i].inuse = 1;
+						X86_Reg.freeReg(i);
+						X86_Reg.x86regs[i].inuse = 1;
 					}
 				}
-				else _freeX86reg(i);
+				else X86_Reg.freeReg(i);
 			}
 		}
-		else _freeX86regs();
+		else X86_Reg.freeRegs();
 #else
-		_freeX86regs();
+		X86_Reg.freeRegs();
 #endif
 
 		// store the last block executed
@@ -3133,7 +3133,7 @@ void VuBaseBlock::Recompile()
 			case 0x10: // jump, esi has new vupc
 				{
 					XMM_Reg.freeRegs();
-					_freeX86regs();
+					X86_Reg.freeRegs();
 
 					SuperVUTestVU0Condition(8);
 
@@ -3579,7 +3579,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 	// redo the counters so that the proper regs are released
 	for (int j = 0; j < iREGCNT_GPR; ++j)
 	{
-		if (x86regs[j].inuse && X86_ISVI(x86regs[j].type))
+		if (X86_Reg.x86regs[j].inuse && X86_ISVI(X86_Reg.x86regs[j].type))
 		{
 			int count = 0;
 			itinst2 = itinst;
@@ -3593,7 +3593,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 				++itinst2;
 			}
 
-			x86regs[j].counter = 1000 - count;
+			X86_Reg.x86regs[j].counter = 1000 - count;
 		}
 	}
 #endif
@@ -3629,14 +3629,14 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 
 		VU->code = code_ptr[1];
 		s_vuInfo = SetCachedRegs(1, vuxyz);
-		if (s_JumpX86 > 0) x86regs[s_JumpX86].needed = 1;
-		if (s_ScheduleXGKICK && s_XGKICKReg > 0) x86regs[s_XGKICKReg].needed = 1;
+		if (s_JumpX86 > 0) X86_Reg.x86regs[s_JumpX86].needed = 1;
+		if (s_ScheduleXGKICK && s_XGKICKReg > 0) X86_Reg.x86regs[s_XGKICKReg].needed = 1;
 
 		recVU_UPPER_OPCODE[ VU->code & 0x3f ](VU, s_vuInfo);
 
 		s_PrevIWrite = (uptr)code_ptr;
 		XMM_Reg.clearNeededRegs();
-		_clearNeededX86regs();
+		X86_Reg.clearNeededRegs();
 	}
 	else
 	{
@@ -3678,7 +3678,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 
 			int x86temp = -1;
 			if (cacheq)
-				x86temp = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
+				x86temp = X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 			// new is written so flush old
 			// if type & INST_Q_READ, already flushed
@@ -3724,12 +3724,12 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 			s_recWriteQ = s_pCurInst->info.cycle + s_pCurInst->pqcycles;
 
 			if (x86temp >= 0)
-				_freeX86reg(x86temp);
+				X86_Reg.freeReg(x86temp);
 		}
 
 		if (regs[0].VIwrite & (1 << REG_P))
 		{
-			int x86temp = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
+			int x86temp = X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
 			// new is written so flush old
 			if (!(type & INST_P_READ) && s_recWriteP == 0)
@@ -3762,7 +3762,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 
 			s_recWriteP = s_pCurInst->info.cycle + s_pCurInst->pqcycles;
 
-			_freeX86reg(x86temp);
+			X86_Reg.freeReg(x86temp);
 		}
 
 		// waitq
@@ -3805,12 +3805,12 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 			}
 		}
 
-		if (s_JumpX86 > 0) x86regs[s_JumpX86].needed = 1;
-		if (s_ScheduleXGKICK && s_XGKICKReg > 0) x86regs[s_XGKICKReg].needed = 1;
+		if (s_JumpX86 > 0) X86_Reg.x86regs[s_JumpX86].needed = 1;
+		if (s_ScheduleXGKICK && s_XGKICKReg > 0) X86_Reg.x86regs[s_XGKICKReg].needed = 1;
 
 		recVU_UPPER_OPCODE[ VU->code & 0x3f ](VU, s_vuInfo);
 		XMM_Reg.clearNeededRegs();
-		_clearNeededX86regs();
+		X86_Reg.clearNeededRegs();
 
 		// necessary because status can be set by both upper and lower
 		if (regs[1].VIwrite & (1 << REG_STATUS_FLAG))
@@ -3848,14 +3848,14 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		if (regs[1].pipe == VUPIPE_FMAC)
 			s_vuInfo |= PROCESS_VU_SET_FMAC();
 
-		if (s_JumpX86 > 0) x86regs[s_JumpX86].needed = 1;
-		if (s_ScheduleXGKICK && s_XGKICKReg > 0) x86regs[s_XGKICKReg].needed = 1;
+		if (s_JumpX86 > 0) X86_Reg.x86regs[s_JumpX86].needed = 1;
+		if (s_ScheduleXGKICK && s_XGKICKReg > 0) X86_Reg.x86regs[s_XGKICKReg].needed = 1;
 
 #ifdef SUPERVU_VIBRANCHDELAY
 		if (type & INST_CACHE_VI)
 		{
 			pxAssert(vicached >= 0);
-			int cachedreg = _allocX86reg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), vicached, MODE_READ);
+			int cachedreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), vicached, MODE_READ);
 			xMOV(ptr[&s_VIBranchDelay], xRegister32(cachedreg));
 		}
 #endif
@@ -3874,32 +3874,32 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 //						break;
 //				}
 //
-//				oldreg = _allocX86reg(xEmptyReg, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), s_CacheVIReg, MODE_READ);
-//				s_CacheVIX86 = _allocX86reg(xEmptyReg, X86TYPE_VITEMP, s_CacheVIReg, MODE_WRITE);
+//				oldreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), s_CacheVIReg, MODE_READ);
+//				s_CacheVIX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VITEMP, s_CacheVIReg, MODE_WRITE);
 //				xMOV(xRegister32(s_CacheVIX86), xRegister32(oldreg));
 //			}
 //		}
 //		else if( pc == s_pCurBlock->endpc-8 && s_CacheVIReg >= 0 ) {
-//			pxAssert( s_CacheVIX86 > 0 && x86regs[s_CacheVIX86].inuse && x86regs[s_CacheVIX86].reg == s_CacheVIReg && x86regs[s_CacheVIX86].type == X86TYPE_VITEMP );
+//			pxAssert( s_CacheVIX86 > 0 && X86_Reg.x86regs[s_CacheVIX86].inuse && X86_Reg.x86regs[s_CacheVIX86].reg == s_CacheVIReg && X86_Reg.x86regs[s_CacheVIX86].type == X86TYPE_VITEMP );
 //
-//			oldreg = _allocX86reg(xEmptyReg, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), s_CacheVIReg, MODE_READ);
-//			x86regs[s_CacheVIX86].needed = 1;
-//			pxAssert( x86regs[oldreg].mode & MODE_WRITE );
+//			oldreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), s_CacheVIReg, MODE_READ);
+//			X86_Reg.x86regs[s_CacheVIX86].needed = 1;
+//			pxAssert( X86_Reg.x86regs[oldreg].mode & MODE_WRITE );
 //
-//			x86regs[s_CacheVIX86].type = X86TYPE_VI|(s_vu?X86TYPE_VU1:0);
-//			x86regs[oldreg].type = X86TYPE_VITEMP;
+//			X86_Reg.x86regs[s_CacheVIX86].type = X86TYPE_VI|(s_vu?X86TYPE_VU1:0);
+//			X86_Reg.x86regs[oldreg].type = X86TYPE_VITEMP;
 //		}
 
 		recVU_LOWER_OPCODE[ VU->code >> 25 ](VU, s_vuInfo);
 
 //		if( pc == s_pCurBlock->endpc-8 && s_CacheVIReg >= 0 ) {
 //			// revert
-//			x86regs[s_CacheVIX86].inuse = 0;
-//			x86regs[oldreg].type = X86TYPE_VI|(s_vu?X86TYPE_VU1:0);
+//			X86_Reg.x86regs[s_CacheVIX86].inuse = 0;
+//			X86_Reg.x86regs[oldreg].type = X86TYPE_VI|(s_vu?X86TYPE_VU1:0);
 //		}
 
 		XMM_Reg.clearNeededRegs();
-		_clearNeededX86regs();
+		X86_Reg.clearNeededRegs();
 	}
 
 	// clip is always written so ok
@@ -3983,10 +3983,10 @@ void recVUMI_IBQ_prep()
 		else
 #endif
 		{
-			itreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_, MODE_READ);
+			itreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_, MODE_READ);
 		}
 
-		s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 		if (itreg >= 0)
 		{
@@ -4004,10 +4004,10 @@ void recVUMI_IBQ_prep()
 		else
 #endif
 		{
-			isreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+			isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 		}
 
-		s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 		if (isreg >= 0)
 		{
@@ -4018,7 +4018,7 @@ void recVUMI_IBQ_prep()
 	}
 	else
 	{
-		_addNeededX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_);
+		X86_Reg.addNeededReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_);
 
 #ifdef SUPERVU_VIBRANCHDELAY
 		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
@@ -4028,7 +4028,7 @@ void recVUMI_IBQ_prep()
 		else
 #endif
 		{
-			isreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+			isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 		}
 
 #ifdef SUPERVU_VIBRANCHDELAY
@@ -4041,20 +4041,20 @@ void recVUMI_IBQ_prep()
 				// allocate fsreg
 				if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
 				{
-					isreg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, MODE_READ | MODE_WRITE);
+					isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, MODE_READ | MODE_WRITE);
 					xMOV(xRegister32(isreg), ptr[(void*)(SuperVUGetVIAddr(_Is_, 1))]);
 				}
 				else
-					isreg = _allocX86reg(xEmptyReg, X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+					isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 			}
 		}
 		else
 #endif
 		{
-			itreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_, MODE_READ);
+			itreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_, MODE_READ);
 		}
 
-		s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 		if (isreg >= 0)
 		{
@@ -4070,7 +4070,7 @@ void recVUMI_IBQ_prep()
 		}
 		else
 		{
-			isreg = _allocX86reg(xEmptyReg, X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+			isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 			xCMP(xRegister16(isreg), ptr[(void*)(SuperVUGetVIAddr(_It_, 1))]);
 		}
 	}
@@ -4086,7 +4086,7 @@ void recVUMI_IBEQ(VURegs* vuu, s32 info)
 void recVUMI_IBGEZ(VURegs* vuu, s32 info)
 {
 	int isreg;
-	s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+	s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
 	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
@@ -4096,7 +4096,7 @@ void recVUMI_IBGEZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4116,7 +4116,7 @@ void recVUMI_IBGEZ(VURegs* vuu, s32 info)
 void recVUMI_IBGTZ(VURegs* vuu, s32 info)
 {
 	int isreg;
-	s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+	s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
 	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
@@ -4126,7 +4126,7 @@ void recVUMI_IBGTZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4145,7 +4145,7 @@ void recVUMI_IBGTZ(VURegs* vuu, s32 info)
 void recVUMI_IBLEZ(VURegs* vuu, s32 info)
 {
 	int isreg;
-	s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+	s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
 	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
@@ -4155,7 +4155,7 @@ void recVUMI_IBLEZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4174,7 +4174,7 @@ void recVUMI_IBLEZ(VURegs* vuu, s32 info)
 void recVUMI_IBLTZ(VURegs* vuu, s32 info)
 {
 	int isreg;
-	s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+	s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 
 #ifdef SUPERVU_VIBRANCHDELAY
 	if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
@@ -4184,7 +4184,7 @@ void recVUMI_IBLTZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = _checkX86reg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4222,7 +4222,7 @@ void recVUMI_B(VURegs* vuu, s32 info)
 
 	if (s_pCurBlock->blocks.size() > 1)
 	{
-		s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 		xMOV(xRegister32(s_JumpX86), 1);
 		s_pCurBlock->pChildJumps[(s_pCurInst->type & INST_BRANCH_DELAY)?1:0] = (u32*)x86Ptr - 1;
 		s_UnconditionalDelay = 1;
@@ -4245,13 +4245,13 @@ void recVUMI_BAL(VURegs* vuu, s32 info)
 
 	if (_It_)
 	{
-		_deleteX86reg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_, 2);
+		X86_Reg.deleteReg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_, 2);
 		xMOV(ptr16[(u16*)(SuperVUGetVIAddr(_It_, 0))], (pc + 8) >> 3);
 	}
 
 	if (s_pCurBlock->blocks.size() > 1)
 	{
-		s_JumpX86 = _allocX86reg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
+		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
 		xMOV(xRegister32(s_JumpX86), 1);
 		s_pCurBlock->pChildJumps[(s_pCurInst->type & INST_BRANCH_DELAY)?1:0] = (u32*)x86Ptr - 1;
 		s_UnconditionalDelay = 1;
@@ -4262,7 +4262,7 @@ void recVUMI_BAL(VURegs* vuu, s32 info)
 
 void recVUMI_JR(VURegs* vuu, s32 info)
 {
-	int isreg = _allocX86reg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+	int isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 	xLEA(eax, ptr[xAddressReg(isreg) * (1<<3)]);
 
 	//Mask the address to something valid
@@ -4283,9 +4283,9 @@ void recVUMI_JR(VURegs* vuu, s32 info)
 
 void recVUMI_JALR(VURegs* vuu, s32 info)
 {
-	_addNeededX86reg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_);
+	X86_Reg.addNeededReg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_);
 
-	int isreg = _allocX86reg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+	int isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
 	xLEA(eax, ptr[xAddressReg(isreg) * (1<<3)]);
 
 	//Mask the address to something valid
@@ -4296,7 +4296,7 @@ void recVUMI_JALR(VURegs* vuu, s32 info)
 
 	if (_It_)
 	{
-		_deleteX86reg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_, 2);
+		X86_Reg.deleteReg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_, 2);
 		xMOV(ptr16[(u16*)(SuperVUGetVIAddr(_It_, 0))], (pc + 8) >> 3);
 	}
 
@@ -4313,10 +4313,10 @@ void recVUMI_JALR(VURegs* vuu, s32 info)
 
 void recVUMI_XGKICK_(VURegs *VU)
 {
-	pxAssert(s_XGKICKReg > 0 && x86regs[s_XGKICKReg].inuse && x86regs[s_XGKICKReg].type == X86TYPE_VITEMP);
+	pxAssert(s_XGKICKReg > 0 && X86_Reg.x86regs[s_XGKICKReg].inuse && X86_Reg.x86regs[s_XGKICKReg].type == X86TYPE_VITEMP);
 
-	x86regs[s_XGKICKReg].inuse = 0; // so free doesn't flush
-	_freeX86regs();
+	X86_Reg.x86regs[s_XGKICKReg].inuse = 0; // so free doesn't flush
+	X86_Reg.freeRegs();
 	XMM_Reg.freeRegs();
 
 	xMOV(ecx, xRegister32(s_XGKICKReg));
@@ -4332,12 +4332,12 @@ void recVUMI_XGKICK(VURegs *VU, int info)
 		recVUMI_XGKICK_(VU);
 	}
 
-	int isreg = _allocX86reg(ecx, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
-	_freeX86reg(isreg); // flush
-	x86regs[isreg].inuse = 1;
-	x86regs[isreg].type = X86TYPE_VITEMP;
-	x86regs[isreg].needed = 1;
-	x86regs[isreg].mode = MODE_WRITE | MODE_READ;
+	int isreg = X86_Reg.allocReg(ecx, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+	X86_Reg.freeReg(isreg); // flush
+	X86_Reg.x86regs[isreg].inuse = 1;
+	X86_Reg.x86regs[isreg].type = X86TYPE_VITEMP;
+	X86_Reg.x86regs[isreg].needed = 1;
+	X86_Reg.x86regs[isreg].mode = MODE_WRITE | MODE_READ;
 	xSHL(xRegister32(isreg), 4);
 	xAND(xRegister32(isreg), 0x3fff);
 	s_XGKICKReg = isreg;

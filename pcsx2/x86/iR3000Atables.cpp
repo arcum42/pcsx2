@@ -965,7 +965,7 @@ void rpsxJR()
 void rpsxJALR()
 {
 	// jalr Rs
-	_allocX86reg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+	X86_Reg.allocReg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 	_psxMoveGPRtoR(esi, _Rs_);
 
 	if ( _Rd_ )
@@ -977,10 +977,10 @@ void rpsxJALR()
 
 	psxRecompileNextInstruction(1);
 
-	if( x86regs[esi.GetId()].inuse ) {
-		pxAssert( x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
+	if( X86_Reg.x86regs[esi.GetId()].inuse ) {
+		pxAssert( X86_Reg.x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
 		xMOV(ptr[&psxRegs.pc], esi);
-		x86regs[esi.GetId()].inuse = 0;
+		X86_Reg.x86regs[esi.GetId()].inuse = 0;
 		#ifdef PCSX2_DEBUG
 		xOR( esi, esi );
 		#endif
@@ -1284,7 +1284,7 @@ void rpsxBLEZ()
 	}
 
 	_psxDeleteReg(_Rs_, 1);
-	_clearNeededX86regs();
+	X86_Reg.clearNeededRegs();
 
 	xCMP(ptr32[&psxRegs.GPR.r[_Rs_]], 0);
 	u32* pjmp = JLE32(0);
@@ -1319,7 +1319,7 @@ void rpsxBGTZ()
 	}
 
 	_psxDeleteReg(_Rs_, 1);
-	_clearNeededX86regs();
+	X86_Reg.clearNeededRegs();
 
 	xCMP(ptr32[&psxRegs.GPR.r[_Rs_]], 0);
 	u32* pjmp = JG32(0);
