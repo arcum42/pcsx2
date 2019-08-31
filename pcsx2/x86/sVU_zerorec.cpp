@@ -2186,7 +2186,7 @@ void VuBaseBlock::AssignVFRegs()
 				itnext = itinst;
 				itnext++;
 
-				u8 type = reusereg ? XMMTYPE_ACC : XMMTYPE_VFREG;
+				xmmtype type = reusereg ? XMMTYPE_ACC : XMMTYPE_VFREG;
 				u8 reg = reusereg ? 0 : regs->VFwrite;
 
 				if (itinst->vfacc[i] >= 0 && lastwrite != itinst->vfacc[i] &&
@@ -3855,7 +3855,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 		if (type & INST_CACHE_VI)
 		{
 			pxAssert(vicached >= 0);
-			int cachedreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), vicached, MODE_READ);
+			int cachedreg = X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)), vicached, MODE_READ);
 			xMOV(ptr[&s_VIBranchDelay], xRegister32(cachedreg));
 		}
 #endif
@@ -3874,7 +3874,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 //						break;
 //				}
 //
-//				oldreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), s_CacheVIReg, MODE_READ);
+//				oldreg = X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI|(s_vu?X86TYPE_VU1:0)), s_CacheVIReg, MODE_READ);
 //				s_CacheVIX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VITEMP, s_CacheVIReg, MODE_WRITE);
 //				xMOV(xRegister32(s_CacheVIX86), xRegister32(oldreg));
 //			}
@@ -3882,7 +3882,7 @@ void VuInstruction::Recompile(std::list<VuInstruction>::iterator& itinst, u32 vu
 //		else if( pc == s_pCurBlock->endpc-8 && s_CacheVIReg >= 0 ) {
 //			pxAssert( s_CacheVIX86 > 0 && X86_Reg.x86regs[s_CacheVIX86].inuse && X86_Reg.x86regs[s_CacheVIX86].reg == s_CacheVIReg && X86_Reg.x86regs[s_CacheVIX86].type == X86TYPE_VITEMP );
 //
-//			oldreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI|(s_vu?X86TYPE_VU1:0), s_CacheVIReg, MODE_READ);
+//			oldreg = X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI|(s_vu?X86TYPE_VU1:0)), s_CacheVIReg, MODE_READ);
 //			X86_Reg.x86regs[s_CacheVIX86].needed = 1;
 //			pxAssert( X86_Reg.x86regs[oldreg].mode & MODE_WRITE );
 //
@@ -3983,7 +3983,7 @@ void recVUMI_IBQ_prep()
 		else
 #endif
 		{
-			itreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_, MODE_READ);
+			itreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _It_, MODE_READ);
 		}
 
 		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
@@ -4004,7 +4004,7 @@ void recVUMI_IBQ_prep()
 		else
 #endif
 		{
-			isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+			isreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 		}
 
 		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
@@ -4018,7 +4018,7 @@ void recVUMI_IBQ_prep()
 	}
 	else
 	{
-		X86_Reg.addNeededReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_);
+		X86_Reg.addNeededReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _It_);
 
 #ifdef SUPERVU_VIBRANCHDELAY
 		if (s_pCurInst->vicached >= 0 && s_pCurInst->vicached == (s8)_Is_)
@@ -4028,7 +4028,7 @@ void recVUMI_IBQ_prep()
 		else
 #endif
 		{
-			isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+			isreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 		}
 
 #ifdef SUPERVU_VIBRANCHDELAY
@@ -4045,13 +4045,13 @@ void recVUMI_IBQ_prep()
 					xMOV(xRegister32(isreg), ptr[(void*)(SuperVUGetVIAddr(_Is_, 1))]);
 				}
 				else
-					isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+					isreg = X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 			}
 		}
 		else
 #endif
 		{
-			itreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _It_, MODE_READ);
+			itreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _It_, MODE_READ);
 		}
 
 		s_JumpX86 = X86_Reg.allocReg(xEmptyReg, X86TYPE_VUJUMP, 0, MODE_WRITE);
@@ -4070,7 +4070,7 @@ void recVUMI_IBQ_prep()
 		}
 		else
 		{
-			isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+			isreg = X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 			xCMP(xRegister16(isreg), ptr[(void*)(SuperVUGetVIAddr(_It_, 1))]);
 		}
 	}
@@ -4096,7 +4096,7 @@ void recVUMI_IBGEZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4126,7 +4126,7 @@ void recVUMI_IBGTZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4155,7 +4155,7 @@ void recVUMI_IBLEZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4184,7 +4184,7 @@ void recVUMI_IBLTZ(VURegs* vuu, s32 info)
 	else
 #endif
 	{
-		isreg = X86_Reg.checkReg(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+		isreg = X86_Reg.checkReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 	}
 
 	if (isreg >= 0)
@@ -4245,7 +4245,7 @@ void recVUMI_BAL(VURegs* vuu, s32 info)
 
 	if (_It_)
 	{
-		X86_Reg.deleteReg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_, 2);
+		X86_Reg.deleteReg((x86type)(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)), _It_, 2);
 		xMOV(ptr16[(u16*)(SuperVUGetVIAddr(_It_, 0))], (pc + 8) >> 3);
 	}
 
@@ -4262,7 +4262,7 @@ void recVUMI_BAL(VURegs* vuu, s32 info)
 
 void recVUMI_JR(VURegs* vuu, s32 info)
 {
-	int isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+	int isreg = X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 	xLEA(eax, ptr[xAddressReg(isreg) * (1<<3)]);
 
 	//Mask the address to something valid
@@ -4283,9 +4283,9 @@ void recVUMI_JR(VURegs* vuu, s32 info)
 
 void recVUMI_JALR(VURegs* vuu, s32 info)
 {
-	X86_Reg.addNeededReg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_);
+	X86_Reg.addNeededReg((x86type)(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)), _It_);
 
-	int isreg = X86_Reg.allocReg(xEmptyReg, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+	int isreg = X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 	xLEA(eax, ptr[xAddressReg(isreg) * (1<<3)]);
 
 	//Mask the address to something valid
@@ -4296,7 +4296,7 @@ void recVUMI_JALR(VURegs* vuu, s32 info)
 
 	if (_It_)
 	{
-		X86_Reg.deleteReg(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _It_, 2);
+		X86_Reg.deleteReg((x86type)(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)), _It_, 2);
 		xMOV(ptr16[(u16*)(SuperVUGetVIAddr(_It_, 0))], (pc + 8) >> 3);
 	}
 
@@ -4332,7 +4332,7 @@ void recVUMI_XGKICK(VURegs *VU, int info)
 		recVUMI_XGKICK_(VU);
 	}
 
-	int isreg = X86_Reg.allocReg(ecx, X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0), _Is_, MODE_READ);
+	int isreg = X86_Reg.allocReg(ecx, (x86type)(X86TYPE_VI | (s_vu ? X86TYPE_VU1 : 0)), _Is_, MODE_READ);
 	X86_Reg.freeReg(isreg); // flush
 	X86_Reg.x86regs[isreg].inuse = 1;
 	X86_Reg.x86regs[isreg].type = X86TYPE_VITEMP;

@@ -35,7 +35,7 @@ void X86_Regs::init()
     g_x86checknext = 0;
 }
 
-uptr X86_Regs::getAddr(int type, int reg)
+uptr X86_Regs::getAddr(x86type type, int reg)
 {
     uptr ret = 0;
 
@@ -260,7 +260,7 @@ void _flushConstRegs()
     }
 }
 
-int X86_Regs::allocReg(xRegisterLong x86reg, int type, int reg, int mode)
+int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
 {
     pxAssertDev(reg >= 0 && reg < 32, "Register index out of bounds.");
     pxAssertDev(x86reg != esp && x86reg != ebp, "Allocation of ESP/EBP is not allowed!");
@@ -389,7 +389,7 @@ int X86_Regs::allocReg(xRegisterLong x86reg, int type, int reg, int mode)
     return x86reg.GetId();
 }
 
-int X86_Regs::checkReg(int type, int reg, int mode)
+int X86_Regs::checkReg(x86type type, int reg, int mode)
 {
     for (u32 i = 0; i < iREGCNT_GPR; i++)
 	{
@@ -415,7 +415,7 @@ int X86_Regs::checkReg(int type, int reg, int mode)
     return -1;
 }
 
-void X86_Regs::addNeededReg(int type, int reg)
+void X86_Regs::addNeededReg(x86type type, int reg)
 {
     for (u32 i = 0; i < iREGCNT_GPR; i++)
 	{
@@ -443,7 +443,7 @@ void X86_Regs::clearNeededRegs()
     }
 }
 
-void X86_Regs::deleteReg(int type, int reg, int flush)
+void X86_Regs::deleteReg(x86type type, int reg, int flush)
 {
     for (u32 i = 0; i < iREGCNT_GPR; i++)
 	{

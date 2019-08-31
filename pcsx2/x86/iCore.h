@@ -84,20 +84,23 @@
 ////////////////////////////////////////////////////////////////////////////////
 //   X86 (32-bit) Register Allocation Tools
 
-#define X86TYPE_TEMP 0
-#define X86TYPE_GPR 1
-#define X86TYPE_VI 2
-#define X86TYPE_MEMOFFSET 3
-#define X86TYPE_VIMEMOFFSET 4
-#define X86TYPE_VUQREAD 5
-#define X86TYPE_VUPREAD 6
-#define X86TYPE_VUQWRITE 7
-#define X86TYPE_VUPWRITE 8
-#define X86TYPE_PSX 9
-#define X86TYPE_PCWRITEBACK 10
-#define X86TYPE_VUJUMP 12 // jump from random mem (g_recWriteback)
-#define X86TYPE_VITEMP 13
-#define X86TYPE_FNARG 14 // function parameter, max is 4
+enum x86type
+{
+	X86TYPE_TEMP = 0,
+	X86TYPE_GPR = 1,
+	X86TYPE_VI = 2,
+	X86TYPE_MEMOFFSET = 3,
+	X86TYPE_VIMEMOFFSET = 4,
+	X86TYPE_VUQREAD = 5,
+	X86TYPE_VUPREAD = 6,
+	X86TYPE_VUQWRITE = 7,
+	X86TYPE_VUPWRITE = 8,
+	 X86TYPE_PSX = 9,
+	X86TYPE_PCWRITEBACK = 10,
+	X86TYPE_VUJUMP = 12, // jump from random mem (g_recWriteback)
+	X86TYPE_VITEMP = 13,
+	X86TYPE_FNARG = 14 // function parameter, max is 4
+};
 
 #define X86TYPE_VU1 0x80
 
@@ -109,19 +112,19 @@ static __fi int X86_ISVI(int type)
 
 struct _x86regs
 {
-    u8 inuse;
+    bool inuse;
     u8 reg; // value of 0 - not used
     u8 mode;
-    u8 needed;
-    u8 type; // X86TYPE_
+    bool needed;
+    x86type type; // X86TYPE_
     u16 counter;
-    u32 extra; // extra info assoc with the reg
+    //u32 extra; // extra info assoc with the reg
 };
 
 class X86_Regs
 {
 	private:
-		uptr getAddr(int type, int reg);
+		uptr getAddr(x86type type, int reg);
 		// X86 caching
 		int g_x86checknext;
 		std::array<_x86regs, iREGCNT_GPR> s_saveX86regs;
@@ -133,10 +136,10 @@ class X86_Regs
 
 		void init();
 		int getFreeReg(int mode);
-		int allocReg(x86Emitter::xRegisterLong x86reg, int type, int reg, int mode);
-		void deleteReg(int type, int reg, int flush);
-		int checkReg(int type, int reg, int mode);
-		void addNeededReg(int type, int reg);
+		int allocReg(x86Emitter::xRegisterLong x86reg, x86type type, int reg, int mode);
+		void deleteReg(x86type type, int reg, int flush);
+		int checkReg(x86type type, int reg, int mode);
+		void addNeededReg(x86type type, int reg);
 		void clearNeededRegs();
 		void freeReg(const x86Emitter::xRegisterLong &x86reg);
 		void freeReg(int x86reg);
@@ -153,12 +156,15 @@ void _flushConstReg(int reg);
 
 #define XMM_CONV_VU(VU) (VU == &VU1)
 
-#define XMMTYPE_TEMP 0 // has to be 0
-#define XMMTYPE_VFREG 1
-#define XMMTYPE_ACC 2
-#define XMMTYPE_FPREG 3
-#define XMMTYPE_FPACC 4
-#define XMMTYPE_GPRREG 5
+enum xmmtype
+{
+	XMMTYPE_TEMP = 0, // has to be 0
+	XMMTYPE_VFREG = 1,
+	XMMTYPE_ACC = 2,
+	XMMTYPE_FPREG = 3,
+	XMMTYPE_FPACC = 4,
+	XMMTYPE_GPRREG = 5
+};
 
 // lo and hi regs
 #define XMMGPR_LO 33
@@ -167,13 +173,13 @@ void _flushConstReg(int reg);
 
 struct _xmmregs
 {
-    u8 inuse;
+    bool inuse;
     u8 reg;
-    u8 type;
+    xmmtype type;
     u8 mode;
-    u8 needed;
+    bool needed;
     u8 VU; // 0 = VU0, 1 = VU1
-    u16 counter;
+    u16 counter; // How often it is used.
 };
 
 class XMM_Regs
@@ -198,7 +204,7 @@ class XMM_Regs
 			r.counter = g_xmmAllocCounter++; // update counter
 		}
 
-		__forceinline void reg_use(_xmmregs &r, u8 the_type, u8 the_reg, u8 the_mode)
+		__forceinline void reg_use(_xmmregs &r, xmmtype the_type, u8 the_reg, u8 the_mode)
 		{
 			r.inuse = 1;
 			r.type = the_type;
