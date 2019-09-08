@@ -325,14 +325,14 @@ static u8 __pagealigned eeRecDispatchers[__pagesize];
 
 typedef void DynGenFunc();
 
-static DynGenFunc* DispatcherEvent		= NULL;
-static DynGenFunc* DispatcherReg		= NULL;
-static DynGenFunc* JITCompile			= NULL;
-static DynGenFunc* JITCompileInBlock	= NULL;
-static DynGenFunc* EnterRecompiledCode	= NULL;
-static DynGenFunc* ExitRecompiledCode	= NULL;
-static DynGenFunc* DispatchBlockDiscard = NULL;
-static DynGenFunc* DispatchPageReset    = NULL;
+static DynGenFunc* DispatcherEvent		= nullptr;
+static DynGenFunc* DispatcherReg		= nullptr;
+static DynGenFunc* JITCompile			= nullptr;
+static DynGenFunc* JITCompileInBlock	= nullptr;
+static DynGenFunc* EnterRecompiledCode	= nullptr;
+static DynGenFunc* ExitRecompiledCode	= nullptr;
+static DynGenFunc* DispatchBlockDiscard = nullptr;
+static DynGenFunc* DispatchPageReset    = nullptr;
 
 static void recEventTest()
 {
@@ -343,7 +343,7 @@ static void recEventTest()
 // dispatches to the recompiled block address.
 static DynGenFunc* _DynGen_JITCompile()
 {
-	pxAssertMsg( DispatcherReg != NULL, "Please compile the DispatcherReg subroutine *before* JITComple.  Thanks." );
+	pxAssertMsg( DispatcherReg != nullptr, "Please compile the DispatcherReg subroutine *before* JITCompile.  Thanks." );
 
 	u8* retval = xGetAlignedCallTarget();
 
@@ -390,7 +390,7 @@ static DynGenFunc* _DynGen_DispatcherEvent()
 
 static DynGenFunc* _DynGen_EnterRecompiledCode()
 {
-	pxAssertDev( DispatcherReg != NULL, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!" );
+	pxAssertDev( DispatcherReg != nullptr, "Dynamically generated dispatchers are required prior to generating EnterRecompiledCode!" );
 
 	u8* retval = xGetAlignedCallTarget();
 
@@ -547,19 +547,19 @@ static void recAlloc()
 		recLUT_SetPage(recLUT, hwLUT, recROM1, 0xa000, i, i - 0x1e00);
 	}
 
-    if( recConstBuf == NULL )
+    if( recConstBuf == nullptr )
 		recConstBuf = (u32*) _aligned_malloc( RECCONSTBUF_SIZE * sizeof(*recConstBuf), 16 );
 
-	if( recConstBuf == NULL )
+	if( recConstBuf == nullptr )
 		throw Exception::OutOfMemory( L"R5900-32 SIMD Constants Buffer" );
 
-	if( s_pInstCache == NULL )
+	if( s_pInstCache == nullptr )
 	{
 		s_nInstCacheSize = 128;
 		s_pInstCache = (EEINST*)malloc( sizeof(EEINST) * s_nInstCacheSize );
 	}
 
-	if( s_pInstCache == NULL )
+	if( s_pInstCache == nullptr )
 		throw Exception::OutOfMemory( L"R5900-32 InstCache" );
 
 	// No errors.. Proceed with initialization:
@@ -698,8 +698,8 @@ static void recExecute()
 #else
 
 	int oldstate;
-	m_cpuException	= NULL;
-	m_Exception		= NULL;
+	m_cpuException	= nullptr;
+	m_Exception		= nullptr;
 
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
@@ -2129,8 +2129,8 @@ StartRecomp:
 
 	pxAssert( (g_cpuHasConstReg&g_cpuFlushedConstReg) == g_cpuHasConstReg );
 
-	s_pCurBlock = NULL;
-	s_pCurBlockEx = NULL;
+	s_pCurBlock = nullptr;
+	s_pCurBlockEx = nullptr;
 }
 
 // The only *safe* way to throw exceptions from the context of recompiled code.
