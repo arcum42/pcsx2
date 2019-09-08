@@ -26,9 +26,12 @@ using namespace x86Emitter;
 #define REC_STORES
 #define REC_LOADS
 
-namespace R5900 {
-namespace Dynarec {
-namespace OpcodeImpl {
+namespace R5900
+{
+namespace Dynarec
+{
+namespace OpcodeImpl
+{
 
 /*********************************************************
 * Load and store for GPR                                 *
@@ -70,23 +73,27 @@ __aligned16 u64 retValues[2];
 
 void _eeOnLoadWrite(u32 reg)
 {
-	int regt;
+    int regt;
 
-	if( !reg ) return;
+    if (!reg) return;
 
-	_eeOnWriteReg(reg, 1);
-	regt = XMM_Reg.checkReg(XMMTYPE_GPRREG, reg, MODE_READ);
+    _eeOnWriteReg(reg, 1);
+    regt = XMM_Reg.checkReg(XMMTYPE_GPRREG, reg, MODE_READ);
 
-	if( regt >= 0 ) {
-		if( XMM_Reg.xmmregs[regt].mode & MODE_WRITE ) {
-			if( reg != _Rs_ ) {
-				xPUNPCK.HQDQ(xRegisterSSE(regt), xRegisterSSE(regt));
-				xMOVQ(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
-			}
-			else xMOVH.PS(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
-		}
-		XMM_Reg.xmmregs[regt].inuse = 0;
-	}
+    if (regt >= 0)
+    {
+        if (XMM_Reg.xmmregs[regt].mode & MODE_WRITE)
+        {
+            if (reg != _Rs_)
+            {
+                xPUNPCK.HQDQ(xRegisterSSE(regt), xRegisterSSE(regt));
+                xMOVQ(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
+            }
+            else
+                xMOVH.PS(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
+        }
+        XMM_Reg.xmmregs[regt].inuse = 0;
+    }
 }
 
 using namespace Interpreter::OpcodeImpl;
@@ -95,89 +102,89 @@ __aligned16 u32 dummyValue[4];
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLoad64( u32 bits, bool sign )
+void recLoad64(u32 bits, bool sign)
 {
-	pxAssume( bits == 64 || bits == 128 );
+    pxAssume(bits == 64 || bits == 128);
 
-	// Load EDX with the destination.
-	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
+    // Load EDX with the destination.
+    // 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
 
-	if (_Rt_)
-		xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
-	else
-		xMOV(edx, (uptr)&dummyValue[0]);
+    if (_Rt_)
+        xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+    else
+        xMOV(edx, (uptr)&dummyValue[0]);
 
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		if (bits == 128)
-			srcadr &= ~0x0f;
+    if (GPR_IS_CONST1(_Rs_))
+    {
+        u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+        if (bits == 128)
+            srcadr &= ~0x0f;
 
-		_eeOnLoadWrite(_Rt_);
-		_deleteEEreg(_Rt_, 0);
+        _eeOnLoadWrite(_Rt_);
+        _deleteEEreg(_Rt_, 0);
 
-		vtlb_DynGenRead64_Const(bits, srcadr);
-	}
-	else
-	{
-		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
-		if (bits == 128)		// force 16 byte alignment on 128 bit reads
-			xAND(ecx, ~0x0F);
+        vtlb_DynGenRead64_Const(bits, srcadr);
+    }
+    else
+    {
+        // Load ECX with the source memory address that we're reading from.
+        _eeMoveGPRtoR(ecx, _Rs_);
+        if (_Imm_ != 0)
+            xADD(ecx, _Imm_);
+        if (bits == 128) // force 16 byte alignment on 128 bit reads
+            xAND(ecx, ~0x0F);
 
-		_eeOnLoadWrite(_Rt_);
-		_deleteEEreg(_Rt_, 0);
-		iFlushCall(FLUSH_FULLVTLB);
+        _eeOnLoadWrite(_Rt_);
+        _deleteEEreg(_Rt_, 0);
+        iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(bits);
-	}
+        vtlb_DynGenRead64(bits);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLoad32( u32 bits, bool sign )
+void recLoad32(u32 bits, bool sign)
 {
-	pxAssume( bits <= 32 );
+    pxAssume(bits <= 32);
 
-	// 8/16/32 bit modes return the loaded value in EAX.
+    // 8/16/32 bit modes return the loaded value in EAX.
 
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+    if (GPR_IS_CONST1(_Rs_))
+    {
+        u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 
-		_eeOnLoadWrite(_Rt_);
-		_deleteEEreg(_Rt_, 0);
+        _eeOnLoadWrite(_Rt_);
+        _deleteEEreg(_Rt_, 0);
 
-		vtlb_DynGenRead32_Const(bits, sign, srcadr);
-	}
-	else
-	{
-		// Load ECX with the source memory address that we're reading from.
-		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_ );
+        vtlb_DynGenRead32_Const(bits, sign, srcadr);
+    }
+    else
+    {
+        // Load ECX with the source memory address that we're reading from.
+        _eeMoveGPRtoR(ecx, _Rs_);
+        if (_Imm_ != 0)
+            xADD(ecx, _Imm_);
 
-		_eeOnLoadWrite(_Rt_);
-		_deleteEEreg(_Rt_, 0);
+        _eeOnLoadWrite(_Rt_);
+        _deleteEEreg(_Rt_, 0);
 
-		iFlushCall(FLUSH_FULLVTLB);
-		vtlb_DynGenRead32(bits, sign);
-	}
+        iFlushCall(FLUSH_FULLVTLB);
+        vtlb_DynGenRead32(bits, sign);
+    }
 
-	if (_Rt_)
-	{
-		// EAX holds the loaded value, so sign extend as needed:
-		if (sign)
-			xCDQ();
+    if (_Rt_)
+    {
+        // EAX holds the loaded value, so sign extend as needed:
+        if (sign)
+            xCDQ();
 
-		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
-		if (sign)
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
-		else
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
-	}
+        xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+        if (sign)
+            xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+        else
+            xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -185,309 +192,361 @@ void recLoad32( u32 bits, bool sign )
 
 void recStore(u32 bits)
 {
-        // Performance note: Const prop for the store address is good, always.
-        // Constprop for the value being stored is not really worthwhile (better to use register
-        // allocation -- simpler code and just as fast)
+    // Performance note: Const prop for the store address is good, always.
+    // Constprop for the value being stored is not really worthwhile (better to use register
+    // allocation -- simpler code and just as fast)
 
-        // Load EDX first with the value being written, or the address of the value
-        // being written (64/128 bit modes).
+    // Load EDX first with the value being written, or the address of the value
+    // being written (64/128 bit modes).
 
-        if (bits < 64)
-        {
-                _eeMoveGPRtoR(edx, _Rt_);
-        }
-        else if (bits == 128 || bits == 64)
-        {
-                _flushEEreg(_Rt_);          // flush register to mem
-                xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
-        }
+    if (bits < 64)
+    {
+        _eeMoveGPRtoR(edx, _Rt_);
+    }
+    else if (bits == 128 || bits == 64)
+    {
+        _flushEEreg(_Rt_); // flush register to mem
+        xMOV(edx, (uptr)&cpuRegs.GPR.r[_Rt_].UL[0]);
+    }
 
-        // Load ECX with the destination address, or issue a direct optimized write
-        // if the address is a constant propagation.
+    // Load ECX with the destination address, or issue a direct optimized write
+    // if the address is a constant propagation.
 
-        if (GPR_IS_CONST1(_Rs_))
-        {
-                u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-                if (bits == 128)
-					dstadr &= ~0x0f;
+    if (GPR_IS_CONST1(_Rs_))
+    {
+        u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+        if (bits == 128)
+            dstadr &= ~0x0f;
 
-                vtlb_DynGenWrite_Const( bits, dstadr );
-        }
-        else
-        {
-                _eeMoveGPRtoR(ecx, _Rs_);
-                if (_Imm_ != 0)
-                        xADD(ecx, _Imm_);
-                if (bits == 128)
-                        xAND(ecx, ~0x0F);
+        vtlb_DynGenWrite_Const(bits, dstadr);
+    }
+    else
+    {
+        _eeMoveGPRtoR(ecx, _Rs_);
+        if (_Imm_ != 0)
+            xADD(ecx, _Imm_);
+        if (bits == 128)
+            xAND(ecx, ~0x0F);
 
-                iFlushCall(FLUSH_FULLVTLB);
+        iFlushCall(FLUSH_FULLVTLB);
 
-				vtlb_DynGenWrite(bits);
-        }
+        vtlb_DynGenWrite(bits);
+    }
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLB()  { recLoad32(8,true);    EE::Profiler.EmitOp(eeOpcode::LB);}
-void recLBU() { recLoad32(8,false);   EE::Profiler.EmitOp(eeOpcode::LBU);}
-void recLH()  { recLoad32(16,true);   EE::Profiler.EmitOp(eeOpcode::LH);}
-void recLHU() { recLoad32(16,false);  EE::Profiler.EmitOp(eeOpcode::LHU);}
-void recLW()  { recLoad32(32,true);   EE::Profiler.EmitOp(eeOpcode::LW);}
-void recLWU() { recLoad32(32,false);  EE::Profiler.EmitOp(eeOpcode::LWU);}
-void recLD()  { recLoad64(64,false);  EE::Profiler.EmitOp(eeOpcode::LD);}
-void recLQ()  { recLoad64(128,false); EE::Profiler.EmitOp(eeOpcode::LQ);}
+void recLB()
+{
+    recLoad32(8, true);
+    EE::Profiler.EmitOp(eeOpcode::LB);
+}
+void recLBU()
+{
+    recLoad32(8, false);
+    EE::Profiler.EmitOp(eeOpcode::LBU);
+}
+void recLH()
+{
+    recLoad32(16, true);
+    EE::Profiler.EmitOp(eeOpcode::LH);
+}
+void recLHU()
+{
+    recLoad32(16, false);
+    EE::Profiler.EmitOp(eeOpcode::LHU);
+}
+void recLW()
+{
+    recLoad32(32, true);
+    EE::Profiler.EmitOp(eeOpcode::LW);
+}
+void recLWU()
+{
+    recLoad32(32, false);
+    EE::Profiler.EmitOp(eeOpcode::LWU);
+}
+void recLD()
+{
+    recLoad64(64, false);
+    EE::Profiler.EmitOp(eeOpcode::LD);
+}
+void recLQ()
+{
+    recLoad64(128, false);
+    EE::Profiler.EmitOp(eeOpcode::LQ);
+}
 
-void recSB()  { recStore(8);   EE::Profiler.EmitOp(eeOpcode::SB);}
-void recSH()  { recStore(16);  EE::Profiler.EmitOp(eeOpcode::SH);}
-void recSW()  { recStore(32);  EE::Profiler.EmitOp(eeOpcode::SW);}
-void recSQ()  { recStore(128); EE::Profiler.EmitOp(eeOpcode::SQ);}
-void recSD()  { recStore(64);  EE::Profiler.EmitOp(eeOpcode::SD);}
+void recSB()
+{
+    recStore(8);
+    EE::Profiler.EmitOp(eeOpcode::SB);
+}
+void recSH()
+{
+    recStore(16);
+    EE::Profiler.EmitOp(eeOpcode::SH);
+}
+void recSW()
+{
+    recStore(32);
+    EE::Profiler.EmitOp(eeOpcode::SW);
+}
+void recSQ()
+{
+    recStore(128);
+    EE::Profiler.EmitOp(eeOpcode::SQ);
+}
+void recSD()
+{
+    recStore(64);
+    EE::Profiler.EmitOp(eeOpcode::SD);
+}
 
 ////////////////////////////////////////////////////
 
 void recLWL()
 {
 #ifdef REC_LOADS
-	iFlushCall(FLUSH_FULLVTLB);
-	_deleteEEreg(_Rt_, 1);
+    iFlushCall(FLUSH_FULLVTLB);
+    _deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
-	if (_Imm_ != 0)
-		xADD(ecx, _Imm_);
+    _eeMoveGPRtoR(ecx, _Rs_);
+    if (_Imm_ != 0)
+        xADD(ecx, _Imm_);
 
-	// edi = bit offset in word
-	xMOV(edi, ecx);
-	xAND(edi, 3);
-	xSHL(edi, 3);
+    // edi = bit offset in word
+    xMOV(edi, ecx);
+    xAND(edi, 3);
+    xSHL(edi, 3);
 
-	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+    xAND(ecx, ~3);
+    vtlb_DynGenRead32(32, false);
 
-	if (!_Rt_)
-		return;
+    if (!_Rt_)
+        return;
 
-	// mask off bytes loaded
-	xMOV(ecx, edi);
-	xMOV(edx, 0xffffff);
-	xSHR(edx, cl);
-	xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
+    // mask off bytes loaded
+    xMOV(ecx, edi);
+    xMOV(edx, 0xffffff);
+    xSHR(edx, cl);
+    xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
 
-	// OR in bytes loaded
-	xMOV(ecx, 24);
-	xSUB(ecx, edi);
-	xSHL(eax, cl);
-	xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+    // OR in bytes loaded
+    xMOV(ecx, 24);
+    xSUB(ecx, edi);
+    xSHL(eax, cl);
+    xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 
-	// eax will always have the sign bit
-	xCDQ();
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+    // eax will always have the sign bit
+    xCDQ();
+    xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 #else
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
 
-	recCall(LWL);
+    recCall(LWL);
 #endif
 
-	EE::Profiler.EmitOp(eeOpcode::LWL);
+    EE::Profiler.EmitOp(eeOpcode::LWL);
 }
 
 ////////////////////////////////////////////////////
 void recLWR()
 {
 #ifdef REC_LOADS
-	iFlushCall(FLUSH_FULLVTLB);
-	_deleteEEreg(_Rt_, 1);
+    iFlushCall(FLUSH_FULLVTLB);
+    _deleteEEreg(_Rt_, 1);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
-	if (_Imm_ != 0)
-		xADD(ecx, _Imm_);
+    _eeMoveGPRtoR(ecx, _Rs_);
+    if (_Imm_ != 0)
+        xADD(ecx, _Imm_);
 
-	// edi = bit offset in word
-	xMOV(edi, ecx);
-	xAND(edi, 3);
-	xSHL(edi, 3);
+    // edi = bit offset in word
+    xMOV(edi, ecx);
+    xAND(edi, 3);
+    xSHL(edi, 3);
 
-	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+    xAND(ecx, ~3);
+    vtlb_DynGenRead32(32, false);
 
-	if (!_Rt_)
-		return;
+    if (!_Rt_)
+        return;
 
-	// mask off bytes loaded
-	xMOV(ecx, 24);
-	xSUB(ecx, edi);
-	xMOV(edx, 0xffffff00);
-	xSHL(edx, cl);
-	xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
+    // mask off bytes loaded
+    xMOV(ecx, 24);
+    xSUB(ecx, edi);
+    xMOV(edx, 0xffffff00);
+    xSHL(edx, cl);
+    xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
 
-	// OR in bytes loaded
-	xMOV(ecx, edi);
-	xSHR(eax, cl);
-	xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+    // OR in bytes loaded
+    xMOV(ecx, edi);
+    xSHR(eax, cl);
+    xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 
-	xCMP(edi, 0);
-	xForwardJump8 nosignextend(Jcc_NotEqual);
-	// if ((addr & 3) == 0)
-	xCDQ();
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
-	nosignextend.SetTarget();
+    xCMP(edi, 0);
+    xForwardJump8 nosignextend(Jcc_NotEqual);
+    // if ((addr & 3) == 0)
+    xCDQ();
+    xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+    nosignextend.SetTarget();
 #else
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
 
-	recCall(LWR);
+    recCall(LWR);
 #endif
 
-	EE::Profiler.EmitOp(eeOpcode::LWR);
+    EE::Profiler.EmitOp(eeOpcode::LWR);
 }
 
 ////////////////////////////////////////////////////
 void recSWL()
 {
 #ifdef REC_STORES
-	iFlushCall(FLUSH_FULLVTLB);
+    iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
-	if (_Imm_ != 0)
-		xADD(ecx, _Imm_);
+    _eeMoveGPRtoR(ecx, _Rs_);
+    if (_Imm_ != 0)
+        xADD(ecx, _Imm_);
 
-	// edi = bit offset in word
-	xMOV(edi, ecx);
-	xAND(edi, 3);
-	xSHL(edi, 3);
+    // edi = bit offset in word
+    xMOV(edi, ecx);
+    xAND(edi, 3);
+    xSHL(edi, 3);
 
-	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+    xAND(ecx, ~3);
+    vtlb_DynGenRead32(32, false);
 
-	// mask read -> edx
-	xMOV(ecx, edi);
-	xMOV(edx, 0xffffff00);
-	xSHL(edx, cl);
-	xAND(edx, eax);
+    // mask read -> edx
+    xMOV(ecx, edi);
+    xMOV(edx, 0xffffff00);
+    xSHL(edx, cl);
+    xAND(edx, eax);
 
-	if (_Rt_)
-	{
-		// mask write and OR -> edx
-		xMOV(ecx, 24);
-		xSUB(ecx, edi);
-		_eeMoveGPRtoR(eax, _Rt_);
-		xSHR(eax, cl);
-		xOR(edx, eax);
-	}
+    if (_Rt_)
+    {
+        // mask write and OR -> edx
+        xMOV(ecx, 24);
+        xSUB(ecx, edi);
+        _eeMoveGPRtoR(eax, _Rt_);
+        xSHR(eax, cl);
+        xOR(edx, eax);
+    }
 
-	_eeMoveGPRtoR(ecx, _Rs_);
-	if (_Imm_ != 0)
-		xADD(ecx, _Imm_);
-	xAND(ecx, ~3);
+    _eeMoveGPRtoR(ecx, _Rs_);
+    if (_Imm_ != 0)
+        xADD(ecx, _Imm_);
+    xAND(ecx, ~3);
 
-	vtlb_DynGenWrite(32);
+    vtlb_DynGenWrite(32);
 #else
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
-	recCall(SWL);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
+    recCall(SWL);
 #endif
 
-	EE::Profiler.EmitOp(eeOpcode::SWL);
+    EE::Profiler.EmitOp(eeOpcode::SWL);
 }
 
 ////////////////////////////////////////////////////
 void recSWR()
 {
 #ifdef REC_STORES
-	iFlushCall(FLUSH_FULLVTLB);
+    iFlushCall(FLUSH_FULLVTLB);
 
-	_eeMoveGPRtoR(ecx, _Rs_);
-	if (_Imm_ != 0)
-		xADD(ecx, _Imm_);
+    _eeMoveGPRtoR(ecx, _Rs_);
+    if (_Imm_ != 0)
+        xADD(ecx, _Imm_);
 
-	// edi = bit offset in word
-	xMOV(edi, ecx);
-	xAND(edi, 3);
-	xSHL(edi, 3);
+    // edi = bit offset in word
+    xMOV(edi, ecx);
+    xAND(edi, 3);
+    xSHL(edi, 3);
 
-	xAND(ecx, ~3);
-	vtlb_DynGenRead32(32, false);
+    xAND(ecx, ~3);
+    vtlb_DynGenRead32(32, false);
 
-	// mask read -> edx
-	xMOV(ecx, 24);
-	xSUB(ecx, edi);
-	xMOV(edx, 0xffffff);
-	xSHR(edx, cl);
-	xAND(edx, eax);
+    // mask read -> edx
+    xMOV(ecx, 24);
+    xSUB(ecx, edi);
+    xMOV(edx, 0xffffff);
+    xSHR(edx, cl);
+    xAND(edx, eax);
 
-	if (_Rt_)
-	{
-		// mask write and OR -> edx
-		xMOV(ecx, edi);
-		_eeMoveGPRtoR(eax, _Rt_);
-		xSHL(eax, cl);
-		xOR(edx, eax);
-	}
+    if (_Rt_)
+    {
+        // mask write and OR -> edx
+        xMOV(ecx, edi);
+        _eeMoveGPRtoR(eax, _Rt_);
+        xSHL(eax, cl);
+        xOR(edx, eax);
+    }
 
-	_eeMoveGPRtoR(ecx, _Rs_);
-	if (_Imm_ != 0)
-		xADD(ecx, _Imm_);
-	xAND(ecx, ~3);
+    _eeMoveGPRtoR(ecx, _Rs_);
+    if (_Imm_ != 0)
+        xADD(ecx, _Imm_);
+    xAND(ecx, ~3);
 
-	vtlb_DynGenWrite(32);
+    vtlb_DynGenWrite(32);
 #else
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
-	recCall(SWR);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
+    recCall(SWR);
 #endif
 
-	EE::Profiler.EmitOp(eeOpcode::SWR);
+    EE::Profiler.EmitOp(eeOpcode::SWR);
 }
 
 ////////////////////////////////////////////////////
 void recLDL()
 {
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
-	recCall(LDL);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
+    recCall(LDL);
 
-	EE::Profiler.EmitOp(eeOpcode::LDL);
+    EE::Profiler.EmitOp(eeOpcode::LDL);
 }
 
 ////////////////////////////////////////////////////
 void recLDR()
 {
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
-	recCall(LDR);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
+    recCall(LDR);
 
-	EE::Profiler.EmitOp(eeOpcode::LDR);
+    EE::Profiler.EmitOp(eeOpcode::LDR);
 }
 
 ////////////////////////////////////////////////////
 
 void recSDL()
 {
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
-	recCall(SDL);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
+    recCall(SDL);
 
-	EE::Profiler.EmitOp(eeOpcode::SDL);
+    EE::Profiler.EmitOp(eeOpcode::SDL);
 }
 
 ////////////////////////////////////////////////////
 void recSDR()
 {
-	iFlushCall(FLUSH_INTERPRETER);
-	_deleteEEreg(_Rs_, 1);
-	_deleteEEreg(_Rt_, 1);
-	recCall(SDR);
+    iFlushCall(FLUSH_INTERPRETER);
+    _deleteEEreg(_Rs_, 1);
+    _deleteEEreg(_Rt_, 1);
+    recCall(SDR);
 
-	EE::Profiler.EmitOp(eeOpcode::SDR);
+    EE::Profiler.EmitOp(eeOpcode::SDR);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -501,29 +560,29 @@ void recSDR()
 void recLWC1()
 {
 #ifndef FPU_RECOMPILE
-	recCall(::R5900::Interpreter::OpcodeImpl::LWC1);
+    recCall(::R5900::Interpreter::OpcodeImpl::LWC1);
 #else
-	XMM_Reg.deleteFP(_Rt_, 2);
+    XMM_Reg.deleteFP(_Rt_, 2);
 
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		vtlb_DynGenRead32_Const(32, false, addr);
-	}
-	else
-	{
-		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
+    if (GPR_IS_CONST1(_Rs_))
+    {
+        int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+        vtlb_DynGenRead32_Const(32, false, addr);
+    }
+    else
+    {
+        _eeMoveGPRtoR(ecx, _Rs_);
+        if (_Imm_ != 0)
+            xADD(ecx, _Imm_);
 
-		iFlushCall(FLUSH_FULLVTLB);
+        iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead32(32, false);
-	}
+        vtlb_DynGenRead32(32, false);
+    }
 
-	xMOV(ptr32[&fpuRegs.fpr[_Rt_].UL], eax);
+    xMOV(ptr32[&fpuRegs.fpr[_Rt_].UL], eax);
 
-	EE::Profiler.EmitOp(eeOpcode::LWC1);
+    EE::Profiler.EmitOp(eeOpcode::LWC1);
 #endif
 }
 
@@ -532,29 +591,29 @@ void recLWC1()
 void recSWC1()
 {
 #ifndef FPU_RECOMPILE
-	recCall(::R5900::Interpreter::OpcodeImpl::SWC1);
+    recCall(::R5900::Interpreter::OpcodeImpl::SWC1);
 #else
-	XMM_Reg.deleteFP(_Rt_, 1);
+    XMM_Reg.deleteFP(_Rt_, 1);
 
-	xMOV(edx, ptr32[&fpuRegs.fpr[_Rt_].UL] );
+    xMOV(edx, ptr32[&fpuRegs.fpr[_Rt_].UL]);
 
-	if( GPR_IS_CONST1( _Rs_ ) )
-	{
-		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		vtlb_DynGenWrite_Const(32, addr);
-	}
-	else
-	{
-		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
+    if (GPR_IS_CONST1(_Rs_))
+    {
+        int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+        vtlb_DynGenWrite_Const(32, addr);
+    }
+    else
+    {
+        _eeMoveGPRtoR(ecx, _Rs_);
+        if (_Imm_ != 0)
+            xADD(ecx, _Imm_);
 
-		iFlushCall(FLUSH_FULLVTLB);
+        iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenWrite(32);
-	}
+        vtlb_DynGenWrite(32);
+    }
 
-	EE::Profiler.EmitOp(eeOpcode::SWC1);
+    EE::Profiler.EmitOp(eeOpcode::SWC1);
 #endif
 }
 
@@ -574,32 +633,32 @@ void recSWC1()
 void recLQC2()
 {
 #ifndef DISABLE_SVU
-	XMM_Reg.deleteVF(_Ft_, 0, 2);
+    XMM_Reg.deleteVF(_Ft_, 0, 2);
 #endif
 
-	if (_Rt_)
-		xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
-	else
-		xMOV(edx, (uptr)&dummyValue[0]);
+    if (_Rt_)
+        xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
+    else
+        xMOV(edx, (uptr)&dummyValue[0]);
 
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+    if (GPR_IS_CONST1(_Rs_))
+    {
+        int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 
-		vtlb_DynGenRead64_Const(128, addr);
-	}
-	else
-	{
-		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
+        vtlb_DynGenRead64_Const(128, addr);
+    }
+    else
+    {
+        _eeMoveGPRtoR(ecx, _Rs_);
+        if (_Imm_ != 0)
+            xADD(ecx, _Imm_);
 
-		iFlushCall(FLUSH_FULLVTLB);
+        iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(128);
-	}
+        vtlb_DynGenRead64(128);
+    }
 
-	EE::Profiler.EmitOp(eeOpcode::LQC2);
+    EE::Profiler.EmitOp(eeOpcode::LQC2);
 }
 
 ////////////////////////////////////////////////////
@@ -607,33 +666,35 @@ void recLQC2()
 void recSQC2()
 {
 #ifndef DISABLE_SVU
-	XMM_Reg.deleteVF(_Ft_, 0, 1); //Want to flush it but not clear it
+    XMM_Reg.deleteVF(_Ft_, 0, 1); //Want to flush it but not clear it
 #endif
 
-	xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
+    xMOV(edx, (uptr)&VU0.VF[_Ft_].UD[0]);
 
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		vtlb_DynGenWrite_Const(128, addr);
-	}
-	else
-	{
-		_eeMoveGPRtoR(ecx, _Rs_);
-		if (_Imm_ != 0)
-			xADD(ecx, _Imm_);
+    if (GPR_IS_CONST1(_Rs_))
+    {
+        int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+        vtlb_DynGenWrite_Const(128, addr);
+    }
+    else
+    {
+        _eeMoveGPRtoR(ecx, _Rs_);
+        if (_Imm_ != 0)
+            xADD(ecx, _Imm_);
 
-		iFlushCall(FLUSH_FULLVTLB);
+        iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenWrite(128);
-	}
+        vtlb_DynGenWrite(128);
+    }
 
-	EE::Profiler.EmitOp(eeOpcode::SQC2);
+    EE::Profiler.EmitOp(eeOpcode::SQC2);
 }
 
 #endif
 
-} } }	// end namespace R5900::Dynarec::OpcodeImpl
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 using namespace R5900::Dynarec;
 using namespace R5900::Dynarec::OpcodeImpl;

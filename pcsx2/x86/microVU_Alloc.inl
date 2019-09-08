@@ -23,148 +23,162 @@
 // Flag Allocators
 //------------------------------------------------------------------
 
-__fi static const x32& getFlagReg(uint fInst)
+__fi static const x32 &getFlagReg(uint fInst)
 {
-	static const x32* const gprFlags[4] = { &gprF0, &gprF1, &gprF2, &gprF3 };
-	pxAssert(fInst < 4);
-	return *gprFlags[fInst];
+    static const x32 *const gprFlags[4] = {&gprF0, &gprF1, &gprF2, &gprF3};
+    pxAssert(fInst < 4);
+    return *gprFlags[fInst];
 }
 
-__fi void setBitSFLAG(const x32& reg, const x32& regT, int bitTest, int bitSet)
+__fi void setBitSFLAG(const x32 &reg, const x32 &regT, int bitTest, int bitSet)
 {
-	xTEST(regT, bitTest);
-	xForwardJZ8 skip;
-	xOR(reg, bitSet);
-	skip.SetTarget();
+    xTEST(regT, bitTest);
+    xForwardJZ8 skip;
+    xOR(reg, bitSet);
+    skip.SetTarget();
 }
 
-__fi void setBitFSEQ(const x32& reg, int bitX)
+__fi void setBitFSEQ(const x32 &reg, int bitX)
 {
-	xTEST(reg, bitX);
-	xForwardJump8 skip(Jcc_Zero);
-	xOR(reg, bitX);
-	skip.SetTarget();
+    xTEST(reg, bitX);
+    xForwardJump8 skip(Jcc_Zero);
+    xOR(reg, bitX);
+    skip.SetTarget();
 }
 
-__fi void mVUallocSFLAGa(const x32& reg, int fInstance)
+__fi void mVUallocSFLAGa(const x32 &reg, int fInstance)
 {
-	xMOV(reg, getFlagReg(fInstance));
+    xMOV(reg, getFlagReg(fInstance));
 }
 
-__fi void mVUallocSFLAGb(const x32& reg, int fInstance)
+__fi void mVUallocSFLAGb(const x32 &reg, int fInstance)
 {
-	xMOV(getFlagReg(fInstance), reg);
+    xMOV(getFlagReg(fInstance), reg);
 }
 
 // Normalize Status Flag
-__ri void mVUallocSFLAGc(const x32& reg, const x32& regT, int fInstance)
+__ri void mVUallocSFLAGc(const x32 &reg, const x32 &regT, int fInstance)
 {
-	xXOR(reg, reg);
-	mVUallocSFLAGa(regT, fInstance);
-	setBitSFLAG(reg, regT, 0x0f00, 0x0001); // Z  Bit
-	setBitSFLAG(reg, regT, 0xf000, 0x0002); // S  Bit
-	setBitSFLAG(reg, regT, 0x000f, 0x0040); // ZS Bit
-	setBitSFLAG(reg, regT, 0x00f0, 0x0080); // SS Bit
-	xAND(regT, 0xffff0000); // DS/DI/OS/US/D/I/O/U Bits
-	xSHR(regT, 14);
-	xOR (reg, regT);
+    xXOR(reg, reg);
+    mVUallocSFLAGa(regT, fInstance);
+    setBitSFLAG(reg, regT, 0x0f00, 0x0001); // Z  Bit
+    setBitSFLAG(reg, regT, 0xf000, 0x0002); // S  Bit
+    setBitSFLAG(reg, regT, 0x000f, 0x0040); // ZS Bit
+    setBitSFLAG(reg, regT, 0x00f0, 0x0080); // SS Bit
+    xAND(regT, 0xffff0000);                 // DS/DI/OS/US/D/I/O/U Bits
+    xSHR(regT, 14);
+    xOR(reg, regT);
 }
 
 // Denormalizes Status Flag
-__ri void mVUallocSFLAGd(u32* memAddr) {
-	xMOV(edx, ptr32[memAddr]);
-	xMOV(eax, edx);
-	xSHR(eax, 3);
-	xAND(eax, 0x18);
+__ri void mVUallocSFLAGd(u32 *memAddr)
+{
+    xMOV(edx, ptr32[memAddr]);
+    xMOV(eax, edx);
+    xSHR(eax, 3);
+    xAND(eax, 0x18);
 
-	xMOV(ecx, edx);
-	xSHL(ecx, 11);
-	xAND(ecx, 0x1800);
-	xOR (eax, ecx);
+    xMOV(ecx, edx);
+    xSHL(ecx, 11);
+    xAND(ecx, 0x1800);
+    xOR(eax, ecx);
 
-	xSHL(edx, 14);
-	xAND(edx, 0x3cf0000);
-	xOR (eax, edx);
+    xSHL(edx, 14);
+    xAND(edx, 0x3cf0000);
+    xOR(eax, edx);
 }
 
-__fi void mVUallocMFLAGa(mV, const x32& reg, int fInstance)
+__fi void mVUallocMFLAGa(mV, const x32 &reg, int fInstance)
 {
-	xMOVZX(reg, ptr16[&mVU.macFlag[fInstance]]);
+    xMOVZX(reg, ptr16[&mVU.macFlag[fInstance]]);
 }
 
-__fi void mVUallocMFLAGb(mV, const x32& reg, int fInstance)
+__fi void mVUallocMFLAGb(mV, const x32 &reg, int fInstance)
 {
-	//xAND(reg, 0xffff);
-	if (fInstance < 4) xMOV(ptr32[&mVU.macFlag[fInstance]], reg);			// microVU
-	else			   xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL], reg);	// macroVU
+    //xAND(reg, 0xffff);
+    if (fInstance < 4)
+        xMOV(ptr32[&mVU.macFlag[fInstance]], reg); // microVU
+    else
+        xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL], reg); // macroVU
 }
 
-__fi void mVUallocCFLAGa(mV, const x32& reg, int fInstance)
+__fi void mVUallocCFLAGa(mV, const x32 &reg, int fInstance)
 {
-	if (fInstance < 4) xMOV(reg, ptr32[&mVU.clipFlag[fInstance]]);			// microVU
-	else			   xMOV(reg, ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL]);	// macroVU
+    if (fInstance < 4)
+        xMOV(reg, ptr32[&mVU.clipFlag[fInstance]]); // microVU
+    else
+        xMOV(reg, ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL]); // macroVU
 }
 
-__fi void mVUallocCFLAGb(mV, const x32& reg, int fInstance)
+__fi void mVUallocCFLAGb(mV, const x32 &reg, int fInstance)
 {
-	if (fInstance < 4) xMOV(ptr32[&mVU.clipFlag[fInstance]], reg);			// microVU
-	else			   xMOV(ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL], reg);	// macroVU
+    if (fInstance < 4)
+        xMOV(ptr32[&mVU.clipFlag[fInstance]], reg); // microVU
+    else
+        xMOV(ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL], reg); // macroVU
 }
 
 //------------------------------------------------------------------
 // VI Reg Allocators
 //------------------------------------------------------------------
 
-__ri void mVUallocVIa(mV, const x32& GPRreg, int _reg_, bool signext = false)
+__ri void mVUallocVIa(mV, const x32 &GPRreg, int _reg_, bool signext = false)
 {
-	if  (!_reg_)
-		xXOR(GPRreg, GPRreg);
-	else if (signext)
-		xMOVSX(GPRreg, ptr16[&mVU.regs().VI[_reg_].SL]);
-	else
-		xMOVZX(GPRreg, ptr16[&mVU.regs().VI[_reg_].UL]);
+    if (!_reg_)
+        xXOR(GPRreg, GPRreg);
+    else if (signext)
+        xMOVSX(GPRreg, ptr16[&mVU.regs().VI[_reg_].SL]);
+    else
+        xMOVZX(GPRreg, ptr16[&mVU.regs().VI[_reg_].UL]);
 }
 
-__ri void mVUallocVIb(mV, const x32& GPRreg, int _reg_)
+__ri void mVUallocVIb(mV, const x32 &GPRreg, int _reg_)
 {
-	if (mVUlow.backupVI) { // Backs up reg to memory (used when VI is modified b4 a branch)
-		xMOVZX(gprT3, ptr16[&mVU.regs().VI[_reg_].UL]);
-		xMOV  (ptr32[&mVU.VIbackup], gprT3);
-	}
+    if (mVUlow.backupVI)
+    { // Backs up reg to memory (used when VI is modified b4 a branch)
+        xMOVZX(gprT3, ptr16[&mVU.regs().VI[_reg_].UL]);
+        xMOV(ptr32[&mVU.VIbackup], gprT3);
+    }
 
-	if   (_reg_ == 0) {
-		return;
-	}
-	else if (_reg_ < 16) {
-		xMOV(ptr16[&mVU.regs().VI[_reg_].UL], xRegister16(GPRreg.Id));
-	}
+    if (_reg_ == 0)
+    {
+        return;
+    }
+    else if (_reg_ < 16)
+    {
+        xMOV(ptr16[&mVU.regs().VI[_reg_].UL], xRegister16(GPRreg.Id));
+    }
 }
 
 //------------------------------------------------------------------
 // P/Q Reg Allocators
 //------------------------------------------------------------------
 
-__fi void getPreg(mV, const xmm& reg)
+__fi void getPreg(mV, const xmm &reg)
 {
-	mVUunpack_xyzw(reg, xmmPQ, (2 + mVUinfo.readP));
-	/*if (CHECK_VU_EXTRA_OVERFLOW) mVUclamp2(reg, xmmT1, 15);*/
+    mVUunpack_xyzw(reg, xmmPQ, (2 + mVUinfo.readP));
+    /*if (CHECK_VU_EXTRA_OVERFLOW) mVUclamp2(reg, xmmT1, 15);*/
 }
 
-__fi void getQreg(const xmm& reg, int qInstance)
+__fi void getQreg(const xmm &reg, int qInstance)
 {
-	mVUunpack_xyzw(reg, xmmPQ, qInstance);
-	/*if (CHECK_VU_EXTRA_OVERFLOW) mVUclamp2<vuIndex>(reg, xmmT1, 15);*/
+    mVUunpack_xyzw(reg, xmmPQ, qInstance);
+    /*if (CHECK_VU_EXTRA_OVERFLOW) mVUclamp2<vuIndex>(reg, xmmT1, 15);*/
 }
 
-__ri void writeQreg(const xmm& reg, int qInstance)
+__ri void writeQreg(const xmm &reg, int qInstance)
 {
-	if (qInstance) {
-		if (!x86caps.hasStreamingSIMD4Extensions) {
-			xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
-			xMOVSS(xmmPQ, reg);
-			xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
-		}
-		else xINSERTPS(xmmPQ, reg, _MM_MK_INSERTPS_NDX(0, 1, 0));
-	}
-	else xMOVSS(xmmPQ, reg);
+    if (qInstance)
+    {
+        if (!x86caps.hasStreamingSIMD4Extensions)
+        {
+            xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
+            xMOVSS(xmmPQ, reg);
+            xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
+        }
+        else
+            xINSERTPS(xmmPQ, reg, _MM_MK_INSERTPS_NDX(0, 1, 0));
+    }
+    else
+        xMOVSS(xmmPQ, reg);
 }

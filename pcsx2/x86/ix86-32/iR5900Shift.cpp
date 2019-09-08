@@ -22,8 +22,10 @@
 
 using namespace x86Emitter;
 
-namespace R5900 {
-namespace Dynarec {
+namespace R5900
+{
+namespace Dynarec
+{
 namespace OpcodeImpl
 {
 
@@ -57,27 +59,27 @@ REC_FUNC_DEL(DSRAV, _Rd_);
 //// SLL
 void recSLL_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] << _Sa_);
+    g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] << _Sa_);
 }
 
 void recSLLs_(int info, int sa)
 {
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-	if ( sa != 0 )
-	{
-		xSHL(eax, sa );
-	}
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+    if (sa != 0)
+    {
+        xSHL(eax, sa);
+    }
 
-	xCDQ( );
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+    xCDQ();
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 }
 
 void recSLL_(int info)
 {
-	recSLLs_(info, _Sa_);
+    recSLLs_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, SLL);
@@ -85,24 +87,24 @@ EERECOMPILE_CODEX(eeRecompileCode2, SLL);
 //// SRL
 void recSRL_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] >> _Sa_);
+    g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] >> _Sa_);
 }
 
 void recSRLs_(int info, int sa)
 {
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-	if ( sa != 0 ) xSHR(eax, sa);
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+    if (sa != 0) xSHR(eax, sa);
 
-	xCDQ( );
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+    xCDQ();
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 }
 
 void recSRL_(int info)
 {
-	recSRLs_(info, _Sa_);
+    recSRLs_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, SRL);
@@ -110,24 +112,24 @@ EERECOMPILE_CODEX(eeRecompileCode2, SRL);
 //// SRA
 void recSRA_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].SL[0] >> _Sa_);
+    g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].SL[0] >> _Sa_);
 }
 
 void recSRAs_(int info, int sa)
 {
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-	if ( sa != 0 ) xSAR(eax, sa);
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+    if (sa != 0) xSAR(eax, sa);
 
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+    xCDQ();
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 }
 
 void recSRA_(int info)
 {
-	recSRAs_(info, _Sa_);
+    recSRAs_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, SRA);
@@ -135,33 +137,33 @@ EERECOMPILE_CODEX(eeRecompileCode2, SRA);
 ////////////////////////////////////////////////////
 void recDSLL_const()
 {
-	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << _Sa_);
+    g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << _Sa_);
 }
 
 void recDSLLs_(int info, int sa)
 {
-	int rtreg, rdreg;
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    int rtreg, rdreg;
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	XMM_Reg.addNeededGPR(_Rt_);
-	XMM_Reg.addNeededGPR(_Rd_);
-	rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
-	rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
+    XMM_Reg.addNeededGPR(_Rt_);
+    XMM_Reg.addNeededGPR(_Rd_);
+    rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
+    rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
 
-	if( rtreg != rdreg ) xMOVDQA(xRegisterSSE(rdreg), xRegisterSSE(rtreg));
-	xPSLL.Q(xRegisterSSE(rdreg), sa);
+    if (rtreg != rdreg) xMOVDQA(xRegisterSSE(rdreg), xRegisterSSE(rtreg));
+    xPSLL.Q(xRegisterSSE(rdreg), sa);
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 }
 
 void recDSLL_(int info)
 {
-	recDSLLs_(info, _Sa_);
+    recDSLLs_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, DSLL);
@@ -169,33 +171,33 @@ EERECOMPILE_CODEX(eeRecompileCode2, DSLL);
 ////////////////////////////////////////////////////
 void recDSRL_const()
 {
-	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> _Sa_);
+    g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> _Sa_);
 }
 
 void recDSRLs_(int info, int sa)
 {
-	int rtreg, rdreg;
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    int rtreg, rdreg;
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	XMM_Reg.addNeededGPR(_Rt_);
-	XMM_Reg.addNeededGPR(_Rd_);
-	rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
-	rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
+    XMM_Reg.addNeededGPR(_Rt_);
+    XMM_Reg.addNeededGPR(_Rd_);
+    rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
+    rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
 
-	if( rtreg != rdreg ) xMOVDQA(xRegisterSSE(rdreg), xRegisterSSE(rtreg));
-	xPSRL.Q(xRegisterSSE(rdreg), sa);
+    if (rtreg != rdreg) xMOVDQA(xRegisterSSE(rdreg), xRegisterSSE(rtreg));
+    xPSRL.Q(xRegisterSSE(rdreg), sa);
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 }
 
 void recDSRL_(int info)
 {
-	recDSRLs_(info, _Sa_);
+    recDSRLs_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, DSRL);
@@ -203,53 +205,54 @@ EERECOMPILE_CODEX(eeRecompileCode2, DSRL);
 //// DSRA
 void recDSRA_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (u64)(g_cpuConstRegs[_Rt_].SD[0] >> _Sa_);
+    g_cpuConstRegs[_Rd_].SD[0] = (u64)(g_cpuConstRegs[_Rt_].SD[0] >> _Sa_);
 }
 
 void recDSRAs_(int info, int sa)
 {
-	int rtreg, rdreg, t0reg;
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    int rtreg, rdreg, t0reg;
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	XMM_Reg.addNeededGPR(_Rt_);
-	XMM_Reg.addNeededGPR(_Rd_);
-	rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
-	rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
+    XMM_Reg.addNeededGPR(_Rt_);
+    XMM_Reg.addNeededGPR(_Rd_);
+    rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
+    rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
 
-	if( rtreg != rdreg ) xMOVDQA(xRegisterSSE(rdreg), xRegisterSSE(rtreg));
+    if (rtreg != rdreg) xMOVDQA(xRegisterSSE(rdreg), xRegisterSSE(rtreg));
 
-	if ( sa )  {
+    if (sa)
+    {
 
-		t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
+        t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
 
-		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
+        xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
 
-		// it is a signed shift (but 64 bits operands aren't supported on 32 bits even on SSE)
-		xPSRA.D(xRegisterSSE(t0reg), sa);
-		xPSRL.Q(xRegisterSSE(rdreg), sa);
+        // it is a signed shift (but 64 bits operands aren't supported on 32 bits even on SSE)
+        xPSRA.D(xRegisterSSE(t0reg), sa);
+        xPSRL.Q(xRegisterSSE(rdreg), sa);
 
-		// It can be done in one blend instruction in SSE4.1
-		// Goal is to move 63:32 of t0reg to 63:32 rdreg
-		{
-			xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0x55);
-			// take lower dword of rdreg and lower dword of t0reg
-			xPUNPCK.LDQ(xRegisterSSE(rdreg), xRegisterSSE(t0reg));
-		}
+        // It can be done in one blend instruction in SSE4.1
+        // Goal is to move 63:32 of t0reg to 63:32 rdreg
+        {
+            xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0x55);
+            // take lower dword of rdreg and lower dword of t0reg
+            xPUNPCK.LDQ(xRegisterSSE(rdreg), xRegisterSSE(t0reg));
+        }
 
-		XMM_Reg.freeReg(t0reg);
-	}
+        XMM_Reg.freeReg(t0reg);
+    }
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 }
 
 void recDSRA_(int info)
 {
-	recDSRAs_(info, _Sa_);
+    recDSRAs_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, DSRA);
@@ -257,26 +260,25 @@ EERECOMPILE_CODEX(eeRecompileCode2, DSRA);
 ///// DSLL32
 void recDSLL32_const()
 {
-	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << (_Sa_+32));
+    g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << (_Sa_ + 32));
 }
 
 void recDSLL32s_(int info, int sa)
 {
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-	if ( sa != 0 )
-	{
-		xSHL(eax, sa );
-	}
-	xMOV(ptr32[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], 0 );
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], eax);
-
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+    if (sa != 0)
+    {
+        xSHL(eax, sa);
+    }
+    xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], 0);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], eax);
 }
 
 void recDSLL32_(int info)
 {
-	recDSLL32s_(info, _Sa_);
+    recDSLL32s_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, DSLL32);
@@ -284,23 +286,23 @@ EERECOMPILE_CODEX(eeRecompileCode2, DSLL32);
 //// DSRL32
 void recDSRL32_const()
 {
-	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> (_Sa_+32));
+    g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> (_Sa_ + 32));
 }
 
 void recDSRL32s_(int info, int sa)
 {
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-	if ( sa != 0 ) xSHR(eax, sa );
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[1]]);
+    if (sa != 0) xSHR(eax, sa);
 
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], 0 );
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
 }
 
 void recDSRL32_(int info)
 {
-	recDSRL32s_(info, _Sa_);
+    recDSRL32s_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, DSRL32);
@@ -308,25 +310,24 @@ EERECOMPILE_CODEX(eeRecompileCode2, DSRL32);
 //// DSRA32
 void recDSRA32_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (u64)(g_cpuConstRegs[_Rt_].SD[0] >> (_Sa_+32));
+    g_cpuConstRegs[_Rd_].SD[0] = (u64)(g_cpuConstRegs[_Rt_].SD[0] >> (_Sa_ + 32));
 }
 
 void recDSRA32s_(int info, int sa)
 {
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-	xCDQ( );
-	if ( sa != 0 ) xSAR(eax, sa );
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[1]]);
+    xCDQ();
+    if (sa != 0) xSAR(eax, sa);
 
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
-
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 }
 
 void recDSRA32_(int info)
 {
-	recDSRA32s_(info, _Sa_);
+    recDSRA32s_(info, _Sa_);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode2, DSRA32);
@@ -338,343 +339,351 @@ EERECOMPILE_CODEX(eeRecompileCode2, DSRA32);
 
 __aligned16 u32 s_sa[4] = {0x1f, 0, 0x3f, 0};
 
-void recSetShiftV(int info, int* rsreg, int* rtreg, int* rdreg, int* rstemp)
+void recSetShiftV(int info, int *rsreg, int *rtreg, int *rdreg, int *rstemp)
 {
-	pxAssert( !(info & PROCESS_EE_XMM) );
+    pxAssert(!(info & PROCESS_EE_XMM));
 
-	XMM_Reg.addNeededGPR(_Rt_);
-	XMM_Reg.addNeededGPR(_Rd_);
-	*rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
-	*rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
+    XMM_Reg.addNeededGPR(_Rt_);
+    XMM_Reg.addNeededGPR(_Rd_);
+    *rtreg = XMM_Reg.allocGPR(-1, _Rt_, MODE_READ);
+    *rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
 
-	*rstemp = XMM_Reg.allocTemp(XMMT_INT, -1);
+    *rstemp = XMM_Reg.allocTemp(XMMT_INT, -1);
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-	xAND(eax, 0x3f);
-	xMOVDZX(xRegisterSSE(*rstemp), eax);
-	*rsreg = *rstemp;
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+    xAND(eax, 0x3f);
+    xMOVDZX(xRegisterSSE(*rstemp), eax);
+    *rsreg = *rstemp;
 
-	if( *rtreg != *rdreg ) xMOVDQA(xRegisterSSE(*rdreg), xRegisterSSE(*rtreg));
+    if (*rtreg != *rdreg) xMOVDQA(xRegisterSSE(*rdreg), xRegisterSSE(*rtreg));
 }
 
-void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
+void recSetConstShiftV(int info, int *rsreg, int *rdreg, int *rstemp)
 {
-	// Note: do it first.
-	// 1/ It doesn't work in SSE if you did it in the end (I suspect
-	// a conflict with allocGPR when rt==rd)
-	// 2/ CPU has minimum cycle delay between read/write
-	_flushConstReg(_Rt_);
+    // Note: do it first.
+    // 1/ It doesn't work in SSE if you did it in the end (I suspect
+    // a conflict with allocGPR when rt==rd)
+    // 2/ CPU has minimum cycle delay between read/write
+    _flushConstReg(_Rt_);
 
-	XMM_Reg.addNeededGPR(_Rd_);
-	*rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
+    XMM_Reg.addNeededGPR(_Rd_);
+    *rdreg = XMM_Reg.allocGPR(-1, _Rd_, MODE_WRITE);
 
-	*rstemp = XMM_Reg.allocTemp(XMMT_INT, -1);
+    *rstemp = XMM_Reg.allocTemp(XMMT_INT, -1);
 
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-	xAND(eax, 0x3f);
-	xMOVDZX(xRegisterSSE(*rstemp), eax);
-	*rsreg = *rstemp;
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+    xAND(eax, 0x3f);
+    xMOVDZX(xRegisterSSE(*rstemp), eax);
+    *rsreg = *rstemp;
 }
 
 //// SLLV
 void recSLLV_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] << (g_cpuConstRegs[_Rs_].UL[0] &0x1f));
+    g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] << (g_cpuConstRegs[_Rs_].UL[0] & 0x1f));
 }
 
 void recSLLV_consts(int info)
 {
-	recSLLs_(info, g_cpuConstRegs[_Rs_].UL[0]&0x1f);
+    recSLLs_(info, g_cpuConstRegs[_Rs_].UL[0] & 0x1f);
 }
 
 void recSLLV_constt(int info)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+    xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
-	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-	xAND(ecx, 0x1f );
-	xSHL(eax, cl);
+    xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+    xAND(ecx, 0x1f);
+    xSHL(eax, cl);
 
-	eeSignExtendTo(_Rd_);
+    eeSignExtendTo(_Rd_);
 }
 
 void recSLLV_(int info)
 {
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-	if ( _Rs_ != 0 )
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xAND(ecx, 0x1f );
-		xSHL(eax, cl);
-	}
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+    if (_Rs_ != 0)
+    {
+        xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+        xAND(ecx, 0x1f);
+        xSHL(eax, cl);
+    }
+    xCDQ();
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 }
 
-EERECOMPILE_CODE0(SLLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
+EERECOMPILE_CODE0(SLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// SRLV
 void recSRLV_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] >> (g_cpuConstRegs[_Rs_].UL[0] &0x1f));
+    g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].UL[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x1f));
 }
 
 void recSRLV_consts(int info)
 {
-	recSRLs_(info, g_cpuConstRegs[_Rs_].UL[0]&0x1f);
+    recSRLs_(info, g_cpuConstRegs[_Rs_].UL[0] & 0x1f);
 }
 
 void recSRLV_constt(int info)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+    xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
-	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-	xAND(ecx, 0x1f );
-	xSHR(eax, cl);
+    xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+    xAND(ecx, 0x1f);
+    xSHR(eax, cl);
 
-	eeSignExtendTo(_Rd_);
+    eeSignExtendTo(_Rd_);
 }
 
 void recSRLV_(int info)
 {
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-	if ( _Rs_ != 0 )
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xAND(ecx, 0x1f );
-		xSHR(eax, cl);
-	}
-	xCDQ( );
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+    if (_Rs_ != 0)
+    {
+        xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+        xAND(ecx, 0x1f);
+        xSHR(eax, cl);
+    }
+    xCDQ();
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 }
 
-EERECOMPILE_CODE0(SRLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
+EERECOMPILE_CODE0(SRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// SRAV
 void recSRAV_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].SL[0] >> (g_cpuConstRegs[_Rs_].UL[0] &0x1f));
+    g_cpuConstRegs[_Rd_].SD[0] = (s32)(g_cpuConstRegs[_Rt_].SL[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x1f));
 }
 
 void recSRAV_consts(int info)
 {
-	recSRAs_(info, g_cpuConstRegs[_Rs_].UL[0]&0x1f);
+    recSRAs_(info, g_cpuConstRegs[_Rs_].UL[0] & 0x1f);
 }
 
 void recSRAV_constt(int info)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+    xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
-	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-	xAND(ecx, 0x1f );
-	xSAR(eax, cl);
+    xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+    xAND(ecx, 0x1f);
+    xSAR(eax, cl);
 
-	eeSignExtendTo(_Rd_);
+    eeSignExtendTo(_Rd_);
 }
 
 void recSRAV_(int info)
 {
-	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-	if ( _Rs_ != 0 )
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xAND(ecx, 0x1f );
-		xSAR(eax, cl);
-	}
-	xCDQ( );
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+    xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+    if (_Rs_ != 0)
+    {
+        xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+        xAND(ecx, 0x1f);
+        xSAR(eax, cl);
+    }
+    xCDQ();
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+    xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 }
 
-EERECOMPILE_CODE0(SRAV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
+EERECOMPILE_CODE0(SRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// DSLLV
 void recDSLLV_const()
 {
-	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << (g_cpuConstRegs[_Rs_].UL[0] &0x3f));
+    g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] << (g_cpuConstRegs[_Rs_].UL[0] & 0x3f));
 }
 
 void recDSLLV_consts(int info)
 {
-	int sa = g_cpuConstRegs[_Rs_].UL[0]&0x3f;
-	if( sa < 32 ) recDSLLs_(info, sa);
-	else recDSLL32s_(info, sa-32);
+    int sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
+    if (sa < 32)
+        recDSLLs_(info, sa);
+    else
+        recDSLL32s_(info, sa - 32);
 }
 
 void recDSLLV_constt(int info)
 {
-	int rsreg, rdreg, rstemp = -1;
-	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
-	xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
-	xPSLL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
-	if( rstemp != -1 ) XMM_Reg.freeReg(rstemp);
+    int rsreg, rdreg, rstemp = -1;
+    recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
+    xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
+    xPSLL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
+    if (rstemp != -1) XMM_Reg.freeReg(rstemp);
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	//XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    //XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 }
 
 void recDSLLV_(int info)
 {
-	int rsreg, rtreg, rdreg, rstemp = -1;
-	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
+    int rsreg, rtreg, rdreg, rstemp = -1;
+    recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
 
-	xPSLL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
-	if( rstemp != -1 ) XMM_Reg.freeReg(rstemp);
+    xPSLL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
+    if (rstemp != -1) XMM_Reg.freeReg(rstemp);
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 }
 
-EERECOMPILE_CODE0(DSLLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
+EERECOMPILE_CODE0(DSLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// DSRLV
 void recDSRLV_const()
 {
-	g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> (g_cpuConstRegs[_Rs_].UL[0] &0x3f));
+    g_cpuConstRegs[_Rd_].UD[0] = (u64)(g_cpuConstRegs[_Rt_].UD[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x3f));
 }
 
 void recDSRLV_consts(int info)
 {
-	int sa = g_cpuConstRegs[_Rs_].UL[0]&0x3f;
-	if( sa < 32 ) recDSRLs_(info, sa);
-	else recDSRL32s_(info, sa-32);
+    int sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
+    if (sa < 32)
+        recDSRLs_(info, sa);
+    else
+        recDSRL32s_(info, sa - 32);
 }
 
 void recDSRLV_constt(int info)
 {
-	int rsreg, rdreg, rstemp = -1;
-	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
+    int rsreg, rdreg, rstemp = -1;
+    recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
 
-	xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
-	xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
-	if( rstemp != -1 ) XMM_Reg.freeReg(rstemp);
+    xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
+    xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
+    if (rstemp != -1) XMM_Reg.freeReg(rstemp);
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	//XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    //XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 }
 
 void recDSRLV_(int info)
 {
-	int rsreg, rtreg, rdreg, rstemp = -1;
-	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
+    int rsreg, rtreg, rdreg, rstemp = -1;
+    recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
 
-	xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
-	if( rstemp != -1 ) XMM_Reg.freeReg(rstemp);
+    xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
+    if (rstemp != -1) XMM_Reg.freeReg(rstemp);
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 }
 
-EERECOMPILE_CODE0(DSRLV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
+EERECOMPILE_CODE0(DSRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 //// DSRAV
 void recDSRAV_const()
 {
-	g_cpuConstRegs[_Rd_].SD[0] = (s64)(g_cpuConstRegs[_Rt_].SD[0] >> (g_cpuConstRegs[_Rs_].UL[0] &0x3f));
+    g_cpuConstRegs[_Rd_].SD[0] = (s64)(g_cpuConstRegs[_Rt_].SD[0] >> (g_cpuConstRegs[_Rs_].UL[0] & 0x3f));
 }
 
 void recDSRAV_consts(int info)
 {
-	int sa = g_cpuConstRegs[_Rs_].UL[0]&0x3f;
-	if( sa < 32 ) recDSRAs_(info, sa);
-	else recDSRA32s_(info, sa-32);
+    int sa = g_cpuConstRegs[_Rs_].UL[0] & 0x3f;
+    if (sa < 32)
+        recDSRAs_(info, sa);
+    else
+        recDSRA32s_(info, sa - 32);
 }
 
 void recDSRAV_constt(int info)
 {
-	int rsreg, rdreg, rstemp = -1, t0reg, t1reg;
-	t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
-	t1reg = XMM_Reg.allocTemp(XMMT_INT, -1);
+    int rsreg, rdreg, rstemp = -1, t0reg, t1reg;
+    t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
+    t1reg = XMM_Reg.allocTemp(XMMT_INT, -1);
 
-	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
+    recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
 
-	xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
-	xPXOR(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
+    xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
+    xPXOR(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 
-	// calc high bit
-	xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(rdreg));
-	xPCMP.GTD(xRegisterSSE(t0reg), xRegisterSSE(rdreg));
-	xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0x55);
+    // calc high bit
+    xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(rdreg));
+    xPCMP.GTD(xRegisterSSE(t0reg), xRegisterSSE(rdreg));
+    xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0x55);
 
-	// shift highest bit, 64 - eax
-	xMOV(eax, 64);
-	xMOVDZX(xRegisterSSE(t1reg), eax);
-	xPSUB.D(xRegisterSSE(t1reg), xRegisterSSE(rsreg));
+    // shift highest bit, 64 - eax
+    xMOV(eax, 64);
+    xMOVDZX(xRegisterSSE(t1reg), eax);
+    xPSUB.D(xRegisterSSE(t1reg), xRegisterSSE(rsreg));
 
-	// right logical shift
-	xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
-	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg)); // highest bits
+    // right logical shift
+    xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
+    xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg)); // highest bits
 
-	xPOR(xRegisterSSE(rdreg), xRegisterSSE(t0reg));
+    xPOR(xRegisterSSE(rdreg), xRegisterSSE(t0reg));
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    XMM_Reg.deleteGPR(_Rd_, 3);
 
-	XMM_Reg.freeReg(t0reg);
-	XMM_Reg.freeReg(t1reg);
-	if( rstemp != -1 ) XMM_Reg.freeReg(rstemp);
+    XMM_Reg.freeReg(t0reg);
+    XMM_Reg.freeReg(t1reg);
+    if (rstemp != -1) XMM_Reg.freeReg(rstemp);
 }
 
 void recDSRAV_(int info)
 {
-	int rsreg, rtreg, rdreg, rstemp = -1, t0reg, t1reg;
-	t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
-	t1reg = XMM_Reg.allocTemp(XMMT_INT, -1);
-	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
+    int rsreg, rtreg, rdreg, rstemp = -1, t0reg, t1reg;
+    t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
+    t1reg = XMM_Reg.allocTemp(XMMT_INT, -1);
+    recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
 
-	xPXOR(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
+    xPXOR(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 
-	// calc high bit
-	xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(rdreg));
-	xPCMP.GTD(xRegisterSSE(t0reg), xRegisterSSE(rdreg));
-	xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0x55);
+    // calc high bit
+    xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(rdreg));
+    xPCMP.GTD(xRegisterSSE(t0reg), xRegisterSSE(rdreg));
+    xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0x55);
 
-	// shift highest bit, 64 - eax
-	xMOV(eax, 64);
-	xMOVDZX(xRegisterSSE(t1reg), eax);
-	xPSUB.D(xRegisterSSE(t1reg), xRegisterSSE(rsreg));
+    // shift highest bit, 64 - eax
+    xMOV(eax, 64);
+    xMOVDZX(xRegisterSSE(t1reg), eax);
+    xPSUB.D(xRegisterSSE(t1reg), xRegisterSSE(rsreg));
 
-	// right logical shift
-	xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
-	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg)); // highest bits
+    // right logical shift
+    xPSRL.Q(xRegisterSSE(rdreg), xRegisterSSE(rsreg));
+    xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg)); // highest bits
 
-	xPOR(xRegisterSSE(rdreg), xRegisterSSE(t0reg));
+    xPOR(xRegisterSSE(rdreg), xRegisterSSE(t0reg));
 
-	// flush lower 64 bits (as upper is wrong)
-	// The others possibility could be a read back of the upper 64 bits
-	// (better use of register but code will likely be flushed after anyway)
-	xMOVL.PD(ptr64[&cpuRegs.GPR.r[ _Rd_ ].UD[ 0 ]] , xRegisterSSE(rdreg));
-	XMM_Reg.deleteGPR(_Rt_, 3);
-	XMM_Reg.deleteGPR(_Rd_, 3);
+    // flush lower 64 bits (as upper is wrong)
+    // The others possibility could be a read back of the upper 64 bits
+    // (better use of register but code will likely be flushed after anyway)
+    xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
+    XMM_Reg.deleteGPR(_Rt_, 3);
+    XMM_Reg.deleteGPR(_Rd_, 3);
 
-	XMM_Reg.freeReg(t0reg);
-	XMM_Reg.freeReg(t1reg);
-	if( rstemp != -1 ) XMM_Reg.freeReg(rstemp);
+    XMM_Reg.freeReg(t0reg);
+    XMM_Reg.freeReg(t1reg);
+    if (rstemp != -1) XMM_Reg.freeReg(rstemp);
 }
 
-EERECOMPILE_CODE0(DSRAV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED);
+EERECOMPILE_CODE0(DSRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 #endif
 
-} } }
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

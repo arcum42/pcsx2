@@ -45,7 +45,7 @@ XMM_Regs XMM_Reg;
 // Clear allocation counter
 void XMM_Regs::init()
 {
-	xmmregs.fill({0});
+    xmmregs.fill({0});
     g_xmmAllocCounter = 0;
     s_xmmchecknext = 0;
 }
@@ -63,10 +63,10 @@ int XMM_Regs::getFreeReg()
     int tempi;
     u32 bestcount = 0x10000;
 
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        if (xmmregs[(i + s_xmmchecknext) % iREGCNT_XMM].inuse == 0) 
-		{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        if (xmmregs[(i + s_xmmchecknext) % iREGCNT_XMM].inuse == 0)
+        {
             int ret = (s_xmmchecknext + i) % iREGCNT_XMM;
             s_xmmchecknext = (s_xmmchecknext + i + 1) % iREGCNT_XMM;
             return ret;
@@ -74,13 +74,13 @@ int XMM_Regs::getFreeReg()
     }
 
     // check for dead regs
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].needed) continue;
-        if (xmmregs[i].type == XMMTYPE_GPRREG) 
-		{
-            if (!(EEINST_ISLIVEXMM(xmmregs[i].reg))) 
-			{
+        if (xmmregs[i].type == XMMTYPE_GPRREG)
+        {
+            if (!(EEINST_ISLIVEXMM(xmmregs[i].reg)))
+            {
                 freeReg(i);
                 return i;
             }
@@ -88,13 +88,13 @@ int XMM_Regs::getFreeReg()
     }
 
     // check for future xmm usage
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].needed) continue;
-        if (xmmregs[i].type == XMMTYPE_GPRREG) 
-		{
-            if (!(g_pCurInstInfo->regs[XMM_Reg.xmmregs[i].reg] & EEINST_XMM)) 
-			{
+        if (xmmregs[i].type == XMMTYPE_GPRREG)
+        {
+            if (!(g_pCurInstInfo->regs[XMM_Reg.xmmregs[i].reg] & EEINST_XMM))
+            {
                 freeReg(i);
                 return i;
             }
@@ -104,13 +104,13 @@ int XMM_Regs::getFreeReg()
     tempi = -1;
     bestcount = 0xffff;
 
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].needed) continue;
-        if (xmmregs[i].type != XMMTYPE_TEMP) 
-		{
-            if (xmmregs[i].counter < bestcount) 
-			{
+        if (xmmregs[i].type != XMMTYPE_TEMP)
+        {
+            if (xmmregs[i].counter < bestcount)
+            {
                 tempi = i;
                 bestcount = xmmregs[i].counter;
             }
@@ -121,8 +121,8 @@ int XMM_Regs::getFreeReg()
         return i;
     }
 
-    if (tempi != -1) 
-	{
+    if (tempi != -1)
+    {
         freeReg(tempi);
         return tempi;
     }
@@ -154,8 +154,8 @@ __fi void *XMM_Regs::GetAddr(_xmmregs &r)
 {
     const VURegs *VU = r.VU ? &VU1 : &VU0;
 
-    switch (r.type) 
-	{
+    switch (r.type)
+    {
         case XMMTYPE_VFREG:
             return (void *)VU_VFx_ADDR(r.reg);
 
@@ -187,20 +187,20 @@ __fi void *XMM_Regs::GetAddr(_xmmregs &r)
 // So basically it is mostly used to set the mode of the register, and load value if we need to read it.
 int XMM_Regs::checkReg(int type, int reg, int mode)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
-        if (r.inuse && (r.type == (type & 0xff)) && (r.reg == reg)) 
-		{
-            if (!(r.mode & MODE_READ)) 
-			{
-                if (mode & MODE_READ) 
-				{
+        if (r.inuse && (r.type == (type & 0xff)) && (r.reg == reg))
+        {
+            if (!(r.mode & MODE_READ))
+            {
+                if (mode & MODE_READ)
+                {
                     xMOVDQA(xRegisterSSE(i), ptr[GetAddr(r)]);
-                } 
-				else if (mode & MODE_READHALF) 
-				{
+                }
+                else if (mode & MODE_READHALF)
+                {
                     if (g_xmmtypes[i] == XMMT_INT)
                         xMOVQZX(xRegisterSSE(i), ptr[(void *)(uptr)GetAddr(r)]);
                     else
@@ -227,16 +227,16 @@ int XMM_Regs::checkReg(int type, int reg, int mode)
 // Note: FPU are always in XMM register
 int XMM_Regs::allocFP(int xmmreg, int fpreg, int mode)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_FPREG) continue;
         if (r.reg != fpreg) continue;
 
-        if (!(r.mode & MODE_READ) && (mode & MODE_READ)) 
-		{
+        if (!(r.mode & MODE_READ) && (mode & MODE_READ))
+        {
             xMOVSSZX(xRegisterSSE(i), ptr[&fpuRegs.fpr[fpreg].f]);
             r.mode |= MODE_READ;
         }
@@ -247,10 +247,10 @@ int XMM_Regs::allocFP(int xmmreg, int fpreg, int mode)
     }
 
     if (xmmreg == -1) xmmreg = getFreeReg();
-    _xmmregs& r = xmmregs[xmmreg];
+    _xmmregs &r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
-    reg_use(r,XMMTYPE_FPREG, fpreg, mode);
+    reg_use(r, XMMTYPE_FPREG, fpreg, mode);
 
     if (mode & MODE_READ)
         xMOVSSZX(xRegisterSSE(xmmreg), ptr[&fpuRegs.fpr[fpreg].f]);
@@ -262,22 +262,22 @@ int XMM_Regs::allocFP(int xmmreg, int fpreg, int mode)
 // due to XMM/MMX/X86 crazyness!
 int XMM_Regs::allocGPR(int xmmreg, int gprreg, int mode)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_GPRREG) continue;
         if (r.reg != gprreg) continue;
 
         if (!(r.mode & MODE_READ) && (mode & MODE_READ))
-		{
-            if (gprreg == 0) 
-			{
+        {
+            if (gprreg == 0)
+            {
                 xPXOR(xRegisterSSE(i), xRegisterSSE(i));
-            } 
-			else 
-			{
+            }
+            else
+            {
                 //pxAssert( !(g_cpuHasConstReg & (1<<gprreg)) || (g_cpuFlushedConstReg & (1<<gprreg)) );
                 _flushConstReg(gprreg);
                 xMOVDQA(xRegisterSSE(i), ptr[&cpuRegs.GPR.r[gprreg].UL[0]]);
@@ -285,8 +285,8 @@ int XMM_Regs::allocGPR(int xmmreg, int gprreg, int mode)
             xmmregs[i].mode |= MODE_READ;
         }
 
-        if ((mode & MODE_WRITE) && (gprreg < 32)) 
-		{
+        if ((mode & MODE_WRITE) && (gprreg < 32))
+        {
             g_cpuHasConstReg &= ~(1 << gprreg);
             //pxAssert( !(g_cpuHasConstReg & (1<<gprreg)) );
         }
@@ -298,26 +298,26 @@ int XMM_Regs::allocGPR(int xmmreg, int gprreg, int mode)
 
     // currently only gpr regs are const
     // fixme - do we really need to execute this both here and in the loop?
-    if ((mode & MODE_WRITE) && gprreg < 32) 
-	{
+    if ((mode & MODE_WRITE) && gprreg < 32)
+    {
         //pxAssert( !(g_cpuHasConstReg & (1<<gprreg)) );
         g_cpuHasConstReg &= ~(1 << gprreg);
     }
 
     if (xmmreg == -1) xmmreg = getFreeReg();
-    _xmmregs& r = xmmregs[xmmreg];
+    _xmmregs &r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_INT;
-    reg_use(r,XMMTYPE_GPRREG, gprreg, mode);
+    reg_use(r, XMMTYPE_GPRREG, gprreg, mode);
 
-    if (mode & MODE_READ) 
-	{
-        if (gprreg == 0) 
-		{
+    if (mode & MODE_READ)
+    {
+        if (gprreg == 0)
+        {
             xPXOR(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg));
-        } 
-		else 
-		{
+        }
+        else
+        {
             // DOX86
             if (mode & MODE_READ) _flushConstReg(gprreg);
 
@@ -332,15 +332,15 @@ int XMM_Regs::allocGPR(int xmmreg, int gprreg, int mode)
 // (seriously boy you could have factorized it)
 int XMM_Regs::allocFPACC(int xmmreg, int mode)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_FPACC) continue;
 
-        if (!(r.mode & MODE_READ) && (mode & MODE_READ)) 
-		{
+        if (!(r.mode & MODE_READ) && (mode & MODE_READ))
+        {
             xMOVSSZX(xRegisterSSE(i), ptr[&fpuRegs.ACC.f]);
             r.mode |= MODE_READ;
         }
@@ -351,13 +351,13 @@ int XMM_Regs::allocFPACC(int xmmreg, int mode)
     }
 
     if (xmmreg == -1) xmmreg = getFreeReg();
-    _xmmregs& r = xmmregs[xmmreg];
+    _xmmregs &r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
-    reg_use(r,XMMTYPE_FPACC, 0, mode);
+    reg_use(r, XMMTYPE_FPACC, 0, mode);
 
-    if (mode & MODE_READ) 
-	{
+    if (mode & MODE_READ)
+    {
         xMOVSSZX(xRegisterSSE(xmmreg), ptr[&fpuRegs.ACC.f]);
     }
 
@@ -368,13 +368,13 @@ int XMM_Regs::allocFPACC(int xmmreg, int mode)
 // You must use XMM_Reg.clearNeededRegs to clear the flag.
 void XMM_Regs::addNeededGPR(int gprreg)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
-        if (r.inuse == 0)continue;
-        if (r.type != XMMTYPE_GPRREG)continue;
-        if (r.reg != gprreg)continue;
+        if (r.inuse == 0) continue;
+        if (r.type != XMMTYPE_GPRREG) continue;
+        if (r.reg != gprreg) continue;
 
         r.counter = g_xmmAllocCounter++; // update counter
         r.needed = 1;
@@ -386,9 +386,9 @@ void XMM_Regs::addNeededGPR(int gprreg)
 // You must use clearNeededRegs to clear the flag
 void XMM_Regs::addNeededFP(int fpreg)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_FPREG) continue;
@@ -404,9 +404,9 @@ void XMM_Regs::addNeededFP(int fpreg)
 // You must use XMM_Reg.clearNeededRegs to clear the flag
 void XMM_Regs::addNeededFPACC()
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_FPACC) continue;
@@ -421,20 +421,20 @@ void XMM_Regs::addNeededFPACC()
 // Written register will set MODE_READ (aka data is valid, no need to load it)
 void XMM_Regs::clearNeededRegs()
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
-        if (r.needed) 
-		{
+        if (r.needed)
+        {
             // setup read to any just written regs
             if (r.inuse && (r.mode & MODE_WRITE))
                 r.mode |= MODE_READ;
-                r.needed = 0;
+            r.needed = 0;
         }
 
-        if (r.inuse) 
-		{
+        if (r.inuse)
+        {
             pxAssert(r.type != XMMTYPE_TEMP);
         }
     }
@@ -446,22 +446,22 @@ void XMM_Regs::clearNeededRegs()
 // Flush is 3: drop register content.
 void XMM_Regs::deleteGPR(int reg, int flush)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
-        if (r.inuse && r.type == XMMTYPE_GPRREG && r.reg == reg) 
-		{
-            switch (flush) 
-			{
+        if (r.inuse && r.type == XMMTYPE_GPRREG && r.reg == reg)
+        {
+            switch (flush)
+            {
                 case 0:
                     freeReg(i);
                     break;
 
                 case 1:
                 case 2:
-                    if (r.mode & MODE_WRITE) 
-					{
+                    if (r.mode & MODE_WRITE)
+                    {
                         pxAssert(reg != 0);
 
                         //pxAssert( g_xmmtypes[i] == XMMT_INT );
@@ -490,21 +490,21 @@ void XMM_Regs::deleteGPR(int reg, int flush)
 // Flush is 2: drop register content.
 void XMM_Regs::deleteFP(int reg, int flush)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
-        if (r.inuse && r.type == XMMTYPE_FPREG && r.reg == reg) 
-		{
-            switch (flush) 
-			{
+        if (r.inuse && r.type == XMMTYPE_FPREG && r.reg == reg)
+        {
+            switch (flush)
+            {
                 case 0:
                     freeReg(i);
                     return;
 
                 case 1:
-                    if (r.mode & MODE_WRITE) 
-					{
+                    if (r.mode & MODE_WRITE)
+                    {
                         xMOVSS(ptr[&fpuRegs.fpr[reg].UL], xRegisterSSE(i));
                         // get rid of MODE_WRITE since don't want to flush again
                         r.mode &= ~MODE_WRITE;
@@ -525,35 +525,35 @@ void XMM_Regs::deleteFP(int reg, int flush)
 // Step 2: clear 'inuse' field.
 void XMM_Regs::freeReg(u32 xmmreg)
 {
-    _xmmregs& r = xmmregs[xmmreg];
+    _xmmregs &r = xmmregs[xmmreg];
 
     pxAssert(xmmreg < iREGCNT_XMM);
 
     if (!r.inuse) return;
 
-    if (r.mode & MODE_WRITE) 
-	{
-        switch (r.type) 
-		{
-            case XMMTYPE_VFREG: 
-			{
+    if (r.mode & MODE_WRITE)
+    {
+        switch (r.type)
+        {
+            case XMMTYPE_VFREG:
+            {
                 const VURegs *VU = r.VU ? &VU1 : &VU0;
 
-                if (r.mode & MODE_VUXYZ) 
-				{
-                    if (r.mode & MODE_VUZ) 
-					{
+                if (r.mode & MODE_VUXYZ)
+                {
+                    if (r.mode & MODE_VUZ)
+                    {
                         // don't destroy w
                         int t0reg = getAvailableReg();
 
-                        if (t0reg >= 0) 
-						{
+                        if (t0reg >= 0)
+                        {
                             xMOVHL.PS(xRegisterSSE(t0reg), xRegisterSSE(xmmreg));
                             xMOVL.PS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(xmmreg));
                             xMOVSS(ptr[(void *)(VU_VFx_ADDR(r.reg) + 8)], xRegisterSSE(t0reg));
-                        } 
-						else 
-						{
+                        }
+                        else
+                        {
                             // no free reg
                             xMOVL.PS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(xmmreg));
                             xSHUF.PS(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg), 0xc6);
@@ -561,38 +561,38 @@ void XMM_Regs::freeReg(u32 xmmreg)
                             xMOVSS(ptr[(void *)(VU_VFx_ADDR(r.reg) + 8)], xRegisterSSE(xmmreg));
                             xSHUF.PS(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg), 0xc6);
                         }
-                    } 
-					else 
-					{
+                    }
+                    else
+                    {
                         xMOVL.PS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(xmmreg));
                     }
-                } 
-				else 
-				{
+                }
+                else
+                {
                     xMOVAPS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(xmmreg));
                 }
-            } 
-			break;
+            }
+            break;
 
-            case XMMTYPE_ACC: 
-			{
+            case XMMTYPE_ACC:
+            {
                 const VURegs *VU = r.VU ? &VU1 : &VU0;
 
-                if (r.mode & MODE_VUXYZ) 
-				{
-                    if (r.mode & MODE_VUZ) 
-					{
+                if (r.mode & MODE_VUXYZ)
+                {
+                    if (r.mode & MODE_VUZ)
+                    {
                         // don't destroy w
                         int t0reg = getAvailableReg();
 
-                        if (t0reg >= 0) 
-						{
+                        if (t0reg >= 0)
+                        {
                             xMOVHL.PS(xRegisterSSE(t0reg), xRegisterSSE(xmmreg));
                             xMOVL.PS(ptr[(void *)(VU_ACCx_ADDR)], xRegisterSSE(xmmreg));
                             xMOVSS(ptr[(void *)(VU_ACCx_ADDR + 8)], xRegisterSSE(t0reg));
-                        } 
-						else 
-						{
+                        }
+                        else
+                        {
                             // no free reg
                             xMOVL.PS(ptr[(void *)(VU_ACCx_ADDR)], xRegisterSSE(xmmreg));
                             xSHUF.PS(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg), 0xc6);
@@ -600,18 +600,18 @@ void XMM_Regs::freeReg(u32 xmmreg)
                             xMOVSS(ptr[(void *)(VU_ACCx_ADDR + 8)], xRegisterSSE(xmmreg));
                             xSHUF.PS(xRegisterSSE(xmmreg), xRegisterSSE(xmmreg), 0xc6);
                         }
-                    } 
-					else 
-					{
+                    }
+                    else
+                    {
                         xMOVL.PS(ptr[(void *)(VU_ACCx_ADDR)], xRegisterSSE(xmmreg));
                     }
-                } 
-				else 
-				{
+                }
+                else
+                {
                     xMOVAPS(ptr[(void *)(VU_ACCx_ADDR)], xRegisterSSE(xmmreg));
                 }
-            } 
-			break;
+            }
+            break;
 
             case XMMTYPE_GPRREG:
                 pxAssert(XMM_Reg.xmmregs[xmmreg].reg != 0);
@@ -641,9 +641,9 @@ int XMM_Regs::getAvailableReg()
 {
     int num = -1;
 
-    for (u32 i = 0; i < iREGCNT_XMM; ++i) 
-	{
-        if (!xmmregs[i].inuse) 
+    for (u32 i = 0; i < iREGCNT_XMM; ++i)
+    {
+        if (!xmmregs[i].inuse)
         {
             num = i;
             break;
@@ -658,8 +658,8 @@ int XMM_Regs::getFlagCount(u8 flag)
 {
     int num = 0;
 
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].inuse && (xmmregs[i].mode & flag)) ++num;
     }
 
@@ -674,26 +674,26 @@ u8 XMM_Regs::hasFreeReg()
     if (getAvailableReg() >= 0) return 1;
 
     // check for dead regs
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].needed) continue;
-        if (xmmregs[i].type == XMMTYPE_GPRREG) 
-		{
-            if (!EEINST_ISLIVEXMM(XMM_Reg.xmmregs[i].reg)) 
-			{
+        if (xmmregs[i].type == XMMTYPE_GPRREG)
+        {
+            if (!EEINST_ISLIVEXMM(XMM_Reg.xmmregs[i].reg))
+            {
                 return 1;
             }
         }
     }
 
     // check for dead regs
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].needed) continue;
-        if (xmmregs[i].type == XMMTYPE_GPRREG) 
-		{
-            if (!(g_pCurInstInfo->regs[xmmregs[i].reg] & EEINST_USED)) 
-			{
+        if (xmmregs[i].type == XMMTYPE_GPRREG)
+        {
+            if (!(g_pCurInstInfo->regs[xmmregs[i].reg] & EEINST_USED))
+            {
                 return 1;
             }
         }
@@ -704,8 +704,8 @@ u8 XMM_Regs::hasFreeReg()
 // Flush in memory all inuse registers but registers are still valid
 void XMM_Regs::flushRegs()
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].inuse == 0) continue;
 
         pxAssert(xmmregs[i].type != XMMTYPE_TEMP);
@@ -721,8 +721,8 @@ void XMM_Regs::flushRegs()
 // Flush in memory all inuse registers. All registers are invalid.
 void XMM_Regs::freeRegs()
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
         if (xmmregs[i].inuse == 0) continue;
 
         pxAssert(xmmregs[i].type != XMMTYPE_TEMP);
@@ -737,8 +737,8 @@ int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy)
     int t0reg;
     g_xmmtypes[from] = XMMT_INT;
 
-    if (candestroy) 
-	{
+    if (candestroy)
+    {
         if (g_xmmtypes[from] == XMMT_FPS)
             xMOVSS(ptr[(void *)(to)], xRegisterSSE(from));
         else
@@ -747,15 +747,15 @@ int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy)
         xPSRA.D(xRegisterSSE(from), 31);
         xMOVD(ptr[(void *)(to + 4)], xRegisterSSE(from));
         return 1;
-    } 
-	else 
-	{
+    }
+    else
+    {
         // can't destroy and type is int
         pxAssert(g_xmmtypes[from] == XMMT_INT);
 
 
-        if (XMM_Reg.hasFreeReg()) 
-		{
+        if (XMM_Reg.hasFreeReg())
+        {
             XMM_Reg.xmmregs[from].needed = 1;
             t0reg = XMM_Reg.allocTemp(XMMT_INT, -1);
             xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(from));
@@ -766,9 +766,9 @@ int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy)
             // swap xmm regs.. don't ask
             XMM_Reg.xmmregs[t0reg] = XMM_Reg.xmmregs[from];
             XMM_Reg.xmmregs[from].inuse = 0;
-        } 
-		else 
-		{
+        }
+        else
+        {
             xMOVD(ptr[(void *)(to + 4)], xRegisterSSE(from));
             xMOVD(ptr[(void *)(to)], xRegisterSSE(from));
             xSAR(ptr32[(u32 *)(to + 4)], 31);
@@ -820,10 +820,10 @@ u32 _recIsRegWritten(EEINST *pinst, int size, u8 xmmtype, u8 reg)
 {
     u32 inst = 1;
 
-    while (size-- > 0) 
-	{
-        for (u32 i = 0; i < ArraySize(pinst->writeType); ++i) 
-		{
+    while (size-- > 0)
+    {
+        for (u32 i = 0; i < ArraySize(pinst->writeType); ++i)
+        {
             if ((pinst->writeType[i] == xmmtype) && (pinst->writeReg[i] == reg))
                 return inst;
         }
@@ -836,25 +836,25 @@ u32 _recIsRegWritten(EEINST *pinst, int size, u8 xmmtype, u8 reg)
 
 void _recFillRegister(EEINST &pinst, int type, int reg, int write)
 {
-    if (write) 
-	{
+    if (write)
+    {
         for (u32 i = 0; i < ArraySize(pinst.writeType); ++i)
-		{
-            if (pinst.writeType[i] == XMMTYPE_TEMP) 
-			{
+        {
+            if (pinst.writeType[i] == XMMTYPE_TEMP)
+            {
                 pinst.writeType[i] = type;
                 pinst.writeReg[i] = reg;
                 return;
             }
         }
         pxAssume(false);
-    } 
-	else 
-	{
-        for (u32 i = 0; i < ArraySize(pinst.readType); ++i) 
-		{
-            if (pinst.readType[i] == XMMTYPE_TEMP) 
-			{
+    }
+    else
+    {
+        for (u32 i = 0; i < ArraySize(pinst.readType); ++i)
+        {
+            if (pinst.readType[i] == XMMTYPE_TEMP)
+            {
                 pinst.readType[i] = type;
                 pinst.readReg[i] = reg;
                 return;
@@ -869,19 +869,19 @@ int XMM_Regs::allocACC(VURegs *VU, int xmmreg, int mode)
 {
     int readfromreg = -1;
 
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_ACC) continue;
         if (r.VU != XMM_CONV_VU(VU)) continue;
 
-        if (xmmreg >= 0) 
-		{
+        if (xmmreg >= 0)
+        {
             // requested specific reg, so return that instead
-            if ((int)i != xmmreg) 
-			{
+            if ((int)i != xmmreg)
+            {
                 if (r.mode & MODE_READ) readfromreg = i;
                 //if( XMM_Reg.xmmregs[i].mode & MODE_WRITE ) mode |= MODE_WRITE;
                 mode |= r.mode & MODE_WRITE;
@@ -890,8 +890,8 @@ int XMM_Regs::allocACC(VURegs *VU, int xmmreg, int mode)
             }
         }
 
-        if (!(r.mode & MODE_READ) && (mode & MODE_READ)) 
-		{
+        if (!(r.mode & MODE_READ) && (mode & MODE_READ))
+        {
             xMOVAPS(xRegisterSSE(i), ptr[(void *)(VU_ACCx_ADDR)]);
             r.mode |= MODE_READ;
         }
@@ -905,14 +905,14 @@ int XMM_Regs::allocACC(VURegs *VU, int xmmreg, int mode)
         xmmreg = getFreeReg();
     else
         freeReg(xmmreg);
-    _xmmregs& r = xmmregs[xmmreg];
+    _xmmregs &r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
     r.VU = XMM_CONV_VU(VU);
     reg_use(r, XMMTYPE_ACC, 0, mode);
 
-    if (mode & MODE_READ) 
-	{
+    if (mode & MODE_READ)
+    {
         if (readfromreg >= 0)
             xMOVAPS(xRegisterSSE(xmmreg), xRegisterSSE(readfromreg));
         else
@@ -924,9 +924,9 @@ int XMM_Regs::allocACC(VURegs *VU, int xmmreg, int mode)
 
 void XMM_Regs::addNeededVF(int vfreg)
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_VFREG) continue;
@@ -939,9 +939,9 @@ void XMM_Regs::addNeededVF(int vfreg)
 
 void XMM_Regs::addNeededACC()
 {
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if (r.inuse == 0) continue;
         if (r.type != XMMTYPE_ACC) continue;
@@ -956,52 +956,52 @@ void XMM_Regs::deleteVF(int reg, int vu, int flush)
 {
     VURegs *VU = vu ? &VU1 : &VU0;
 
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
-        if (r.inuse && (r.type == XMMTYPE_VFREG) && (r.reg == reg) && (r.VU == vu)) 
-		{
-            switch (flush) 
-		    {
+        if (r.inuse && (r.type == XMMTYPE_VFREG) && (r.reg == reg) && (r.VU == vu))
+        {
+            switch (flush)
+            {
                 case 0:
                     freeReg(i);
                     break;
 
                 case 1:
-                    if (r.mode & MODE_WRITE) 
-					{
+                    if (r.mode & MODE_WRITE)
+                    {
                         pxAssert(reg != 0);
 
-                        if (r.mode & MODE_VUXYZ) 
-						{
-                            if (r.mode & MODE_VUZ) 
-							{
+                        if (r.mode & MODE_VUXYZ)
+                        {
+                            if (r.mode & MODE_VUZ)
+                            {
                                 // xyz, don't destroy w
                                 int t0reg = getAvailableReg();
 
-                                if (t0reg >= 0) 
-								{
+                                if (t0reg >= 0)
+                                {
                                     xMOVHL.PS(xRegisterSSE(t0reg), xRegisterSSE(i));
                                     xMOVL.PS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(i));
                                     xMOVSS(ptr[(void *)(VU_VFx_ADDR(r.reg) + 8)], xRegisterSSE(t0reg));
-                                } 
-								else 
-								{
+                                }
+                                else
+                                {
                                     // no free reg
                                     xMOVL.PS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(i));
                                     xSHUF.PS(xRegisterSSE(i), xRegisterSSE(i), 0xc6);
                                     xMOVSS(ptr[(void *)(VU_VFx_ADDR(r.reg) + 8)], xRegisterSSE(i));
                                     xSHUF.PS(xRegisterSSE(i), xRegisterSSE(i), 0xc6);
                                 }
-                            } 
-							else 
-							{
+                            }
+                            else
+                            {
                                 // xy
                                 xMOVL.PS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(i));
                             }
-                        } 
-						else
+                        }
+                        else
                             xMOVAPS(ptr[(void *)(VU_VFx_ADDR(r.reg))], xRegisterSSE(i));
 
                         // get rid of MODE_WRITE since don't want to flush again
@@ -1024,18 +1024,18 @@ int XMM_Regs::allocVF(VURegs *VU, int xmmreg, int vfreg, int mode)
 {
     int readfromreg = -1;
 
-    for (u32 i = 0; i < iREGCNT_XMM; i++) 
-	{
-        _xmmregs& r = xmmregs[i];
+    for (u32 i = 0; i < iREGCNT_XMM; i++)
+    {
+        _xmmregs &r = xmmregs[i];
 
         if ((r.inuse == 0) || (r.type != XMMTYPE_VFREG) || (r.reg != vfreg) || (r.VU != XMM_CONV_VU(VU)))
             continue;
 
-        if (xmmreg >= 0) 
-		{
+        if (xmmreg >= 0)
+        {
             // requested specific reg, so return that instead
-            if ((int)i != xmmreg) 
-			{
+            if ((int)i != xmmreg)
+            {
                 if (r.mode & MODE_READ) readfromreg = i;
                 //if( XMM_Reg.xmmregs[i].mode & MODE_WRITE ) mode |= MODE_WRITE;
                 mode |= r.mode & MODE_WRITE;
@@ -1046,8 +1046,8 @@ int XMM_Regs::allocVF(VURegs *VU, int xmmreg, int vfreg, int mode)
 
         r.needed = 1;
 
-        if (!(r.mode & MODE_READ) && (mode & MODE_READ)) 
-		{
+        if (!(r.mode & MODE_READ) && (mode & MODE_READ))
+        {
             xMOVAPS(xRegisterSSE(i), ptr[(void *)(VU_VFx_ADDR(vfreg))]);
             r.mode |= MODE_READ;
         }
@@ -1061,14 +1061,14 @@ int XMM_Regs::allocVF(VURegs *VU, int xmmreg, int vfreg, int mode)
         xmmreg = getFreeReg();
     else
         freeReg(xmmreg);
-    _xmmregs& r = xmmregs[xmmreg];
+    _xmmregs &r = xmmregs[xmmreg];
 
     g_xmmtypes[xmmreg] = XMMT_FPS;
     r.VU = XMM_CONV_VU(VU);
     reg_use(r, XMMTYPE_VFREG, vfreg, mode);
 
-    if (mode & MODE_READ) 
-	{
+    if (mode & MODE_READ)
+    {
         if (readfromreg >= 0)
             xMOVAPS(xRegisterSSE(xmmreg), xRegisterSSE(readfromreg));
         else

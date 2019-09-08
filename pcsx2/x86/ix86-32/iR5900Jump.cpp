@@ -24,8 +24,10 @@
 
 using namespace x86Emitter;
 
-namespace R5900 {
-namespace Dynarec {
+namespace R5900
+{
+namespace Dynarec
+{
 namespace OpcodeImpl
 {
 
@@ -47,41 +49,41 @@ REC_SYS_DEL(JALR, _Rd_);
 ////////////////////////////////////////////////////
 void recJ()
 {
-	EE::Profiler.EmitOp(eeOpcode::J);
+    EE::Profiler.EmitOp(eeOpcode::J);
 
-	// SET_FPUSTATE;
-	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
-	recompileNextInstruction(1);
-	if (EmuConfig.Gamefixes.GoemonTlbHack)
-		SetBranchImm(vtlb_V2P(newpc));
-	else
-		SetBranchImm(newpc);
+    // SET_FPUSTATE;
+    u32 newpc = (_Target_ << 2) + (pc & 0xf0000000);
+    recompileNextInstruction(1);
+    if (EmuConfig.Gamefixes.GoemonTlbHack)
+        SetBranchImm(vtlb_V2P(newpc));
+    else
+        SetBranchImm(newpc);
 }
 
 ////////////////////////////////////////////////////
 void recJAL()
 {
-	EE::Profiler.EmitOp(eeOpcode::JAL);
+    EE::Profiler.EmitOp(eeOpcode::JAL);
 
-	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
-	_deleteEEreg(31, 0);
-	if(EE_CONST_PROP)
-	{
-		GPR_SET_CONST(31);
-		g_cpuConstRegs[31].UL[0] = pc + 4;
-		g_cpuConstRegs[31].UL[1] = 0;
-	}
-	else
-	{
-		xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc + 4);
-		xMOV(ptr32[&cpuRegs.GPR.r[31].UL[1]], 0);
-	}
+    u32 newpc = (_Target_ << 2) + (pc & 0xf0000000);
+    _deleteEEreg(31, 0);
+    if (EE_CONST_PROP)
+    {
+        GPR_SET_CONST(31);
+        g_cpuConstRegs[31].UL[0] = pc + 4;
+        g_cpuConstRegs[31].UL[1] = 0;
+    }
+    else
+    {
+        xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc + 4);
+        xMOV(ptr32[&cpuRegs.GPR.r[31].UL[1]], 0);
+    }
 
-	recompileNextInstruction(1);
-	if (EmuConfig.Gamefixes.GoemonTlbHack)
-		SetBranchImm(vtlb_V2P(newpc));
-	else
-		SetBranchImm(newpc);
+    recompileNextInstruction(1);
+    if (EmuConfig.Gamefixes.GoemonTlbHack)
+        SetBranchImm(vtlb_V2P(newpc));
+    else
+        SetBranchImm(newpc);
 }
 
 /*********************************************************
@@ -92,74 +94,79 @@ void recJAL()
 ////////////////////////////////////////////////////
 void recJR()
 {
-	EE::Profiler.EmitOp(eeOpcode::JR);
+    EE::Profiler.EmitOp(eeOpcode::JR);
 
-	SetBranchReg( _Rs_);
+    SetBranchReg(_Rs_);
 }
 
 ////////////////////////////////////////////////////
 void recJALR()
 {
-	EE::Profiler.EmitOp(eeOpcode::JALR);
+    EE::Profiler.EmitOp(eeOpcode::JALR);
 
-	int newpc = pc + 4;
-	X86_Reg.allocReg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
-	_eeMoveGPRtoR(esi, _Rs_);
+    int newpc = pc + 4;
+    X86_Reg.allocReg(esi, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
+    _eeMoveGPRtoR(esi, _Rs_);
 
-	if (EmuConfig.Gamefixes.GoemonTlbHack) {
-		xMOV(ecx, esi);
-		vtlb_DynV2P();
-		xMOV(esi, eax);
-	}
-	// uncomment when there are NO instructions that need to call interpreter
-//	int mmreg;
-//	if( GPR_IS_CONST1(_Rs_) )
-//		xMOV(ptr32[&cpuRegs.pc], g_cpuConstRegs[_Rs_].UL[0] );
-//	else {
-//		int mmreg;
-//
-//		if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
-//			xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
-//		}
-//		else {
-//			xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] )]);
-//			xMOV(ptr[&cpuRegs.pc], eax);
-//		}
-//	}
+    if (EmuConfig.Gamefixes.GoemonTlbHack)
+    {
+        xMOV(ecx, esi);
+        vtlb_DynV2P();
+        xMOV(esi, eax);
+    }
+    // uncomment when there are NO instructions that need to call interpreter
+    //	int mmreg;
+    //	if( GPR_IS_CONST1(_Rs_) )
+    //		xMOV(ptr32[&cpuRegs.pc], g_cpuConstRegs[_Rs_].UL[0] );
+    //	else {
+    //		int mmreg;
+    //
+    //		if( (mmreg = XMM_Reg.checkReg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
+    //			xMOVSS(ptr[&cpuRegs.pc], xRegisterSSE(mmreg));
+    //		}
+    //		else {
+    //			xMOV(eax, ptr[(void*)((int)&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] )]);
+    //			xMOV(ptr[&cpuRegs.pc], eax);
+    //		}
+    //	}
 
-	
-	if ( _Rd_ )
-	{
-		_deleteEEreg(_Rd_, 0);
-		if(EE_CONST_PROP)
-		{
-			GPR_SET_CONST(_Rd_);
-			g_cpuConstRegs[_Rd_].UL[0] = newpc;
-			g_cpuConstRegs[_Rd_].UL[1] = 0;
-		}
-		else
-		{
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], newpc);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
-		}
-	}
 
-	XMM_Reg.clearNeededRegs();
-	recompileNextInstruction(1);
+    if (_Rd_)
+    {
+        _deleteEEreg(_Rd_, 0);
+        if (EE_CONST_PROP)
+        {
+            GPR_SET_CONST(_Rd_);
+            g_cpuConstRegs[_Rd_].UL[0] = newpc;
+            g_cpuConstRegs[_Rd_].UL[1] = 0;
+        }
+        else
+        {
+            xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], newpc);
+            xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
+        }
+    }
 
-	if( X86_Reg.x86regs[esi.GetId()].inuse ) {
-		pxAssert( X86_Reg.x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK );
-		xMOV(ptr[&cpuRegs.pc], esi);
-		X86_Reg.x86regs[esi.GetId()].inuse = 0;
-	}
-	else {
-		xMOV(eax, ptr[&g_recWriteback]);
-		xMOV(ptr[&cpuRegs.pc], eax);
-	}
+    XMM_Reg.clearNeededRegs();
+    recompileNextInstruction(1);
 
-	SetBranchReg(0xffffffff);
+    if (X86_Reg.x86regs[esi.GetId()].inuse)
+    {
+        pxAssert(X86_Reg.x86regs[esi.GetId()].type == X86TYPE_PCWRITEBACK);
+        xMOV(ptr[&cpuRegs.pc], esi);
+        X86_Reg.x86regs[esi.GetId()].inuse = 0;
+    }
+    else
+    {
+        xMOV(eax, ptr[&g_recWriteback]);
+        xMOV(ptr[&cpuRegs.pc], eax);
+    }
+
+    SetBranchReg(0xffffffff);
 }
 
 #endif
 
-} } }
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

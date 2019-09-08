@@ -84,22 +84,21 @@
 ////////////////////////////////////////////////////////////////////////////////
 //   X86 (32-bit) Register Allocation Tools
 
-enum x86type
-{
-	X86TYPE_TEMP = 0,
-	X86TYPE_GPR = 1,
-	X86TYPE_VI = 2,
-	X86TYPE_MEMOFFSET = 3,
-	X86TYPE_VIMEMOFFSET = 4,
-	X86TYPE_VUQREAD = 5,
-	X86TYPE_VUPREAD = 6,
-	X86TYPE_VUQWRITE = 7,
-	X86TYPE_VUPWRITE = 8,
-	 X86TYPE_PSX = 9,
-	X86TYPE_PCWRITEBACK = 10,
-	X86TYPE_VUJUMP = 12, // jump from random mem (g_recWriteback)
-	X86TYPE_VITEMP = 13,
-	X86TYPE_FNARG = 14 // function parameter, max is 4
+enum x86type {
+    X86TYPE_TEMP = 0,
+    X86TYPE_GPR = 1,
+    X86TYPE_VI = 2,
+    X86TYPE_MEMOFFSET = 3,
+    X86TYPE_VIMEMOFFSET = 4,
+    X86TYPE_VUQREAD = 5,
+    X86TYPE_VUPREAD = 6,
+    X86TYPE_VUQWRITE = 7,
+    X86TYPE_VUPWRITE = 8,
+    X86TYPE_PSX = 9,
+    X86TYPE_PCWRITEBACK = 10,
+    X86TYPE_VUJUMP = 12, // jump from random mem (g_recWriteback)
+    X86TYPE_VITEMP = 13,
+    X86TYPE_FNARG = 14 // function parameter, max is 4
 };
 
 #define X86TYPE_VU1 0x80
@@ -123,27 +122,27 @@ struct _x86regs
 
 class X86_Regs
 {
-	private:
-		uptr getAddr(x86type type, int reg);
-		// X86 caching
-		int g_x86checknext;
-		std::array<_x86regs, iREGCNT_GPR> s_saveX86regs;
+private:
+    uptr getAddr(x86type type, int reg);
+    // X86 caching
+    int g_x86checknext;
+    std::array<_x86regs, iREGCNT_GPR> s_saveX86regs;
 
-	public:
-		std::array<_x86regs, iREGCNT_GPR> x86regs;
-		__forceinline void backup() { s_saveX86regs = x86regs; }
-		__forceinline void restore() { x86regs = s_saveX86regs; }
+public:
+    std::array<_x86regs, iREGCNT_GPR> x86regs;
+    __forceinline void backup() { s_saveX86regs = x86regs; }
+    __forceinline void restore() { x86regs = s_saveX86regs; }
 
-		void init();
-		int getFreeReg(int mode);
-		int allocReg(x86Emitter::xRegisterLong x86reg, x86type type, int reg, int mode);
-		void deleteReg(x86type type, int reg, int flush);
-		int checkReg(x86type type, int reg, int mode);
-		void addNeededReg(x86type type, int reg);
-		void clearNeededRegs();
-		void freeReg(const x86Emitter::xRegisterLong &x86reg);
-		void freeReg(int x86reg);
-		void freeRegs();
+    void init();
+    int getFreeReg(int mode);
+    int allocReg(x86Emitter::xRegisterLong x86reg, x86type type, int reg, int mode);
+    void deleteReg(x86type type, int reg, int flush);
+    int checkReg(x86type type, int reg, int mode);
+    void addNeededReg(x86type type, int reg);
+    void clearNeededRegs();
+    void freeReg(const x86Emitter::xRegisterLong &x86reg);
+    void freeReg(int x86reg);
+    void freeRegs();
 };
 extern X86_Regs X86_Reg;
 
@@ -156,14 +155,13 @@ void _flushConstReg(int reg);
 
 #define XMM_CONV_VU(VU) (VU == &VU1)
 
-enum xmmtype
-{
-	XMMTYPE_TEMP = 0, // has to be 0
-	XMMTYPE_VFREG = 1,
-	XMMTYPE_ACC = 2,
-	XMMTYPE_FPREG = 3,
-	XMMTYPE_FPACC = 4,
-	XMMTYPE_GPRREG = 5
+enum xmmtype {
+    XMMTYPE_TEMP = 0, // has to be 0
+    XMMTYPE_VFREG = 1,
+    XMMTYPE_ACC = 2,
+    XMMTYPE_FPREG = 3,
+    XMMTYPE_FPACC = 4,
+    XMMTYPE_GPRREG = 5
 };
 
 // lo and hi regs
@@ -178,83 +176,83 @@ struct _xmmregs
     xmmtype type;
     u8 mode;
     bool needed;
-    u8 VU; // 0 = VU0, 1 = VU1
+    u8 VU;       // 0 = VU0, 1 = VU1
     u16 counter; // How often it is used.
 };
 
 class XMM_Regs
 {
-	private:
-		u16 g_xmmAllocCounter = 0;
-		int s_xmmchecknext = 0;
-		std::array<_xmmregs, iREGCNT_XMM> s_saveXMMregs;
+private:
+    u16 g_xmmAllocCounter = 0;
+    int s_xmmchecknext = 0;
+    std::array<_xmmregs, iREGCNT_XMM> s_saveXMMregs;
 
-		__fi void *GetAddr(_xmmregs &r);
+    __fi void *GetAddr(_xmmregs &r);
 
-	public:
-		std::array<_xmmregs, iREGCNT_XMM> xmmregs;
+public:
+    std::array<_xmmregs, iREGCNT_XMM> xmmregs;
 
-		__forceinline void backup() { s_saveXMMregs = xmmregs; }
-		__forceinline void restore() { xmmregs = s_saveXMMregs; }
+    __forceinline void backup() { s_saveXMMregs = xmmregs; }
+    __forceinline void restore() { xmmregs = s_saveXMMregs; }
 
-		__forceinline void reg_reuse(_xmmregs &r, u8 the_mode)
-		{
-			r.mode |= the_mode;
-			r.needed = 1;
-			r.counter = g_xmmAllocCounter++; // update counter
-		}
+    __forceinline void reg_reuse(_xmmregs &r, u8 the_mode)
+    {
+        r.mode |= the_mode;
+        r.needed = 1;
+        r.counter = g_xmmAllocCounter++; // update counter
+    }
 
-		__forceinline void reg_use(_xmmregs &r, xmmtype the_type, u8 the_reg, u8 the_mode)
-		{
-			r.inuse = 1;
-			r.type = the_type;
-			r.reg = the_reg;
-			r.mode = the_mode;
-			r.needed = 1;
-			r.counter = g_xmmAllocCounter++;
-		}
+    __forceinline void reg_use(_xmmregs &r, xmmtype the_type, u8 the_reg, u8 the_mode)
+    {
+        r.inuse = 1;
+        r.type = the_type;
+        r.reg = the_reg;
+        r.mode = the_mode;
+        r.needed = 1;
+        r.counter = g_xmmAllocCounter++;
+    }
 
-		void init();
+    void init();
 
-		// Is there a free reg?
-		u8 hasFreeReg();
-		// Get a free reg's index.
-		int getFreeReg();
-		// Free a reg.
-		void freeReg(u32 xmmreg);
-		// Free all of them.
-		void freeRegs();
+    // Is there a free reg?
+    u8 hasFreeReg();
+    // Get a free reg's index.
+    int getFreeReg();
+    // Free a reg.
+    void freeReg(u32 xmmreg);
+    // Free all of them.
+    void freeRegs();
 
-		int allocTemp(XMMSSEType type, int xmmreg);
+    int allocTemp(XMMSSEType type, int xmmreg);
 
-		int checkReg(int type, int reg, int mode);
-		int getFlagCount(u8 flag);
-		void flushRegs();
-		void clearNeededRegs();
-		int getAvailableReg();
+    int checkReg(int type, int reg, int mode);
+    int getFlagCount(u8 flag);
+    void flushRegs();
+    void clearNeededRegs();
+    int getAvailableReg();
 
-		int allocFP(int xmmreg, int fpreg, int mode);
-		void addNeededFP(int fpreg);
-		void deleteFP(int reg, int flush);
+    int allocFP(int xmmreg, int fpreg, int mode);
+    void addNeededFP(int fpreg);
+    void deleteFP(int reg, int flush);
 
-		int allocFPACC(int xmmreg, int mode);
-		void addNeededFPACC();
+    int allocFPACC(int xmmreg, int mode);
+    void addNeededFPACC();
 
-		int allocGPR(int xmmreg, int gprreg, int mode);
-		void addNeededGPR(int gprreg);
-		void deleteGPR(int reg, int flush);
+    int allocGPR(int xmmreg, int gprreg, int mode);
+    void addNeededGPR(int gprreg);
+    void deleteGPR(int reg, int flush);
 
-		// allocates only if later insts use XMM, otherwise checks.
-		int allocCheckGPR(int gprreg, int mode);
-		int allocCheckFPU(int fpureg, int mode);
+    // allocates only if later insts use XMM, otherwise checks.
+    int allocCheckGPR(int gprreg, int mode);
+    int allocCheckFPU(int fpureg, int mode);
 
 #ifndef DISABLE_SVU
-		int allocVF(VURegs *VU, int xmmreg, int vfreg, int mode);
-		void addNeededVF(int vfreg);
-		void deleteVF(int reg, int vu, int flush);
+    int allocVF(VURegs *VU, int xmmreg, int vfreg, int mode);
+    void addNeededVF(int vfreg);
+    void deleteVF(int reg, int vu, int flush);
 
-		int allocACC(VURegs *VU, int xmmreg, int mode);
-		void addNeededACC();
+    int allocACC(VURegs *VU, int xmmreg, int mode);
+    void addNeededACC();
 #endif
 };
 

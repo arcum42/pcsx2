@@ -30,7 +30,7 @@ X86_Regs X86_Reg;
 
 void X86_Regs::init()
 {
-	x86regs.fill({0});
+    x86regs.fill({0});
     g_x86AllocCounter = 0;
     g_x86checknext = 0;
 }
@@ -40,7 +40,7 @@ uptr X86_Regs::getAddr(x86type type, int reg)
     uptr ret = 0;
 
     switch (type & ~X86TYPE_VU1)
-	{
+    {
         case X86TYPE_GPR:
             ret = (uptr)&cpuRegs.GPR.r[reg];
             break;
@@ -113,7 +113,7 @@ int X86_Regs::getFreeReg(int mode)
     int maxreg = (mode & MODE_8BITREG) ? 4 : iREGCNT_GPR;
 
     for (uint i = 0; i < iREGCNT_GPR; i++)
-	{
+    {
         int reg = (g_x86checknext + i) % iREGCNT_GPR;
 
         if (reg == 0 || reg == esp.GetId() || reg == ebp.GetId()) continue;
@@ -121,22 +121,22 @@ int X86_Regs::getFreeReg(int mode)
         //if( (mode&MODE_NOFRAME) && reg==EBP ) continue;
 
         if (x86regs[reg].inuse == 0)
-		{
+        {
             g_x86checknext = (reg + 1) % iREGCNT_GPR;
             return reg;
         }
     }
 
     for (int i = 1; i < maxreg; i++)
-	{
+    {
         if (i == esp.GetId() || i == ebp.GetId()) continue;
         //if( (mode&MODE_NOFRAME) && i==EBP ) continue;
 
         if (x86regs[i].needed) continue;
         if (x86regs[i].type != X86TYPE_TEMP)
-		{
+        {
             if (x86regs[i].counter < bestcount)
-			{
+            {
                 tempi = i;
                 bestcount = x86regs[i].counter;
             }
@@ -148,7 +148,7 @@ int X86_Regs::getFreeReg(int mode)
     }
 
     if (tempi != -1)
-	{
+    {
         freeReg(tempi);
         return tempi;
     }
@@ -166,12 +166,12 @@ void _flushCachedRegs()
 void _flushConstReg(int reg)
 {
     if (GPR_IS_CONST1(reg) && !(g_cpuFlushedConstReg & (1 << reg)))
-	{
+    {
         xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[0]], g_cpuConstRegs[reg].UL[0]);
         xMOV(ptr32[&cpuRegs.GPR.r[reg].UL[1]], g_cpuConstRegs[reg].UL[1]);
         g_cpuFlushedConstReg |= (1 << reg);
 
-        if (reg == 0)  DevCon.Warning("Flushing r0!");
+        if (reg == 0) DevCon.Warning("Flushing r0!");
     }
 }
 
@@ -186,67 +186,67 @@ void _flushConstRegs()
 
     // flush 0 and -1 first
     // ignore r0
-	for (int i = 1; i < 32; i++)
-	{
-		for(int j = 0; j < 2; j++)
-		{
-			if (!GPR_IS_CONST1(i) || g_cpuFlushedConstReg & (1 << i)) continue;
-			if (g_cpuConstRegs[i].SL[j] != 0)  continue;
+    for (int i = 1; i < 32; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            if (!GPR_IS_CONST1(i) || g_cpuFlushedConstReg & (1 << i)) continue;
+            if (g_cpuConstRegs[i].SL[j] != 0) continue;
 
-			if (eaxval != 0)
-			{
-				xXOR(eax, eax);
-				eaxval = 0;
-			}
+            if (eaxval != 0)
+            {
+                xXOR(eax, eax);
+                eaxval = 0;
+            }
 
-			xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
-			done[j] |= 1 << i;
-			zero_cnt++;
-		}
-	}
+            xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
+            done[j] |= 1 << i;
+            zero_cnt++;
+        }
+    }
 
     rewindPtr = x86Ptr;
 
-	for (int i = 1; i < 32; i++)
-	{
-		for(int j = 0; j < 2; j++)
-		{
-			if (!GPR_IS_CONST1(i) || g_cpuFlushedConstReg & (1 << i)) continue;
-			if (g_cpuConstRegs[i].SL[j] != -1) continue;
+    for (int i = 1; i < 32; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            if (!GPR_IS_CONST1(i) || g_cpuFlushedConstReg & (1 << i)) continue;
+            if (g_cpuConstRegs[i].SL[j] != -1) continue;
 
-			if (eaxval > 0)
-			{
-				xXOR(eax, eax);
-				eaxval = 0;
-			}
-			if (eaxval == 0)
-			{
-				xNOT(eax);
-				eaxval = -1;
-			}
+            if (eaxval > 0)
+            {
+                xXOR(eax, eax);
+                eaxval = 0;
+            }
+            if (eaxval == 0)
+            {
+                xNOT(eax);
+                eaxval = -1;
+            }
 
-			xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
-			done[j + 2] |= 1 << i;
-			minusone_cnt++;
-		}
-	}
+            xMOV(ptr[&cpuRegs.GPR.r[i].SL[j]], eax);
+            done[j + 2] |= 1 << i;
+            minusone_cnt++;
+        }
+    }
 
     if (minusone_cnt == 1 && !zero_cnt)
-	{ // not worth it for one byte
+    { // not worth it for one byte
         x86SetPtr(rewindPtr);
-    } 
-	else
-	{
+    }
+    else
+    {
         done[0] |= done[2];
         done[1] |= done[3];
     }
 
     for (int i = 1; i < 32; ++i)
-	{
+    {
         if (GPR_IS_CONST1(i))
-		{
+        {
             if (!(g_cpuFlushedConstReg & (1 << i)))
-			{
+            {
                 if (!(done[0] & (1 << i)))
                     xMOV(ptr32[&cpuRegs.GPR.r[i].UL[0]], g_cpuConstRegs[i].UL[0]);
                 if (!(done[1] & (1 << i)))
@@ -273,24 +273,24 @@ int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
     int readfromreg = -1;
 
     if (type != X86TYPE_TEMP)
-	{
+    {
         if (maxreg < iREGCNT_GPR)
-		{ // make sure reg isn't in the higher regs
+        { // make sure reg isn't in the higher regs
 
             for (u32 i = maxreg; i < iREGCNT_GPR; ++i)
-			{
-				_x86regs &r = x86regs[i];
+            {
+                _x86regs &r = x86regs[i];
 
                 if (!r.inuse || r.type != type || r.reg != reg) continue;
 
                 if (mode & MODE_READ)
-				{
+                {
                     readfromreg = i;
                     r.inuse = 0;
                     break;
                 }
-				else if (mode & MODE_WRITE)
-				{
+                else if (mode & MODE_WRITE)
+                {
                     r.inuse = 0;
                     break;
                 }
@@ -298,17 +298,17 @@ int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
         }
 
         for (u32 i = 1; i < maxreg; i++)
-		{
-			_x86regs &r = x86regs[i];
+        {
+            _x86regs &r = x86regs[i];
 
             if ((int)i == esp.GetId() || (int)i == ebp.GetId()) continue;
             if (!r.inuse || r.type != type || r.reg != reg) continue;
 
             if (!x86reg.IsEmpty())
-			{
+            {
                 // requested specific reg, so return that instead
                 if (i != (uint)x86reg.GetId())
-				{
+                {
                     if (r.mode & MODE_READ) readfromreg = i;
 
                     mode |= r.mode & MODE_WRITE;
@@ -318,7 +318,7 @@ int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
             }
 
             if (type != X86TYPE_TEMP && !(r.mode & MODE_READ) && (mode & MODE_READ))
-			{
+            {
                 if (type == X86TYPE_GPR) _flushConstReg(reg);
 
                 if (X86_ISVI(type) && reg < 16)
@@ -339,7 +339,7 @@ int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
         x86reg = xRegisterLong(getFreeReg(oldmode));
     else
         freeReg(x86reg);
-	_x86regs &r = x86regs[x86reg.GetId()];
+    _x86regs &r = x86regs[x86reg.GetId()];
 
     r.type = type;
     r.reg = reg;
@@ -348,19 +348,19 @@ int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
     r.inuse = 1;
 
     if (mode & MODE_READ)
-	{
+    {
         if (readfromreg >= 0)
             xMOV(x86reg, xRegister32(readfromreg));
         else
-		{
+        {
             if (type == X86TYPE_GPR)
-			{
+            {
                 if (reg == 0)
-				{
+                {
                     xXOR(x86reg, x86reg);
                 }
-				else
-				{
+                else
+                {
                     _flushConstReg(reg);
                     XMM_Reg.deleteGPR(reg, 1);
 
@@ -368,17 +368,17 @@ int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
 
                     XMM_Reg.deleteGPR(reg, 0);
                 }
-            } 
-			else
-			{
+            }
+            else
+            {
                 if (X86_ISVI(type) && reg < 16)
-				{
+                {
                     if (reg == 0)
                         xXOR(x86reg, x86reg);
                     else
                         xMOVZX(x86reg, ptr16[(u16 *)(getAddr(type, reg))]);
                 }
-				else
+                else
                     xMOV(x86reg, ptr[(void *)(getAddr(type, reg))]);
             }
         }
@@ -392,13 +392,13 @@ int X86_Regs::allocReg(xRegisterLong x86reg, x86type type, int reg, int mode)
 int X86_Regs::checkReg(x86type type, int reg, int mode)
 {
     for (u32 i = 0; i < iREGCNT_GPR; i++)
-	{
-		_x86regs &r = x86regs[i];
+    {
+        _x86regs &r = x86regs[i];
 
         if (r.inuse && r.reg == reg && r.type == type)
-		{
-            if (!(r.mode & MODE_READ) && (mode & MODE_READ)) 
-			{
+        {
+            if (!(r.mode & MODE_READ) && (mode & MODE_READ))
+            {
                 if (X86_ISVI(type))
                     xMOVZX(xRegister32(i), ptr16[(u16 *)(getAddr(type, reg))]);
                 else
@@ -418,8 +418,8 @@ int X86_Regs::checkReg(x86type type, int reg, int mode)
 void X86_Regs::addNeededReg(x86type type, int reg)
 {
     for (u32 i = 0; i < iREGCNT_GPR; i++)
-	{
-		_x86regs &r = x86regs[i];
+    {
+        _x86regs &r = x86regs[i];
 
         if (!r.inuse || r.reg != reg || r.type != type) continue;
 
@@ -431,11 +431,11 @@ void X86_Regs::addNeededReg(x86type type, int reg)
 void X86_Regs::clearNeededRegs()
 {
     for (u32 i = 0; i < iREGCNT_GPR; i++)
-	{
-		_x86regs &r = x86regs[i];
+    {
+        _x86regs &r = x86regs[i];
 
         if (r.needed)
-		{
+        {
             if (r.inuse && (r.mode & MODE_WRITE)) r.mode |= MODE_READ;
         }
 
@@ -446,20 +446,20 @@ void X86_Regs::clearNeededRegs()
 void X86_Regs::deleteReg(x86type type, int reg, int flush)
 {
     for (u32 i = 0; i < iREGCNT_GPR; i++)
-	{
-		_x86regs &r = x86regs[i];
+    {
+        _x86regs &r = x86regs[i];
 
         if (r.inuse && r.reg == reg && r.type == type)
-		{
+        {
             switch (flush)
-			{
+            {
                 case 0:
                     freeReg(i);
                     break;
 
                 case 1:
                     if (r.mode & MODE_WRITE)
-					{
+                    {
                         if (X86_ISVI(type) && r.reg < 16)
                             xMOV(ptr[(void *)(getAddr(type, r.reg))], xRegister16(i));
                         else
@@ -487,19 +487,19 @@ void X86_Regs::freeReg(const x86Emitter::xRegisterLong &x86reg)
 
 void X86_Regs::freeReg(int x86reg)
 {
-	_x86regs &r = x86regs[x86reg];
+    _x86regs &r = x86regs[x86reg];
 
     pxAssert(x86reg >= 0 && x86reg < (int)iREGCNT_GPR);
 
     if (r.inuse && (r.mode & MODE_WRITE))
-	{
+    {
         r.mode &= ~MODE_WRITE;
 
         if (X86_ISVI(r.type) && r.reg < 16)
-		{
+        {
             xMOV(ptr[(void *)(getAddr(r.type, r.reg))], xRegister16(x86reg));
         }
-		else
+        else
             xMOV(ptr[(void *)(getAddr(r.type, r.reg))], xRegister32(x86reg));
     }
 

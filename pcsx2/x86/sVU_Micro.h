@@ -19,35 +19,36 @@
 
 extern u32 vudump;
 
-u32 GetVIAddr(VURegs * VU, int reg, int read, int info); // returns the correct VI addr
-void recUpdateFlags(VURegs * VU, int reg, int info);
+u32 GetVIAddr(VURegs *VU, int reg, int read, int info); // returns the correct VI addr
+void recUpdateFlags(VURegs *VU, int reg, int info);
 
-void _recvuTestPipes(VURegs * VU);
-void _recvuFlushFDIV(VURegs * VU);
-void _recvuTestUpperStalls(VURegs * VU, _VURegsNum *VUregsn);
-void _recvuTestLowerStalls(VURegs * VU, _VURegsNum *VUregsn);
-void _recvuAddUpperStalls(VURegs * VU, _VURegsNum *VUregsn);
-void _recvuAddLowerStalls(VURegs * VU, _VURegsNum *VUregsn);
+void _recvuTestPipes(VURegs *VU);
+void _recvuFlushFDIV(VURegs *VU);
+void _recvuTestUpperStalls(VURegs *VU, _VURegsNum *VUregsn);
+void _recvuTestLowerStalls(VURegs *VU, _VURegsNum *VUregsn);
+void _recvuAddUpperStalls(VURegs *VU, _VURegsNum *VUregsn);
+void _recvuAddLowerStalls(VURegs *VU, _VURegsNum *VUregsn);
 
 #define VUOP_READ 2
 #define VUOP_WRITE 4
 
 // save on mem
-struct _vuopinfo {
-	int cycle;
-	int cycles;
-	u8 statusflag;
-	u8 macflag;
-	u8 clipflag;
-	u8 dummy;
-	u8 q;
-	u8 p;
-	u16 pqinst; // bit of instruction specifying index (srec only)
+struct _vuopinfo
+{
+    int cycle;
+    int cycles;
+    u8 statusflag;
+    u8 macflag;
+    u8 clipflag;
+    u8 dummy;
+    u8 q;
+    u8 p;
+    u16 pqinst; // bit of instruction specifying index (srec only)
 };
 
-void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum* pCodeRegs);
-int eeVURecompileCode(VURegs *VU, _VURegsNum* regs); // allocates all the necessary regs and returns the indices
-void __fastcall VU1XGKICK_MTGSTransfer(u32 addr); // used for MTGS in XGKICK
+void SuperVUAnalyzeOp(VURegs *VU, _vuopinfo *info, _VURegsNum *pCodeRegs);
+int eeVURecompileCode(VURegs *VU, _VURegsNum *regs); // allocates all the necessary regs and returns the indices
+void __fastcall VU1XGKICK_MTGSTransfer(u32 addr);    // used for MTGS in XGKICK
 
 extern int vucycle;
 typedef void (*vFloat)(int regd, int regTemp);
@@ -61,7 +62,7 @@ extern const __aligned16 u32 s_mask[4];
 extern const __aligned16 u32 s_expmask[4];
 extern const __aligned16 u32 const_clip[8];
 
-u32 GetVIAddr(VURegs * VU, int reg, int read, int info);
+u32 GetVIAddr(VURegs *VU, int reg, int read, int info);
 int _vuGetTempXMMreg(int info);
 void vuFloat(int info, int regd, int XYZW);
 void vuFloat_useEAX(int regd, int regTemp, int XYZW);
@@ -71,23 +72,24 @@ void vuFloat4(int regd, int regTemp, int XYZW);
 void vuFloat4_useEAX(int regd, int regTemp, int XYZW);
 void vuFloat5(int regd, int regTemp, int XYZW);
 void vuFloat5_useEAX(int regd, int regTemp, int XYZW);
-void _vuFlipRegSS(VURegs * VU, int reg);
+void _vuFlipRegSS(VURegs *VU, int reg);
 void _vuFlipRegSS_xyzw(int reg, int xyzw);
-void _vuMoveSS(VURegs * VU, int dstreg, int srcreg);
+void _vuMoveSS(VURegs *VU, int dstreg, int srcreg);
 void _unpackVF_xyzw(int dstreg, int srcreg, int xyzw);
 void _unpackVFSS_xyzw(int dstreg, int srcreg, int xyzw);
 void VU_MERGE_REGS_CUSTOM(int dest, int src, int xyzw);
 void VU_MERGE_REGS_SAFE(int dest, int src, int xyzw);
-#define VU_MERGE_REGS(dest, src) { \
-	VU_MERGE_REGS_CUSTOM(dest, src, _X_Y_Z_W); \
-}
+#define VU_MERGE_REGS(dest, src)                   \
+    {                                              \
+        VU_MERGE_REGS_CUSTOM(dest, src, _X_Y_Z_W); \
+    }
 
 // use for allocating vi regs
-#define ALLOCTEMPX86(mode) X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
-#define ALLOCVI(vi, mode) X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI|((VU==&VU1)?X86TYPE_VU1:0)), vi, ((info&PROCESS_VU_SUPER)?0:MODE_NOFRAME)|mode)
-#define ADD_VI_NEEDED(vi) X86_Reg.addNeededReg((x86type)(X86TYPE_VI|(VU==&VU1?X86TYPE_VU1:0)), vi);
+#define ALLOCTEMPX86(mode) X86_Reg.allocReg(xEmptyReg, X86TYPE_TEMP, 0, ((info & PROCESS_VU_SUPER) ? 0 : MODE_NOFRAME) | mode)
+#define ALLOCVI(vi, mode) X86_Reg.allocReg(xEmptyReg, (x86type)(X86TYPE_VI | ((VU == &VU1) ? X86TYPE_VU1 : 0)), vi, ((info & PROCESS_VU_SUPER) ? 0 : MODE_NOFRAME) | mode)
+#define ADD_VI_NEEDED(vi) X86_Reg.addNeededReg((x86type)(X86TYPE_VI | (VU == &VU1 ? X86TYPE_VU1 : 0)), vi);
 
-#define SWAP(x, y) *(u32*)&y ^= *(u32*)&x ^= *(u32*)&y ^= *(u32*)&x;
+#define SWAP(x, y) *(u32 *)&y ^= *(u32 *)&x ^= *(u32 *)&y ^= *(u32 *)&x;
 
 /*****************************************
    VU Micromode Upper instructions
@@ -263,5 +265,4 @@ void recVUMI_EEXP(VURegs *vuRegs, int info);
 void recVUMI_XGKICK(VURegs *vuRegs, int info);
 void recVUMI_XTOP(VURegs *vuRegs, int info);
 void recVUMI_XITOP(VURegs *vuRegs, int info);
-void recVUMI_XTOP( VURegs *VU , int info);
-
+void recVUMI_XTOP(VURegs *VU, int info);
