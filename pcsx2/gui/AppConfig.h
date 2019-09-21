@@ -151,7 +151,8 @@ public:
 				UseDefaultLogs:1,
 				UseDefaultLangs:1,
 				UseDefaultCheats:1,
-				UseDefaultCheatsWS:1;
+				UseDefaultCheatsWS:1,
+				Unused:24;
 		BITFIELD_END
 
 		wxDirName

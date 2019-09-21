@@ -125,8 +125,8 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	};
 
 
-	m_panel_RecEE	= &(new pxRadioPanel( this, tbl_CpuTypes_EE ))->SetDefaultItem( 1 );
-	m_panel_RecIOP	= &(new pxRadioPanel( this, tbl_CpuTypes_IOP ))->SetDefaultItem( 1 );
+	m_panel_RecEE	= &(new pxRadioPanel( this, tbl_CpuTypes_EE ))->SetDefaultItem( 0 );
+	m_panel_RecIOP	= &(new pxRadioPanel( this, tbl_CpuTypes_IOP ))->SetDefaultItem( 0 );
 
 	m_panel_RecEE->Realize();
 	m_panel_RecIOP->Realize();
@@ -180,8 +180,8 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 		.SetToolTip(_("Vector Unit Interpreter. Slow and not very compatible. Only use for diagnostics."))
 	};
 
-	m_panel_VU0 = &(new pxRadioPanel( this, tbl_CpuTypes_VU ))	->SetDefaultItem( 1 );
-	m_panel_VU1 = &(new pxRadioPanel( this, tbl_CpuTypes_VU ))	->SetDefaultItem( 1 );
+	m_panel_VU0 = &(new pxRadioPanel( this, tbl_CpuTypes_VU ))	->SetDefaultItem( 0 );
+	m_panel_VU1 = &(new pxRadioPanel( this, tbl_CpuTypes_VU ))	->SetDefaultItem( 0 );
 
 	m_panel_VU0->Realize();
 	m_panel_VU1->Realize();

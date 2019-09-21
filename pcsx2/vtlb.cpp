@@ -101,24 +101,21 @@ DataType __fastcall vtlb_memRead(u32 addr)
 
 	if (!(ppf<0))
 	{
-		if (!CHECK_EEREC) 
+		if(CHECK_CACHE && CheckCache(addr)) 
 		{
-			if(CHECK_CACHE && CheckCache(addr)) 
+			switch( DataSize )
 			{
-				switch( DataSize )
-				{
-					case 8: 
-						return readCache8(addr);
-						break;
-					case 16: 
-						return readCache16(addr);
-						break;
-					case 32: 
-						return readCache32(addr);
-						break;
+				case 8: 
+					return readCache8(addr);
+					break;
+				case 16: 
+					return readCache16(addr);
+					break;
+				case 32: 
+					return readCache32(addr);
+					break;
 
-					jNO_DEFAULT;
-				}
+				jNO_DEFAULT;
 			}
 		}
 
@@ -156,12 +153,10 @@ void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 
 	if (!(ppf<0))
 	{
-		if (!CHECK_EEREC) {
-			if(CHECK_CACHE && CheckCache(mem)) 
-			{
-				*out = readCache64(mem);
-				return;
-			}
+		if(CHECK_CACHE && CheckCache(mem)) 
+		{
+			*out = readCache64(mem);
+			return;
 		}
 
 		*out = *(mem64_t*)ppf;
@@ -183,14 +178,11 @@ void __fastcall vtlb_memRead128(u32 mem, mem128_t *out)
 
 	if (!(ppf<0))
 	{
-		if (!CHECK_EEREC) 
+		if(CHECK_CACHE && CheckCache(mem)) 
 		{
-			if(CHECK_CACHE && CheckCache(mem)) 
-			{
-				out->lo = readCache64(mem);
-				out->hi = readCache64(mem+8);
-				return;
-			}
+			out->lo = readCache64(mem);
+			out->hi = readCache64(mem+8);
+			return;
 		}
 
 		CopyQWC(out,(void*)ppf);
@@ -214,23 +206,20 @@ void __fastcall vtlb_memWrite(u32 addr, DataType data)
 	uptr vmv=vtlbdata.vmap[addr>>VTLB_PAGE_BITS];
 	sptr ppf=addr+vmv;
 	if (!(ppf<0))
-	{		
-		if (!CHECK_EEREC) 
+	{
+		if(CHECK_CACHE && CheckCache(addr)) 
 		{
-			if(CHECK_CACHE && CheckCache(addr)) 
+			switch( DataSize )
 			{
-				switch( DataSize )
-				{
-				case 8: 
-					writeCache8(addr, data);
-					return;
-				case 16:
-					writeCache16(addr, data);
-					return;
-				case 32:
-					writeCache32(addr, data);
-					return;
-				}
+			case 8: 
+				writeCache8(addr, data);
+				return;
+			case 16:
+				writeCache16(addr, data);
+				return;
+			case 32:
+				writeCache32(addr, data);
+				return;
 			}
 		}
 
@@ -262,14 +251,11 @@ void __fastcall vtlb_memWrite64(u32 mem, const mem64_t* value)
 	uptr vmv=vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 	sptr ppf=mem+vmv;
 	if (!(ppf<0))
-	{		
-		if (!CHECK_EEREC) 
+	{
+		if(CHECK_CACHE && CheckCache(mem)) 
 		{
-			if(CHECK_CACHE && CheckCache(mem)) 
-			{
-				writeCache64(mem, *value);
-				return;
-			}
+			writeCache64(mem, *value);
+			return;
 		}
 
 		*(mem64_t*)ppf = *value;
@@ -291,13 +277,10 @@ void __fastcall vtlb_memWrite128(u32 mem, const mem128_t *value)
 	sptr ppf=mem+vmv;
 	if (!(ppf<0))
 	{
-		if (!CHECK_EEREC) 
+		if(CHECK_CACHE && CheckCache(mem)) 
 		{
-			if(CHECK_CACHE && CheckCache(mem)) 
-			{
-				writeCache128(mem, value);
-				return;
-			}
+			writeCache128(mem, value);
+			return;
 		}
 
 		CopyQWC((void*)ppf, value);

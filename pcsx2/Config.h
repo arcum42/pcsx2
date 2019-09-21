@@ -513,11 +513,7 @@ TraceLogFilters&				SetTraceConfig();
 //
 
 // ------------ CPU / Recompiler Options ---------------
-
-#define THREAD_VU1					false
-#define CHECK_EEREC					false
 #define CHECK_CACHE					(EmuConfig.Cpu.Recompiler.EnableEECache)
-#define CHECK_IOPREC				false
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
@@ -547,33 +543,6 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_FPU_FULL				(EmuConfig.Cpu.Recompiler.fpuFullMode)
 
 //------------ EE Recompiler defines - Comment to disable a recompiler ---------------
-
-#define SHIFT_RECOMPILE		// Speed majorly reduced if disabled
-#define BRANCH_RECOMPILE	// Speed extremely reduced if disabled - more then shift
-
-// Disabling all the recompilers in this block is interesting, as it still runs at a reasonable rate.
-// It also adds a few glitches. Really reminds me of the old Linux 64-bit version. --arcum42
-#define ARITHMETICIMM_RECOMPILE
-#define ARITHMETIC_RECOMPILE
-#define MULTDIV_RECOMPILE
-#define JUMP_RECOMPILE
-#define LOADSTORE_RECOMPILE
-#define MOVE_RECOMPILE
-#define MMI_RECOMPILE
-#define MMI0_RECOMPILE
-#define MMI1_RECOMPILE
-#define MMI2_RECOMPILE
-#define MMI3_RECOMPILE
-#define FPU_RECOMPILE
-#define CP0_RECOMPILE
-#define CP2_RECOMPILE
-
-// You can't recompile ARITHMETICIMM without ARITHMETIC.
-#ifndef ARITHMETIC_RECOMPILE
-#undef ARITHMETICIMM_RECOMPILE
-#endif
-
-#define EE_CONST_PROP 1 // rec2 - enables constant propagation (faster)
 
 // Change to 1 for console logs of SIF, GPU (PS1 mode) and MDEC (PS1 mode).
 // These do spam a lot though!
