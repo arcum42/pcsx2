@@ -18,7 +18,6 @@
 #include "AppAccelerators.h"
 #include "ConsoleLogger.h"
 #include "MSWstuff.h"
-#include "MTVU.h" // for thread cancellation on shutdown
 
 #include "Utilities/IniInterface.h"
 #include "DebugTools/Debug.h"
@@ -165,34 +164,6 @@ void Pcsx2App::AllocateCoreStuffs()
 
 			exconf += 6;
 			exconf += scrollableTextArea	| pxExpand.Border(wxALL, 16);
-			
-			Pcsx2Config::RecompilerOptions& recOps = g_Conf->EmuOptions.Cpu.Recompiler;
-			
-			if( BaseException* ex = m_CpuProviders->GetException_EE() )
-			{
-				scrollableTextArea->AppendText( L"* R5900 (EE)\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.EnableEE		= false;
-			}
-
-			if( BaseException* ex = m_CpuProviders->GetException_IOP() )
-			{
-				scrollableTextArea->AppendText( L"* R3000A (IOP)\n\t"  + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.EnableIOP	= false;
-			}
-
-			if( BaseException* ex = m_CpuProviders->GetException_MicroVU0() )
-			{
-				scrollableTextArea->AppendText( L"* microVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU0	= false;
-				recOps.EnableVU0	= false;
-			}
-
-			if( BaseException* ex = m_CpuProviders->GetException_MicroVU1() )
-			{
-				scrollableTextArea->AppendText( L"* microVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU1	= false;
-				recOps.EnableVU1	= false;
-			}
 
 			exconf += exconf.Heading(pxE( L"Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors." ));
 
@@ -751,11 +722,7 @@ Pcsx2App::Pcsx2App()
 
 Pcsx2App::~Pcsx2App()
 {
-	pxDoAssert = pxAssertImpl_LogIt;	
-	try {
-		vu1Thread.Cancel();
-	}
-	DESTRUCTOR_CATCHALL
+	pxDoAssert = pxAssertImpl_LogIt;
 }
 
 void Pcsx2App::CleanUp()

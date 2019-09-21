@@ -36,5 +36,4 @@ extern wxString ShiftJIS_ConvertString( const char* src, int maxlen );
 
 // Some homeless externs.  This is as good a spot as any for now...
 
-extern void SetCPUState(SSE_MXCSR sseMXCSR, SSE_MXCSR sseVUMXCSR);
 extern SSE_MXCSR g_sseVUMXCSR, g_sseMXCSR;

@@ -115,19 +115,13 @@ Panels::CpuPanelEE::CpuPanelEE( wxWindow* parent )
 	const RadioPanelItem tbl_CpuTypes_EE[] =
 	{
 		RadioPanelItem(_("Interpreter"))
-		.SetToolTip(_("Quite possibly the slowest thing in the universe.")),
-
-		RadioPanelItem(_("Recompiler"))
-		.SetToolTip(_("Performs just-in-time binary translation of 64-bit MIPS-IV machine code to x86."))
+		.SetToolTip(_("Quite possibly the slowest thing in the universe."))
 	};
 
 	const RadioPanelItem tbl_CpuTypes_IOP[] =
 	{
 		RadioPanelItem(_("Interpreter"))
-		.SetToolTip(_("Pretty slow; provided for diagnostic purposes only.")),
-
-		RadioPanelItem(_("Recompiler"))
-		.SetToolTip(_("Performs just-in-time binary translation of 32-bit MIPS-I machine code to x86."))
+		.SetToolTip(_("Pretty slow; provided for diagnostic purposes only."))
 	};
 
 
@@ -183,10 +177,7 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 	const RadioPanelItem tbl_CpuTypes_VU[] =
 	{
 		RadioPanelItem(_("Interpreter"))
-		.SetToolTip(_("Vector Unit Interpreter. Slow and not very compatible. Only use for diagnostics.")),
-
-		RadioPanelItem(_("microVU Recompiler"))
-		.SetToolTip(_("New Vector Unit recompiler with much improved compatibility. Recommended."))
+		.SetToolTip(_("Vector Unit Interpreter. Slow and not very compatible. Only use for diagnostics."))
 	};
 
 	m_panel_VU0 = &(new pxRadioPanel( this, tbl_CpuTypes_VU ))	->SetDefaultItem( 1 );
@@ -227,8 +218,6 @@ Panels::CpuPanelVU::CpuPanelVU( wxWindow* parent )
 void Panels::CpuPanelEE::Apply()
 {
 	Pcsx2Config::RecompilerOptions& recOps( g_Conf->EmuOptions.Cpu.Recompiler );
-	recOps.EnableEE		  = !!m_panel_RecEE->GetSelection();
-	recOps.EnableIOP	  = !!m_panel_RecIOP->GetSelection();
 	recOps.EnableEECache  = m_check_EECacheEnable->GetValue();
 }
 
@@ -240,8 +229,6 @@ void Panels::CpuPanelEE::AppStatusEvent_OnSettingsApplied()
 void Panels::CpuPanelEE::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
 	const Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
-	m_panel_RecEE->SetSelection( (int)recOps.EnableEE );
-	m_panel_RecIOP->SetSelection( (int)recOps.EnableIOP );
 
 	m_panel_RecEE->Enable(!configToApply.EnablePresets);
 	m_panel_RecIOP->Enable(!configToApply.EnablePresets);
@@ -272,9 +259,6 @@ void Panels::CpuPanelEE::OnRestoreDefaults(wxCommandEvent &evt)
 
 void Panels::CpuPanelVU::Apply()
 {
-	Pcsx2Config::RecompilerOptions& recOps( g_Conf->EmuOptions.Cpu.Recompiler );
-	recOps.EnableVU0	= m_panel_VU0->GetSelection() > 0;
-	recOps.EnableVU1	= m_panel_VU1->GetSelection() > 0;
 }
 
 void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
@@ -284,9 +268,6 @@ void Panels::CpuPanelVU::AppStatusEvent_OnSettingsApplied()
 
 void Panels::CpuPanelVU::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	Pcsx2Config::RecompilerOptions& recOps( configToApply.EmuOptions.Cpu.Recompiler );
-	m_panel_VU0->SetSelection( recOps.EnableVU0 ? 1 : 0 );
-	m_panel_VU1->SetSelection( recOps.EnableVU1 ? 1 : 0 );
 	m_panel_VU0->Enable(!configToApply.EnablePresets);
 	m_panel_VU1->Enable(!configToApply.EnablePresets);
 	m_button_RestoreDefaults->Enable(!configToApply.EnablePresets);

@@ -31,7 +31,6 @@
 #include <ctype.h>
 
 #include "R3000A.h"
-#include "iR5900.h"
 #include "System.h"
 #include "DebugTools/Debug.h"
 
@@ -72,7 +71,7 @@ void SysTraceLog::DoWrite( const char *msg ) const
 
 void SysTraceLog_EE::ApplyPrefix( FastFormatAscii& ascii ) const
 {
-	ascii.Write( "%-4s(%8.8lx %8.8lx): ", ((SysTraceLogDescriptor*)m_Descriptor)->Prefix, cpuRegs.pc, cpuRegs.cycle );
+	//ascii.Write( "%-4s(%8.8lx %8.8lx): ", ((SysTraceLogDescriptor*)m_Descriptor)->Prefix, cpuRegs.pc, cpuRegs.cycle );
 }
 
 void SysTraceLog_IOP::ApplyPrefix( FastFormatAscii& ascii ) const

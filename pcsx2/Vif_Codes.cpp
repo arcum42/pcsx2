@@ -20,7 +20,6 @@
 #include "Vif_Dma.h"
 #include "newVif.h"
 #include "VUmicro.h"
-#include "MTVU.h"
 
 #define vifOp(vifCodeName) _vifT int __fastcall vifCodeName(int pass, const u32 *data)
 #define pass1    if (pass == 0)
@@ -261,13 +260,6 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	pxAssert(VUx.Micro);
 
 	vifExecQueue(idx);
-
-	if (idx && THREAD_VU1) {
-		vu1Thread.WriteMicroMem(addr, (u8*)data, size*4);
-		return;
-	}
-
-	
 
 	// Don't forget the Unsigned designator for these checks
 	if((addr + size *4) > vuMemSize)
@@ -526,7 +518,6 @@ vifOp(vifCode_STCol) {
 	}
 	pass2 {
 		u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskCol._u32[vifX.tag.addr]);
-		if (idx && THREAD_VU1) { vu1Thread.WriteCol(vifX); }
 		return ret;
 	}
 	pass3 { VifCodeLog("STCol"); }
@@ -543,7 +534,6 @@ vifOp(vifCode_STRow) {
 	}
 	pass2 {
 		u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskRow._u32[vifX.tag.addr]);
-		if (idx && THREAD_VU1) { vu1Thread.WriteRow(vifX); }
 		return ret;
 	}
 	pass3 { VifCodeLog("STRow"); }

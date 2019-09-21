@@ -17,7 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 #include "Hardware.h"
-#include "MTVU.h"
+#include "VU.h"
 
 #include "IPU/IPUdma.h"
 #include "ps2/HwInternal.h"
@@ -115,12 +115,6 @@ __fi tDMA_TAG* SPRdmaGetAddr(u32 addr, bool write)
 	}
 	else if ((addr >= 0x11000000) && (addr < 0x11010000))
 	{
-		if (addr >= 0x11008000 && THREAD_VU1)
-		{
-			DevCon.Warning("MTVU: SPR Accessing VU1 Memory");
-			vu1Thread.WaitVU();
-		}
-		
 		//Access for VU Memory
 
 		if((addr >= 0x1100c000) && (addr < 0x11010000))

@@ -21,7 +21,6 @@
 #include "Common.h"
 #include "Vif_Dma.h"
 #include "newVif.h"
-#include "MTVU.h"
 
 __aligned16 nVifStruct	nVif[2];
 
@@ -79,8 +78,6 @@ void resetNewVif(int idx)
 	nVif[idx].idx   = idx;
 	nVif[idx].bSize = 0;
 	memzero(nVif[idx].buffer);
-
-	if (newVifDynaRec) dVifReset(idx);
 }
 
 void closeNewVif(int idx) {
@@ -116,11 +113,7 @@ _vifT int nVifUnpack(const u8* data) {
 			if (!vifRegs.num) vifRegs.num = 256;
 		}
 
-		if (!idx || !THREAD_VU1) {
-			if (newVifDynaRec)	dVifUnpack<idx>(data, isFill);
-			else			   _nVifUnpack(idx, data, vifRegs.mode, isFill);
-		}
-		else vu1Thread.VifUnpack(vif, vifRegs, (u8*)data, (size + 4) & ~0x3);
+		_nVifUnpack(idx, data, vifRegs.mode, isFill);
 
 		vif.pass		= 0;
 		vif.tag.size	= 0;

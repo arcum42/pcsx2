@@ -1043,12 +1043,11 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	EmuOptions.Gamefixes			= default_Pcsx2Config.Gamefixes;
 	EmuOptions.Speedhacks			= default_Pcsx2Config.Speedhacks;
 	EmuOptions.Speedhacks.bitset	= 0; //Turn off individual hacks to make it visually clear they're not used.
-	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread;
 	EnableSpeedHacks = true;
 
 	// Actual application of current preset over the base settings which all presets use (mostly pcsx2's default values).
 
-	bool isRateSet = false, isSkipSet = false, isMTVUSet = ignoreMTVU ? true : false; // used to prevent application of specific lower preset values on fallthrough.
+	bool isRateSet = false, isSkipSet = false, isMTVUSet =  false; // used to prevent application of specific lower preset values on fallthrough.
 	switch (n) // Settings will waterfall down to the Safe preset, then stop. So, Balanced and higher will inherit any settings through Safe.
 	{
 		case 5: // Mostly Harmful
@@ -1065,7 +1064,6 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
             // Fall through
 
 		case 2: // Balanced
-			isMTVUSet ? 0 : (isMTVUSet = true, EmuOptions.Speedhacks.vuThread = true); // Enable MTVU
             // Fall through
 
 		case 1: // Safe (Default)
@@ -1078,7 +1076,6 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
             // Fall through
 			
 		case 0: // Safest
-			isMTVUSet ? 0 : (isMTVUSet = true, EmuOptions.Speedhacks.vuThread = false); // Disable MTVU
 			break;
 
 		default:

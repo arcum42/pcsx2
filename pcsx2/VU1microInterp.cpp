@@ -18,7 +18,6 @@
 #include "Common.h"
 
 #include "VUmicro.h"
-#include "MTVU.h"
 
 extern void _vuFlushAll(VURegs* VU);
 
@@ -195,11 +194,9 @@ InterpVU1::InterpVU1()
 }
 
 void InterpVU1::Reset() {
-	vu1Thread.WaitVU();
 }
 
 void InterpVU1::Shutdown() noexcept {
-	vu1Thread.WaitVU();
 }
 
 void InterpVU1::Step()

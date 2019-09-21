@@ -21,18 +21,6 @@
 #include "R5900OpcodeTables.h"
 #include "R5900.h"
 
-#include "x86/iR5900AritImm.h"
-#include "x86/iR5900Arit.h"
-#include "x86/iR5900MultDiv.h"
-#include "x86/iR5900Shift.h"
-#include "x86/iR5900Branch.h"
-#include "x86/iR5900Jump.h"
-#include "x86/iR5900LoadStore.h"
-#include "x86/iR5900Move.h"
-#include "x86/iMMI.h"
-#include "x86/iCOP0.h"
-#include "x86/iFPU.h"
-
 namespace R5900
 {
 	namespace Opcodes
@@ -46,7 +34,7 @@ namespace R5900
 			flags, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::name, \
-			::R5900::Dynarec::OpcodeImpl::rec##name, \
+			NULL, \
 			::R5900::OpcodeDisasm::name \
 		}
 
@@ -57,7 +45,7 @@ namespace R5900
 			flags, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::MMI::name, \
-			::R5900::Dynarec::OpcodeImpl::MMI::rec##name, \
+			NULL, \
 			::R5900::OpcodeDisasm::name \
 		}
 
@@ -68,7 +56,7 @@ namespace R5900
 			flags, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::COP0::name, \
-			::R5900::Dynarec::OpcodeImpl::COP0::rec##name, \
+			NULL, \
 			::R5900::OpcodeDisasm::name \
 		}
 
@@ -79,7 +67,7 @@ namespace R5900
 			flags, \
 			NULL, \
 			::R5900::Interpreter::OpcodeImpl::COP1::name, \
-			::R5900::Dynarec::OpcodeImpl::COP1::rec##name, \
+			NULL, \
 			::R5900::OpcodeDisasm::name \
 		}
 

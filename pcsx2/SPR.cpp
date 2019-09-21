@@ -18,7 +18,6 @@
 
 #include "SPR.h"
 #include "VUmicro.h"
-#include "MTVU.h"
 
 static bool spr0finished = false;
 static bool spr1finished = false;

@@ -17,7 +17,6 @@
 #include "Common.h"
 
 #include "Hardware.h"
-#include "newVif.h"
 #include "IPU/IPUdma.h"
 #include "Gif_Unit.h"
 
@@ -37,16 +36,12 @@ void hwInit()
 
 	if( hwInitialized ) return;
 
-	VifUnpackSSE_Init();
-
 	hwInitialized = true;
 }
 
 void hwShutdown()
 {
 	if (!hwInitialized) return;
-
-	VifUnpackSSE_Destroy();
 
 	hwInitialized = false;
 }

@@ -221,16 +221,6 @@ struct Pcsx2Config
 	{
 		BITFIELD32()
 			bool
-				EnableEE		:1,
-				EnableIOP		:1,
-				EnableVU0		:1,
-				EnableVU1		:1;
-
-			bool
-				UseMicroVU0		:1,
-				UseMicroVU1		:1;
-
-			bool
 				vuOverflow		:1,
 				vuExtraOverflow	:1,
 				vuSignOverflow	:1,
@@ -394,8 +384,7 @@ struct Pcsx2Config
 				fastCDVD		:1,		// enables fast CDVD access
 				IntcStat		:1,		// tells Pcsx2 to fast-forward through intc_stat waits.
 				WaitLoop		:1,		// enables constant loop detection and fast-forwarding
-				vuFlagHack		:1,		// microVU specific flag hack
-				vuThread        :1;		// Enable Threaded VU1
+				vuFlagHack		:1;		// microVU specific flag hack
 		BITFIELD_END
 
 		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
@@ -525,12 +514,10 @@ TraceLogFilters&				SetTraceConfig();
 
 // ------------ CPU / Recompiler Options ---------------
 
-#define THREAD_VU1					(EmuConfig.Cpu.Recompiler.UseMicroVU1 && EmuConfig.Speedhacks.vuThread)
-#define CHECK_MICROVU0				(EmuConfig.Cpu.Recompiler.UseMicroVU0)
-#define CHECK_MICROVU1				(EmuConfig.Cpu.Recompiler.UseMicroVU1)
-#define CHECK_EEREC					(EmuConfig.Cpu.Recompiler.EnableEE && GetCpuProviders().IsRecAvailable_EE())
+#define THREAD_VU1					false
+#define CHECK_EEREC					false
 #define CHECK_CACHE					(EmuConfig.Cpu.Recompiler.EnableEECache)
-#define CHECK_IOPREC				(EmuConfig.Cpu.Recompiler.EnableIOP && GetCpuProviders().IsRecAvailable_IOP())
+#define CHECK_IOPREC				false
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.

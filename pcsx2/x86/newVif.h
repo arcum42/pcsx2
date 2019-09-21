@@ -29,7 +29,6 @@ typedef void (__fastcall *nVifrecCall)(uptr dest, uptr src);
 
 #include "newVif_HashBucket.h"
 
-extern void  mVUmergeRegs(const xRegisterSSE& dest, const xRegisterSSE& src,  int xyzw, bool modXYZW = 0);
 extern void _nVifUnpack  (int idx, const u8* data, uint mode, bool isFill);
 extern void  dVifReserve (int idx);
 extern void  dVifReset   (int idx);
@@ -75,7 +74,6 @@ extern void resetNewVif(int idx);
 extern void releaseNewVif(int idx);
 
 extern __aligned16 nVifStruct nVif[2];
+extern __aligned16 const u8 nVifT[16];
 extern __aligned16 nVifCall nVifUpk[(2*2*16)*4]; // ([USN][Masking][Unpack Type]) [curCycle]
 extern __aligned16 u32		nVifMask[3][4][4];	 // [MaskNumber][CycleNumber][Vector]
-
-static const bool newVifDynaRec = 1; // Use code in newVif_Dynarec.inl

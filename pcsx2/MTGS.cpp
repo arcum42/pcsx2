@@ -21,7 +21,6 @@
 
 #include "GS.h"
 #include "Gif_Unit.h"
-#include "MTVU.h"
 #include "Elfheader.h"
 
 
@@ -407,11 +406,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 				}
 
 				case GS_RINGTYPE_MTVU_GSPACKET: {
-					MTVU_LOG("MTGS - Waiting on semaXGkick!");
-					vu1Thread.KickStart(true);
 					busy.PartialRelease();
-					// Wait for MTVU to complete vu1 program
-					vu1Thread.semaXGkick.WaitWithoutYield();
 					busy.PartialAcquire();
 					Gif_Path& path   = gifUnit.gifPath[GIF_PATH_1];
 					GS_Packet gsPack = path.GetGSPacketMTVU(); // Get vu1 program's xgkick packet(s)
@@ -609,14 +604,14 @@ void SysMtgsThread::WaitGS(bool syncRegs, bool weakWait, bool isMTVU)
 	// Both m_ReadPos and m_WritePos can be relaxed as we only want to test if the queue is empty but
 	// we don't want to access the content of the queue
 
-	if (isMTVU || m_ReadPos.load(std::memory_order_relaxed) != m_WritePos.load(std::memory_order_relaxed)) {
+	if (m_ReadPos.load(std::memory_order_relaxed) != m_WritePos.load(std::memory_order_relaxed)) {
 		SetEvent();
 		RethrowException();
 		for(;;) {
 			if (weakWait) m_mtx_RingBufferBusy2.Wait();
 			else          m_mtx_RingBufferBusy .Wait();
 			RethrowException();
-			if(!isMTVU && m_ReadPos.load(std::memory_order_relaxed) == m_WritePos.load(std::memory_order_relaxed)) break;
+			if(m_ReadPos.load(std::memory_order_relaxed) == m_WritePos.load(std::memory_order_relaxed)) break;
 			u32 curP1Packs = weakWait ? path.GetPendingGSPackets() : 0;
 			if (weakWait && ((startP1Packs-curP1Packs) || !curP1Packs)) break;
 			// On weakWait we will stop waiting on the MTGS thread if the

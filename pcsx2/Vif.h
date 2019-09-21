@@ -238,8 +238,8 @@ static VIFregisters& vif1Regs = (VIFregisters&)eeHw[0x3C00];
 #define  vifXch		(idx ? (vif1ch)   : (vif0ch))
 #define  vifXRegs	(idx ? (vif1Regs) : (vif0Regs))
 
-#define  MTVU_VifX     (idx ? ((THREAD_VU1) ? vu1Thread.vif     : vif1)     : (vif0))
-#define  MTVU_VifXRegs (idx ? ((THREAD_VU1) ? vu1Thread.vifRegs : vif1Regs) : (vif0Regs))
+#define  MTVU_VifX     (idx ? (vif1)     : (vif0))
+#define  MTVU_VifXRegs (idx ? (vif1Regs) : (vif0Regs))
 
 #define VifStallEnable(vif) (vif.chcr.STR);
 

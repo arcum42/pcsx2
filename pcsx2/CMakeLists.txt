@@ -81,7 +81,6 @@ set(pcsx2Sources
 	Memory.cpp
 	MMI.cpp
 	MTGS.cpp
-	MTVU.cpp
 	MultipartFileReader.cpp
 	OutputIsoFile.cpp
 	Patch.cpp
@@ -150,7 +149,6 @@ set(pcsx2Headers
 	IopMem.h
 	IopSio2.h
 	Mdec.h
-	MTVU.h
 	Memory.h
 	MemoryTypes.h
 	Patch.h
@@ -534,73 +532,13 @@ set(pcsx2WindowsHeaders
 
 # x86 sources
 set(pcsx2x86Sources
-	x86/BaseblockEx.cpp
-	x86/iCOP0.cpp
-	x86/iCore.cpp
-	x86/iFPU.cpp
-	x86/iFPUd.cpp
-	x86/iMisc.cpp
-	x86/iMMI.cpp
-	x86/iR3000A.cpp
-	x86/iR3000Atables.cpp
-	x86/iR5900Misc.cpp
-	x86/ir5900tables.cpp
-	x86/ix86-32/iCore-32.cpp
-	x86/ix86-32/iR5900-32.cpp
-	x86/ix86-32/iR5900Arit.cpp
-	x86/ix86-32/iR5900AritImm.cpp
-	x86/ix86-32/iR5900Branch.cpp
-	x86/ix86-32/iR5900Jump.cpp
-	x86/ix86-32/iR5900LoadStore.cpp
-	x86/ix86-32/iR5900Move.cpp
-	x86/ix86-32/iR5900MultDiv.cpp
-	x86/ix86-32/iR5900Shift.cpp
-	x86/ix86-32/iR5900Templates.cpp
-	x86/ix86-32/recVTLB.cpp
-	x86/newVif_Dynarec.cpp
 	x86/newVif_Unpack.cpp
-	x86/newVif_UnpackSSE.cpp
 	)
 
 # x86 headers
 set(pcsx2x86Headers
-	x86/BaseblockEx.h
-	x86/iCOP0.h
-	x86/iCore.h
-	x86/iFPU.h
-	x86/iMMI.h
-	x86/iR3000A.h
-	x86/iR5900Arit.h
-	x86/iR5900AritImm.h
-	x86/iR5900Branch.h
-	x86/iR5900.h
-	x86/iR5900Jump.h
-	x86/iR5900LoadStore.h
-	x86/iR5900Move.h
-	x86/iR5900MultDiv.h
-	x86/iR5900Shift.h
-	x86/microVU_Alloc.inl
-	x86/microVU_Analyze.inl
-	x86/microVU_Branch.inl
-	x86/microVU_Clamp.inl
-	x86/microVU_Compile.inl
-	x86/microVU.cpp
-	x86/microVU_Execute.inl
-	x86/microVU_Flags.inl
-	x86/microVU.h
-	x86/microVU_IR.h
-	x86/microVU_Log.inl
-	x86/microVU_Lower.inl
-	x86/microVU_Macro.inl
-	x86/microVU_Misc.h
-	x86/microVU_Misc.inl
-	x86/microVU_Profiler.h
-	x86/microVU_Tables.inl
-	x86/microVU_Upper.inl
 	x86/newVif.h
 	x86/newVif_HashBucket.h
-	x86/newVif_UnpackSSE.h
-	x86/R5900_Profiler.h
 	)
 
 # common Sources

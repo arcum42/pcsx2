@@ -341,7 +341,6 @@ namespace Panels
 		pxCheckBox*		m_check_waitloop;
 		pxCheckBox*		m_check_fastCDVD;
 		pxCheckBox*		m_check_vuFlagHack;
-		pxCheckBox*		m_check_vuThread;
 
 	public:
 		virtual ~SpeedHacksPanel() = default;

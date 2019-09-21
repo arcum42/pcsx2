@@ -674,14 +674,8 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 			cpuUsage.Write(L"EE: %3d%%", m_CpuUsage.GetEEcorePct());
 			cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
 
-			if (THREAD_VU1)
-				cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
-
 			pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct()));
 		}
-
-		if (THREAD_VU1)
-			OSDmonitor(Color_StrongGreen, "VU:", std::to_string(m_CpuUsage.GetVUPct()).c_str());
 
 		OSDmonitor(Color_StrongGreen, "EE:", std::to_string(m_CpuUsage.GetEEcorePct()).c_str());
 		OSDmonitor(Color_StrongGreen, "GS:", std::to_string(m_CpuUsage.GetGsPct()).c_str());

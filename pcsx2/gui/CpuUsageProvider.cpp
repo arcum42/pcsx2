@@ -23,13 +23,12 @@
 #endif
 
 #include "GS.h"
-#include "MTVU.h"
 
 void AllPCSX2Threads::LoadWithCurrentTimes()
 {
 	ee		= GetCoreThread().GetCpuTime();
 	gs		= GetMTGS().GetCpuTime();
-	vu		= vu1Thread.GetCpuTime();
+	vu		= 0;
 	ui		= GetThreadCpuTime();
 	update	= GetCPUTicks();
 }

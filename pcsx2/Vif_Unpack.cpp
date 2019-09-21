@@ -17,7 +17,6 @@
 #include "Common.h"
 #include "Vif.h"
 #include "Vif_Dma.h"
-#include "MTVU.h"
 
 enum UnpackOffset {
 	OFFSET_X = 0,

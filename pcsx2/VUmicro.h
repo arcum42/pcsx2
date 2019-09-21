@@ -209,51 +209,6 @@ public:
 	void SetCacheReserve( uint reserveInMegs ) const {}
 };
 
-// --------------------------------------------------------------------------------------
-//  recMicroVU0 / recMicroVU1
-// --------------------------------------------------------------------------------------
-class recMicroVU0 : public BaseVUmicroCPU
-{
-public:
-	recMicroVU0();
-	virtual ~recMicroVU0() { Shutdown(); }
-
-	const char* GetShortName() const	{ return "mVU0"; }
-	wxString GetLongName() const		{ return L"microVU0 Recompiler"; }
-
-	void Reserve();
-	void Shutdown() noexcept;
-
-	void Reset();
-	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size);
-	void Vsync() noexcept;
-
-	uint GetCacheReserve() const;
-	void SetCacheReserve( uint reserveInMegs ) const;
-};
-
-class recMicroVU1 : public BaseVUmicroCPU
-{
-public:
-	recMicroVU1();
-	virtual ~recMicroVU1() { Shutdown(); }
-
-	const char* GetShortName() const	{ return "mVU1"; }
-	wxString GetLongName() const		{ return L"microVU1 Recompiler"; }
-
-	void Reserve();
-	void Shutdown() noexcept;
-	void Reset();
-	void Execute(u32 cycles);
-	void Clear(u32 addr, u32 size);
-	void Vsync() noexcept;
-	void ResumeXGkick();
-
-	uint GetCacheReserve() const;
-	void SetCacheReserve( uint reserveInMegs ) const;
-};
-
 extern BaseVUmicroCPU* CpuVU0;
 extern BaseVUmicroCPU* CpuVU1;
 
@@ -263,14 +218,12 @@ extern void vu0ResetRegs();
 extern void __fastcall vu0ExecMicro(u32 addr);
 extern void vu0Exec(VURegs* VU);
 extern void vu0Finish();
-extern void iDumpVU0Registers();
 
 // VU1
 extern void vu1Finish();
 extern void vu1ResetRegs();
 extern void __fastcall vu1ExecMicro(u32 addr);
 extern void vu1Exec(VURegs* VU);
-extern void iDumpVU1Registers();
 
 #ifdef VUM_LOG
 

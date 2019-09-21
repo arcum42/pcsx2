@@ -64,7 +64,6 @@ void Pcsx2Config::SpeedhackOptions::LoadSave( IniInterface& ini )
 	IniBitBool( IntcStat );
 	IniBitBool( WaitLoop );
 	IniBitBool( vuFlagHack );
-	IniBitBool( vuThread );
 }
 
 void Pcsx2Config::ProfilerOptions::LoadSave( IniInterface& ini )
@@ -85,16 +84,7 @@ Pcsx2Config::RecompilerOptions::RecompilerOptions()
 	//StackFrameChecks	= false;
 	//PreBlockCheckEE	= false;
 
-	// All recs are enabled by default.
-
-	EnableEE	= true;
 	EnableEECache = false;
-	EnableIOP	= true;
-	EnableVU0	= true;
-	EnableVU1	= true;
-
-	UseMicroVU0	= true;
-	UseMicroVU1	= true;
 
 	// vu and fpu clamping default to standard overflow.
 	vuOverflow	= true;
@@ -143,15 +133,8 @@ void Pcsx2Config::RecompilerOptions::ApplySanityCheck()
 void Pcsx2Config::RecompilerOptions::LoadSave( IniInterface& ini )
 {
 	ScopedIniGroup path( ini, L"Recompiler" );
-
-	IniBitBool( EnableEE );
-	IniBitBool( EnableIOP );
+	
 	IniBitBool( EnableEECache );
-	IniBitBool( EnableVU0 );
-	IniBitBool( EnableVU1 );
-
-	IniBitBool( UseMicroVU0 );
-	IniBitBool( UseMicroVU1 );
 
 	IniBitBool( vuOverflow );
 	IniBitBool( vuExtraOverflow );

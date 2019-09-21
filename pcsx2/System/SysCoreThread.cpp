@@ -23,7 +23,6 @@
 #include "Elfheader.h"
 #include "Patch.h"
 #include "SysThreads.h"
-#include "MTVU.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -182,7 +181,6 @@ void SysCoreThread::_reset_stuff_as_needed()
 	{
 		SysClearExecutionCache();
 		memBindConditionalHandlers();
-		SetCPUState( EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVUMXCSR );
 
 		m_resetRecompilers		= false;
 		m_resetProfilers		= false;
@@ -291,8 +289,6 @@ void SysCoreThread::OnCleanupInThread()
 	m_hasActiveMachine		= false;
 	m_resetVirtualMachine	= true;
 
-	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
-	vu1Thread.WaitVU();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 

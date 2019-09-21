@@ -398,7 +398,6 @@ struct R5900cpu
 
 extern R5900cpu *Cpu;
 extern R5900cpu intCpu;
-extern R5900cpu recCpu;
 
 enum EE_EventType
 {

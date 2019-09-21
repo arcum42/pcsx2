@@ -21,7 +21,6 @@
 #include "ps2/BiosTools.h"
 #include "COP0.h"
 #include "VUmicro.h"
-#include "MTVU.h"
 #include "Cache.h"
 #include "AppConfig.h"
 
@@ -152,7 +151,6 @@ static const uint MainMemorySizeInBytes =
 
 SaveStateBase& SaveStateBase::FreezeMainMemory()
 {
-	vu1Thread.WaitVU(); // Finish VU1 just in-case...
 	if (IsLoading()) PreLoadPrep();
 	else m_memory->MakeRoomFor( m_idx + MainMemorySizeInBytes );
 
@@ -175,11 +173,7 @@ SaveStateBase& SaveStateBase::FreezeMainMemory()
 }
 
 SaveStateBase& SaveStateBase::FreezeInternals()
-{
-	vu1Thread.WaitVU(); // Finish VU1 just in-case...
-	// Print this until the MTVU problem in gifPathFreeze is taken care of (rama)
-	if (THREAD_VU1) Console.Warning("MTVU speedhack is enabled, saved states may not be stable");
-	
+{	
 	if (IsLoading()) PreLoadPrep();
 
 	// Second Block - Various CPU Registers and States

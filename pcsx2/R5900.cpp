@@ -22,7 +22,6 @@
 #include "ps2/pgif.h" // pgif init
 #include "VUmicro.h"
 #include "COP0.h"
-#include "MTVU.h"
 
 #include "System/SysThreads.h"
 #include "R5900Exceptions.h"
@@ -71,7 +70,6 @@ extern SysMainMemory& GetVmMemory();
 
 void cpuReset()
 {
-	vu1Thread.WaitVU();
 	if (GetMTGS().IsOpen())
 		GetMTGS().WaitGS();		// GS better be done processing before we reset the EE, just in case.
 

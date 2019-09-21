@@ -210,20 +210,19 @@ struct Gif_Path {
 		gsPack.Reset();
 	}
 
-	bool isMTVU() const           { return !idx && THREAD_VU1; }
 	s32 getReadAmount()           { return readAmount.load(std::memory_order_acquire) + gsPack.readAmount; }
 	bool hasDataRemaining() const { return curOffset < curSize; }
-	bool isDone() const           { return isMTVU() ? !mtvu.fakePackets : (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
+	bool isDone() const           { return (!hasDataRemaining() && (state == GIF_PATH_IDLE || state == GIF_PATH_WAIT)); }
 
 	// Waits on the MTGS to process gs packets
 	void mtgsReadWait() {
 		if (IsDevBuild) {
 			DevCon.WriteLn(Color_Red,   "Gif Path[%d] - MTGS Wait! [r=0x%x]", idx+1, getReadAmount());
-			Gif_MTGS_Wait(isMTVU());
+			Gif_MTGS_Wait(false);
 			DevCon.WriteLn(Color_Green, "Gif Path[%d] - MTGS Wait! [r=0x%x]", idx+1, getReadAmount());
 			return;
 		}
-		Gif_MTGS_Wait(isMTVU());
+		Gif_MTGS_Wait(false);
 	}
 
 	// Moves packet data to start of buffer
@@ -239,8 +238,7 @@ struct Gif_Path {
 			mtgsReadWait();
 		}
 		if (offset < (s32)buffLimit) { // Needed for correct readAmount values
-			if (isMTVU()) gsPack.readAmount += buffLimit - offset;
-			else Gif_AddBlankGSPacket(buffLimit - offset, idx);
+			Gif_AddBlankGSPacket(buffLimit - offset, idx);
 		}
 		//DevCon.WriteLn("Realign Packet [%d]", curSize - offset);
 		if (intersect) memmove(buffer, &buffer[offset], curSize - offset);
@@ -275,7 +273,7 @@ struct Gif_Path {
 			done = true;
 			return mtvu.fakePacket;
 		}
-		pxAssert(!isMTVU());
+		
 		for(;;) {
 			if (!gifTag.isValid) { // Need new Gif Tag
 				// We don't have enough data for a Gif Tag
@@ -308,7 +306,7 @@ struct Gif_Path {
 				while(gifTag.nLoop && !dblSIGNAL) {
 					if (curOffset + 16 > curSize) return gsPack; // Exit Early
 					if (gifTag.curReg() == GIF_REG_A_D) {
-						if (!isMTVU()) dblSIGNAL = Gif_HandlerAD(&buffer[curOffset]);
+						dblSIGNAL = Gif_HandlerAD(&buffer[curOffset]);
 					}
 					incTag(curOffset, gsPack.size, 16); // 1 QWC
 					gifTag.packedStep();
@@ -492,21 +490,6 @@ struct Gif_Unit {
 	// The return value is the amount of data (in bytes) that was processed
 	// If transfer cannot take place at this moment the return value is 0
 	u32 TransferGSPacketData(GIF_TRANSFER_TYPE tranType, u8* pMem, u32 size, bool aligned=false) {
-
-		if (THREAD_VU1) {
-			Gif_Path& path1 = gifPath[GIF_PATH_1];
-			if (tranType == GIF_TRANS_XGKICK) { // This is on the MTVU thread
-				path1.CopyGSPacketData(pMem, size, aligned);
-				path1.ExecuteGSPacketMTVU();
-				return size;
-			}
-			if (tranType == GIF_TRANS_MTVU) {   // This is on the EE thread
-				path1.mtvu.fakePackets++;
-				if (CanDoGif()) Execute(false, true);
-				return 0;
-			}
-		}
-
 		GUNIT_LOG("%s - [path=%d][size=%d]", Gif_TransferStr[(tranType>>8)&0xf], (tranType&3)+1, size);
 		if (size == 0)  { GUNIT_WARN("Gif Unit - Size == 0"); return 0; }
 		if(!CanDoGif()) { GUNIT_WARN("Gif Unit - Signal or PSE Set or Dir = GS to EE"); }

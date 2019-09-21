@@ -19,7 +19,6 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "Vif_Dma.h"
-#include "MTVU.h"
 
 Gif_Unit gifUnit;
 
@@ -130,7 +129,7 @@ void Gif_AddBlankGSPacket(u32 size, GIF_PATH path) {
 }
 
 void Gif_MTGS_Wait(bool isMTVU) {
-	GetMTGS().WaitGS(false, true, isMTVU);
+	GetMTGS().WaitGS(false, true, false);
 }
 
 void SaveStateBase::gifPathFreeze(u32 path) {
@@ -140,11 +139,10 @@ void SaveStateBase::gifPathFreeze(u32 path) {
 	pxAssertDev(!gifPath.gsPack.readAmount,     "GS Pack readAmount should be 0!");
 	pxAssertDev(!gifPath.GetPendingGSPackets(), "MTVU GS Pack Queue should be 0!");
 
-	if (!gifPath.isMTVU()) { // FixMe: savestate freeze bug (Gust games) with MTVU enabled
-		if (IsSaving()) { // Move all the buffered data to the start of buffer
-			gifPath.RealignPacket(); // May add readAmount which we need to clear on load
-		}
+	if (IsSaving()) { // Move all the buffered data to the start of buffer
+		gifPath.RealignPacket(); // May add readAmount which we need to clear on load
 	}
+
 	u8* bufferPtr = gifPath.buffer; // Backup current buffer ptr
 	Freeze(gifPath.mtvu.fakePackets);
 	FreezeMem(&gifPath,  sizeof(gifPath) - sizeof(gifPath.mtvu));
@@ -157,11 +155,8 @@ void SaveStateBase::gifPathFreeze(u32 path) {
 }
 
 void SaveStateBase::gifFreeze() {
-	bool mtvuMode = THREAD_VU1;
-	pxAssert(vu1Thread.IsDone());
 	GetMTGS().WaitGS();
 	FreezeTag("Gif Unit");
-	Freeze(mtvuMode);
 	Freeze(gifUnit.stat);
 	Freeze(gifUnit.gsSIGNAL);
 	Freeze(gifUnit.gsFINISH);
@@ -169,10 +164,4 @@ void SaveStateBase::gifFreeze() {
 	gifPathFreeze(GIF_PATH_1);
 	gifPathFreeze(GIF_PATH_2);
 	gifPathFreeze(GIF_PATH_3);
-	if (!IsSaving()) {
-		if (mtvuMode != THREAD_VU1) {
-			DevCon.Warning("gifUnit: MTVU Mode has switched between save/load state");
-			// ToDo: gifUnit.SwitchMTVU(mtvuMode);
-		}
-	}
 }

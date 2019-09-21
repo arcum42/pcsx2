@@ -18,7 +18,6 @@
 #include "IopCommon.h"
 #include "VUmicro.h"
 #include "newVif.h"
-#include "MTVU.h"
 
 #include "Elfheader.h"
 
@@ -333,9 +332,6 @@ CpuInitializer< CpuType >::~CpuInitializer()
 class CpuInitializerSet
 {
 public:
-	CpuInitializer<recMicroVU0>		microVU0;
-	CpuInitializer<recMicroVU1>		microVU1;
-
 	CpuInitializer<InterpVU0>		interpVU0;
 	CpuInitializer<InterpVU1>		interpVU1;
 
@@ -414,12 +410,6 @@ void SysMainMemory::DecommitAll()
 	Console.WriteLn( Color_Blue, "Decommitting host memory for virtual systems..." );
 	ConsoleIndentScope indent(1);
 
-	// On linux, the MTVU isn't empty and the thread still uses the m_ee/m_vu memory
-	vu1Thread.WaitVU();
-	// The EE thread must be stopped here command mustn't be send
-	// to the ring. Let's call it an extra safety valve :)
-	vu1Thread.Reset();
-
 	m_ee.Decommit();
 	m_iop.Decommit();
 	m_vu.Decommit();
@@ -459,55 +449,10 @@ SysCpuProviderPack::SysCpuProviderPack()
 	ConsoleIndentScope indent(1);
 
 	CpuProviders = std::make_unique<CpuInitializerSet>();
-
-	try {
-		recCpu.Reserve();
-	}
-	catch( Exception::RuntimeError& ex )
-	{
-		m_RecExceptionEE = ScopedExcept(ex.Clone());
-		Console.Error( L"EE Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
-		recCpu.Shutdown();
-	}
-
-	try {
-		psxRec.Reserve();
-	}
-	catch( Exception::RuntimeError& ex )
-	{
-		m_RecExceptionIOP = ScopedExcept(ex.Clone());
-		Console.Error( L"IOP Recompiler Reservation Failed:\n" + ex.FormatDiagnosticMessage() );
-		psxRec.Shutdown();
-	}
-
-	// hmm! : VU0 and VU1 pre-allocations should do sVU and mVU separately?  Sounds complicated. :(
-
-	if (newVifDynaRec)
-	{
-		dVifReserve(0);
-		dVifReserve(1);
-	}
 }
-
-bool SysCpuProviderPack::IsRecAvailable_MicroVU0() const { return CpuProviders->microVU0.IsAvailable(); }
-bool SysCpuProviderPack::IsRecAvailable_MicroVU1() const { return CpuProviders->microVU1.IsAvailable(); }
-BaseException* SysCpuProviderPack::GetException_MicroVU0() const { return CpuProviders->microVU0.ExThrown.get(); }
-BaseException* SysCpuProviderPack::GetException_MicroVU1() const { return CpuProviders->microVU1.ExThrown.get(); }
 
 void SysCpuProviderPack::CleanupMess() noexcept
 {
-	try
-	{
-		psxRec.Shutdown();
-		recCpu.Shutdown();
-
-		if (newVifDynaRec)
-		{
-			dVifRelease(0);
-			dVifRelease(1);
-		}
-	}
-	DESTRUCTOR_CATCHALL
 }
 
 SysCpuProviderPack::~SysCpuProviderPack()
@@ -517,11 +462,7 @@ SysCpuProviderPack::~SysCpuProviderPack()
 
 bool SysCpuProviderPack::HadSomeFailures( const Pcsx2Config::RecompilerOptions& recOpts ) const
 {
-	return	(recOpts.EnableEE && !IsRecAvailable_EE()) ||
-			(recOpts.EnableIOP && !IsRecAvailable_IOP()) ||
-			(recOpts.EnableVU0 && !IsRecAvailable_MicroVU0()) ||
-			(recOpts.EnableVU1 && !IsRecAvailable_MicroVU1())
-			;
+	return false;
 
 }
 
@@ -530,17 +471,11 @@ BaseVUmicroCPU* CpuVU1 = NULL;
 
 void SysCpuProviderPack::ApplyConfig() const
 {
-	Cpu		= CHECK_EEREC	? &recCpu : &intCpu;
-	psxCpu	= CHECK_IOPREC	? &psxRec : &psxInt;
+	Cpu		= &intCpu;
+	psxCpu	= &psxInt;
 
 	CpuVU0 = CpuProviders->interpVU0;
 	CpuVU1 = CpuProviders->interpVU1;
-
-	if( EmuConfig.Cpu.Recompiler.EnableVU0 )
-		CpuVU0 = (BaseVUmicroCPU*)CpuProviders->microVU0;
-
-	if( EmuConfig.Cpu.Recompiler.EnableVU1 )
-		CpuVU1 = (BaseVUmicroCPU*)CpuProviders->microVU1;
 }
 
 // Resets all PS2 cpu execution caches, which does not affect that actual PS2 state/condition.
@@ -555,18 +490,8 @@ void SysClearExecutionCache()
 	Cpu->Reset();
 	psxCpu->Reset();
 
-	// mVU's VU0 needs to be properly initialized for macro mode even if it's not used for micro mode!
-	if (CHECK_EEREC)
-		((BaseVUmicroCPU*)GetCpuProviders().CpuProviders->microVU0)->Reset();
-
 	CpuVU0->Reset();
 	CpuVU1->Reset();
-
-	if (newVifDynaRec)
-	{
-		dVifReset(0);
-		dVifReset(1);
-	}
 }
 
 // Maps a block of memory for use as a recompiled code buffer, and ensures that the

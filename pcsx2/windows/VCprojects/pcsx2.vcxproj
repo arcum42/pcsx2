@@ -69,20 +69,6 @@
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
-    <None Include="..\..\x86\aVUzerorec.S" />
-    <None Include="..\..\x86\microVU_Alloc.inl" />
-    <None Include="..\..\x86\microVU_Analyze.inl" />
-    <None Include="..\..\x86\microVU_Branch.inl" />
-    <None Include="..\..\x86\microVU_Clamp.inl" />
-    <None Include="..\..\x86\microVU_Compile.inl" />
-    <None Include="..\..\x86\microVU_Execute.inl" />
-    <None Include="..\..\x86\microVU_Flags.inl" />
-    <None Include="..\..\x86\microVU_Log.inl" />
-    <None Include="..\..\x86\microVU_Lower.inl" />
-    <None Include="..\..\x86\microVU_Macro.inl" />
-    <None Include="..\..\x86\microVU_Misc.inl" />
-    <None Include="..\..\x86\microVU_Tables.inl" />
-    <None Include="..\..\x86\microVU_Upper.inl" />
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl" />
     <CustomBuild Include="..\..\gui\Resources\AppIcon16.png">
       <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
@@ -202,7 +188,6 @@
     <ClCompile Include="..\..\Recording\VirtualPad.cpp" />
     <ClCompile Include="..\..\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\Dump.cpp" />
-    <ClCompile Include="..\..\x86\iMisc.cpp" />
     <ClCompile Include="..\..\Pcsx2Config.cpp" />
     <ClCompile Include="..\..\PluginManager.cpp" />
     <ClCompile Include="..\FlatFileReaderWindows.cpp" />
@@ -213,7 +198,6 @@
     <ClCompile Include="..\..\System\SysThreadBase.cpp" />
     <ClCompile Include="..\..\Elfheader.cpp" />
     <ClCompile Include="..\..\CDVD\InputIsoFile.cpp" />
-    <ClCompile Include="..\..\x86\BaseblockEx.cpp" />
     <ClCompile Include="..\..\ps2\BiosTools.cpp" />
     <ClCompile Include="..\..\Counters.cpp" />
     <ClCompile Include="..\..\FiFo.cpp" />
@@ -222,12 +206,10 @@
     <ClCompile Include="..\..\HwWrite.cpp" />
     <ClCompile Include="..\..\Cache.cpp" />
     <ClCompile Include="..\..\Memory.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\recVTLB.cpp" />
     <ClCompile Include="..\..\vtlb.cpp" />
     <ClCompile Include="..\..\MTVU.cpp" />
     <ClCompile Include="..\..\VUmicro.cpp" />
     <ClCompile Include="..\..\VUmicroMem.cpp" />
-    <ClCompile Include="..\..\x86\microVU.cpp" />
     <ClCompile Include="..\..\VU0.cpp" />
     <ClCompile Include="..\..\VU0micro.cpp" />
     <ClCompile Include="..\..\VU0microInterp.cpp" />
@@ -246,27 +228,9 @@
     <ClCompile Include="..\..\Vif_Transfer.cpp" />
     <ClCompile Include="..\..\Vif_Unpack.cpp" />
     <ClCompile Include="..\..\x86\newVif_Unpack.cpp" />
-    <ClCompile Include="..\..\x86\newVif_Dynarec.cpp" />
-    <ClCompile Include="..\..\x86\newVif_UnpackSSE.cpp" />
     <ClCompile Include="..\..\SPR.cpp" />
     <ClCompile Include="..\..\Gif.cpp" />
     <ClCompile Include="..\..\R5900OpcodeTables.cpp" />
-    <ClCompile Include="..\..\x86\iCOP0.cpp" />
-    <ClCompile Include="..\..\x86\iFPU.cpp" />
-    <ClCompile Include="..\..\x86\iFPUd.cpp" />
-    <ClCompile Include="..\..\x86\iMMI.cpp" />
-    <ClCompile Include="..\..\x86\iR5900Misc.cpp" />
-    <ClCompile Include="..\..\x86\ir5900tables.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900-32.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900Arit.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900AritImm.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900Branch.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900Jump.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900LoadStore.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900Move.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900MultDiv.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900Shift.cpp" />
-    <ClCompile Include="..\..\x86\ix86-32\iR5900Templates.cpp" />
     <ClCompile Include="..\..\COP0.cpp" />
     <ClCompile Include="..\..\COP2.cpp" />
     <ClCompile Include="..\..\FPU.cpp" />
@@ -286,8 +250,6 @@
     <ClCompile Include="..\..\R3000AInterpreter.cpp" />
     <ClCompile Include="..\..\R3000AOpcodeTables.cpp" />
     <ClCompile Include="..\..\Sio.cpp" />
-    <ClCompile Include="..\..\x86\iR3000A.cpp" />
-    <ClCompile Include="..\..\x86\iR3000Atables.cpp" />
     <ClCompile Include="..\..\IopHw.cpp" />
     <ClCompile Include="..\..\ps2\Iop\IopHwRead.cpp" />
     <ClCompile Include="..\..\ps2\Iop\IopHwWrite.cpp" />
@@ -325,8 +287,6 @@
     <ClCompile Include="..\..\rdebug\deci2_ttyp.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\x86\ix86-32\iCore-32.cpp" />
-    <ClCompile Include="..\..\x86\iCore.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFile.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFS.cpp" />
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFSCDVD.cpp" />
@@ -463,11 +423,6 @@
     <ClInclude Include="..\..\MTVU.h" />
     <ClInclude Include="..\..\VU.h" />
     <ClInclude Include="..\..\VUmicro.h" />
-    <ClInclude Include="..\..\x86\microVU.h" />
-    <ClInclude Include="..\..\x86\microVU_IR.h" />
-    <ClInclude Include="..\..\x86\microVU_Misc.h" />
-    <ClInclude Include="..\..\x86\microVU_Profiler.h" />
-    <ClInclude Include="..\..\x86\R5900_Profiler.h" />
     <ClInclude Include="..\..\VUflags.h" />
     <ClInclude Include="..\..\VUops.h" />
     <ClInclude Include="..\..\Sif.h" />
@@ -477,24 +432,11 @@
     <ClInclude Include="..\..\Vif_Unpack.h" />
     <ClInclude Include="..\..\x86\newVif.h" />
     <ClInclude Include="..\..\x86\newVif_HashBucket.h" />
-    <ClInclude Include="..\..\x86\newVif_UnpackSSE.h" />
     <ClInclude Include="..\..\SPR.h" />
     <ClInclude Include="..\..\Gif.h" />
     <ClInclude Include="..\..\R5900.h" />
     <ClInclude Include="..\..\R5900Exceptions.h" />
-    <ClInclude Include="..\..\R5900OpcodeTables.h" />
-    <ClInclude Include="..\..\x86\iCOP0.h" />
-    <ClInclude Include="..\..\x86\iFPU.h" />
-    <ClInclude Include="..\..\x86\iMMI.h" />
-    <ClInclude Include="..\..\x86\iR5900.h" />
-    <ClInclude Include="..\..\x86\iR5900Arit.h" />
-    <ClInclude Include="..\..\x86\iR5900AritImm.h" />
-    <ClInclude Include="..\..\x86\iR5900Branch.h" />
-    <ClInclude Include="..\..\x86\iR5900Jump.h" />
-    <ClInclude Include="..\..\x86\iR5900LoadStore.h" />
-    <ClInclude Include="..\..\x86\iR5900Move.h" />
-    <ClInclude Include="..\..\x86\iR5900MultDiv.h" />
-    <ClInclude Include="..\..\x86\iR5900Shift.h" />
+    <ClInclude Include="..\..\R5900OpcodeTables.h" /
     <ClInclude Include="..\..\IopBios.h" />
     <ClInclude Include="..\..\IopCounters.h" />
     <ClInclude Include="..\..\IopDma.h" />
@@ -502,7 +444,6 @@
     <ClInclude Include="..\..\IopSio2.h" />
     <ClInclude Include="..\..\R3000A.h" />
     <ClInclude Include="..\..\Sio.h" />
-    <ClInclude Include="..\..\x86\iR3000A.h" />
     <ClInclude Include="..\..\IopHw.h" />
     <ClInclude Include="..\..\ps2\Iop\IopHw_Internal.h" />
     <ClInclude Include="..\..\CDVD\CdRom.h" />
@@ -541,9 +482,7 @@
     <CustomBuildStep Include="..\..\rdebug\deci2_ttyp.h">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </CustomBuildStep>
-    <ClInclude Include="..\..\x86\BaseblockEx.h" />
     <ClInclude Include="..\..\ps2\BiosTools.h" />
-    <ClInclude Include="..\..\x86\iCore.h" />
     <ClInclude Include="..\..\CDVD\IsoFS\IsoDirectory.h" />
     <ClInclude Include="..\..\CDVD\IsoFS\IsoFile.h" />
     <ClInclude Include="..\..\CDVD\IsoFS\IsoFileDescriptor.h" />
