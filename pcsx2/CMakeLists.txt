@@ -236,7 +236,6 @@ set(pcsx2CDVDHeaders
 	CDVD/IsoFS/IsoFS.h
 	CDVD/IsoFS/SectorSource.h
 	CDVD/zlib_indexed.h
-	CDVD/cdvdNull.h
 	)
 
 # DebugTools sources

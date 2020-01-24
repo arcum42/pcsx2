@@ -12,3 +12,25 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+
+// Largely copied from the USBNull plugin.
+
+#pragma once
+
+#include "PrecompiledHeader.h"
+#include "PS2Edefs.h"
+#include "PluginCallbacks.h"
+
+extern USBcallback USBirq;
+
+// Previous USB plugins have needed this in ohci.
+static const s64 PSXCLK = 36864000; /* 36.864 Mhz */
+
+extern s8 *usbregs, *ram;
+
+#define usbRs8(mem) usbregs[(mem)&0xffff]
+#define usbRs16(mem) (*(s16 *)&usbregs[(mem)&0xffff])
+#define usbRs32(mem) (*(s32 *)&usbregs[(mem)&0xffff])
+#define usbRu8(mem) (*(u8 *)&usbregs[(mem)&0xffff])
+#define usbRu16(mem) (*(u16 *)&usbregs[(mem)&0xffff])
+#define usbRu32(mem) (*(u32 *)&usbregs[(mem)&0xffff])

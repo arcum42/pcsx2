@@ -15,10 +15,11 @@
 
 // Largely copied from the FWNull plugin.
 
+#pragma once
+
 #include "PrecompiledHeader.h"
 #include "PS2Edefs.h"
 #include "PluginCallbacks.h"
-#include "null/config.inl"
 
 // Our main memory storage, and defines for accessing it.
 extern s8 *fwregs;
