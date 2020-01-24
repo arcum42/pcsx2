@@ -178,6 +178,26 @@ set(pcsx2Headers
 	VUmicro.h
 	VUops.h)
 
+set(pcsx2NullSources
+	CDVD/cdvdNull.cpp
+	DEV9/dev9Null.cpp
+	FW/fwNull.cpp
+	GS/gsNull.cpp
+	PAD/padNull.cpp
+	SPU2/spu2Null.cpp
+	USB/usbNull.cpp
+)
+
+set(pcsx2NullHeaders
+	CDVD/cdvdNull.h
+	DEV9/dev9Null.h
+	FW/fwNull.h
+	GS/gsNull.h
+	PAD/padNull.h
+	SPU2/spu2Null.h
+	USB/usbNull.h
+)
+
 # CDVD sources
 set(pcsx2CDVDSources
 	CDVD/BlockdumpFileReader.cpp
@@ -216,6 +236,7 @@ set(pcsx2CDVDHeaders
 	CDVD/IsoFS/IsoFS.h
 	CDVD/IsoFS/SectorSource.h
 	CDVD/zlib_indexed.h
+	CDVD/cdvdNull.h
 	)
 
 # DebugTools sources
@@ -628,6 +649,8 @@ endif()
 set(Common
 	${pcsx2Sources}
 	${pcsx2Headers}
+	${pcsx2NullSources}
+	${pcsx2NullHeaders}
 	${pcsx2CDVDSources}
 	${pcsx2CDVDHeaders}
 	${pcsx2DebugToolsSources}
